@@ -1,0 +1,14 @@
+#action {
+  position: static;
+  top: 0;
+  left: 0;
+  width: 10rem;
+  height: 2rem;
+  background-color: grey;
+}
+.chartContainer{
+  height: 50vh;
+  width: 100vw;
+  top: 0 ;
+  right: 0;
+}
