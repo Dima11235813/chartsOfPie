@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,23 +13,44 @@
 
 
     <title>Document</title>
-    <div class="num-tracker-container" id="0-num"></div>
-    <div class="num-tracker-container" id="0-num"></div>
-    <div class="num-tracker-container"></div>
-    <div class="num-tracker-container"></div>
-    <div class="num-tracker-container"></div>
-    <div class="num-tracker-container"></div>
-    <div class="num-tracker-container"></div>
-    <div class="num-tracker-container"></div>
-    <div class="num-tracker-container"></div>
-    <div class="num-tracker-container"></div>
-    <div class="chartContainer">
-
-        <canvas id="myChart" width="400" height="400"></canvas>
-    </div>
 </head>
+
 <body>
+    <div class="charts-of-pie-main">
+
+        <div class="num-tracker-container" id="0-num"></div>
+        <div class="num-tracker-container" id="0-num"></div>
+        <div class="num-tracker-container"></div>
+        <div class="num-tracker-container"></div>
+        <div class="num-tracker-container"></div>
+        <div class="num-tracker-container"></div>
+        <div class="num-tracker-container"></div>
+        <div class="num-tracker-container"></div>
+        <div class="num-tracker-container"></div>
+        <div class="num-tracker-container"></div>
+
+        <div class="chartContainer">
+
+            <canvas id="number-count-chart" width="400" height="400"></canvas>
+            <canvas id="number-concurrence-chart" width="400" height="400"></canvas>
+        </div>
+        <p>Y Axis Type</p>
+        <div id="chart-type-options-container">
+            <div>
+                <input class="chart-type-option" type="radio" id="bar" name="chart-option" value="bar" checked>
+                <label for="bar">Bar</label>
+            </div>
+
+            <div>
+                <input class="chart-type-option" type="radio" id="line" name="chart-option" value="line">
+                <label for="line">line</label>
+            </div>
+        </div>
+
+    </div>
     <button id="action"></button>
     <script src="./index.js"></script>
+    <script src="./performance.js"></script>
 </body>
+
 </html>
