@@ -64,4 +64,4 @@ setInterval(() => {
 
   logPerformance();
 
-}, 500);
+}, 5000);

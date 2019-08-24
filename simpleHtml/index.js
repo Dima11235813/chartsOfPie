@@ -6,7 +6,7 @@
 
 
     let appOptions = {
-      verboseLob: true
+      verboseLob: false
     }
     const {verboseLob} = appOptions
   let numberTracker = new Array(10).fill(0);
@@ -43,13 +43,13 @@
               "rgba(148, 0, 211 )",
               "rgba(75, 0, 130	)",
               "rgba(0, 0, 255		)",
-              "rgba(0, 255, 0		)",
-              "rgba(255, 255, 0	)",
-              "rgba(255, 127, 0	)",
               "rgba(255, 0 , 0	)",
-              "rgba(148, 0, 211 )",
+              "rgba(255, 127, 0	)",
+              "rgba(255, 255, 0	)",
+              "rgba(0, 255, 0		)",
+              "rgba(0, 0, 255		)",
               "rgba(75, 0, 130	)",
-              "rgba(0, 0, 255		)"
+              "rgba(148, 0, 211 )",
             ],
             borderColor: [
               "rgba(0, 0, 0, 1)",
@@ -81,7 +81,7 @@
           }
         },
         animation: {
-          duration: 0,
+          duration: 10,
           // https://www.chartjs.org/docs/latest/configuration/animations.html
           //https://github.com/chartjs/Chart.js/blob/master/samples/advanced/progress-bar.html
           // onProgress: function(animation) {
