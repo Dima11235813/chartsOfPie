@@ -21,7 +21,7 @@
   const { verboseLob } = appOptions
   
   //SOUND TIME UTILS
-  const timeMultiplier = 33 //used to multiple 0-9 times milliseconds
+  const timeMultiplier = 42 //used to multiple 0-9 times milliseconds
   const conversionFactor = 60000
   const bpm = 100
   const msPerBPM = conversionFactor / bpm
@@ -47,7 +47,7 @@
 
   //OPTIONS
   const chartTypeOptions = ["polarArea", "bar", "horizontalBar", "line", "doughnut", "pie", "radar"]
-  let chartType = chartTypeOptions[1]
+  let chartType = chartTypeOptions[3]
 
   //SOUND VARS
   let toneTime = "1n"
@@ -288,7 +288,7 @@
     Current Iteration: ${count} Current Instances By Number ${JSON.stringify(numberTracker)}} Current Number:${currentNumber}`
     totalCount.textContent = displayString
   }
-  getPlayingSoundInfoString = () => `Playing ${note} for ${toneTime} time. Which is time value of ${time}`
+  getPlayingSoundInfoString = () => `Playing ${note} for ${toneTime} time.`
   updateSoundSection = () => {
     let displayString = getPlayingSoundInfoString()
     soundData.textContent = displayString
