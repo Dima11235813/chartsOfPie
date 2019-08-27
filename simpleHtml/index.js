@@ -173,21 +173,23 @@
     6: "4t",
     7: "8n",
     8: "8t",
-    9: "16t"
+    9: "16t",
+    10: "32n"
   }
   //gets a random number 0-9
-  const getRandomTime = () => (Math.random(0,9).toFixed(1) * 10) - 1
+  const getRandomTime = () => (Math.random(0,9).toFixed(1) * 10)
   const convertTimeToToneTimeNotation = time => numberToTimeLookup[time]
   const getTimeOutForNextAction = () => {
 
   }
   const makeSound = () => {
     time = getRandomTime()
-    toneTime = convertTimeToToneTimeNotation(time)
+    toneTime = numberToTimeLookup[currentNumberOnIteration]
+    // toneTime = convertTimeToToneTimeNotation(time)
     // note = numberToNoteLookup[currentNumberOnIteration]
     verboseLob ? console.log(getPlayingSoundInfoString()) : null
     note = noteLookUpForF_SharpMajor[currentNumberOnIteration]
-    synth.triggerAttackRelease(note, currentNumberOnIteration)
+    synth.triggerAttackRelease(note, toneTime)
   }
 
 
