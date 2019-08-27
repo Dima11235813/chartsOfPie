@@ -16,10 +16,10 @@
 
   //APP WIDE OPTIONS
   let appOptions = {
-    verboseLob: true
+    verboseLob: false
   }
   const { verboseLob } = appOptions
-  
+
   //SOUND TIME UTILS
   const timeMultiplier = 42 //used to multiple 0-9 times milliseconds
   const conversionFactor = 60000
@@ -47,7 +47,7 @@
 
   //OPTIONS
   const chartTypeOptions = ["polarArea", "bar", "horizontalBar", "line", "doughnut", "pie", "radar"]
-  let chartType = chartTypeOptions[3]
+  let chartType = chartTypeOptions[1]
 
   //SOUND VARS
   let toneTime = "1n"
@@ -75,6 +75,7 @@
   const generateNumberToNoteLookup = (startOctave, startNote, numInSeq = 10) => {
     //todo move to lookup obj factory class
     const getNextInPentMaj = (note, index) => {
+      let verbose = false
       let numberOfNotes = notes.length
       let noteToInteractWith = note
       let result = noteToInteractWith.split('')
@@ -100,7 +101,7 @@
       //if getting first then change octaves
       let switchedToNextOctave = false
       if (indexOfCurrentNote >= 9 && getfirst) {
-        console.log(`Bumped to next octave`)
+        if (verbose) { console.log(`Bumped to next octave`) }
         nextOctave += 1
         switchedToNextOctave = true
       } else if (indexOfCurrentNote >= 10) {
@@ -114,7 +115,10 @@
       //NOTE SECTION
       //check to make sure that the right new note is returned
       if (getfirst || getFourth) {
-        console.log(`Getting first ${getfirst} getting fifth ${getFourth}`)
+        if (verbose) {
+
+          console.log(`Getting first ${getfirst} getting fifth ${getFourth}`)
+        }
         let nextIndex = indexOfCurrentNote + 3
         if (nextIndex > numberOfNotes - 1) {
 
@@ -131,15 +135,14 @@
         }
       }
       let newResult = `${newNote}${nextOctave}`
-      // if(newNote ==="B"){
-      //   debugger
-      // }
-      console.log(`
-      The next note is ${newResult}
-      Index is ${index}
-      Curr Octave is ${currOctave}
-      Curr Note is ${note}
-      `)
+      if (verbose) {
+        console.log(`
+        The next note is ${newResult}
+        Index is ${index}
+        Curr Octave is ${currOctave}
+        Curr Note is ${note}
+        `)
+      }
       return newResult
     }
 
@@ -153,13 +156,14 @@
         tempObjToReturn.push(nextResult)
       }
     })
-    console.log(tempObjToReturn)
+
+    console.log(`Creating sound using scale: ${tempObjToReturn}`)
     return tempObjToReturn
   }
   const pentatonicF_SharpMajor = () => {
     //TODO
     //Doesn't Work D#
-    let result = generateNumberToNoteLookup(4, 'F#')
+    let result = generateNumberToNoteLookup(4, 'C')
     return result
   }
   noteLookUpForF_SharpMajor = pentatonicF_SharpMajor()
@@ -177,7 +181,7 @@
     10: "32n"
   }
   //gets a random number 0-9
-  const getRandomTime = () => (Math.random(0,9).toFixed(1) * 10)
+  const getRandomTime = () => (Math.random(0, 9).toFixed(1) * 10)
   const convertTimeToToneTimeNotation = time => numberToTimeLookup[time]
   const getTimeOutForNextAction = () => {
 
@@ -308,6 +312,9 @@
   }
 
   const actionInChart = () => {
+    if (!graph_is_in_action) {
+      return
+    }
     // let maxToChart = data.reduce((accum, current) => current > accum ? current : accum, 0)
     if (chart_created) {
       updateNumberTrackerData()
@@ -338,9 +345,10 @@
 
   const action = () => {
     if (graph_is_in_action) {
-      clearInterval(actionInterval)
+      actionButton.innerText = "Play"
       graph_is_in_action = false
     } else {
+      actionButton.innerText = "Pause"
       graph_is_in_action = true
       actionInChart()
     }

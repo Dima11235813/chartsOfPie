@@ -16,11 +16,6 @@
 </head>
 
 <body>
-    <div id="data-container">
-
-        <div class="data-displayed" id="total-count"></div>
-        <div class="data-displayed" id="sound-data"></div>
-    </div>
     <div class="charts-of-pie-main">
 
         <div class="num-tracker-container" id="0-num"></div>
@@ -35,23 +30,28 @@
         <div class="num-tracker-container"></div>
         <div class="chartContainer">
             <canvas id="number-count-chart" width="400" height="400"></canvas>
-            <canvas id="number-concurrence-chart" width="400" height="400"></canvas>
+            <!-- <canvas id="number-concurrence-chart" width="400" height="400"></canvas> -->
         </div>
-        <p>Y Axis Type</p>
-        <div id="chart-type-options-container">
-            <div>
-                <input class="chart-type-option" type="radio" id="bar" name="chart-option" value="bar" checked>
-                <label for="bar">Bar</label>
-            </div>
+        <div id="data-container">
 
-            <div>
-                <input class="chart-type-option" type="radio" id="line" name="chart-option" value="line">
-                <label for="line">line</label>
-            </div>
+            <div class="data-displayed" id="total-count"></div>
+            <div class="data-displayed" id="sound-data"></div>
+            <!-- <div id="chart-type-options-container">
+                <p>Y Axis Type</p>
+                <div>
+                    <input class="chart-type-option" type="radio" id="bar" name="chart-option" value="bar" checked>
+                    <label for="bar">Bar</label>
+                </div>
+                
+                <div>
+                    <input class="chart-type-option" type="radio" id="line" name="chart-option" value="line">
+                    <label for="line">line</label>
+                </div>
+            </div> -->
         </div>
 
     </div>
-    <button id="action"></button>
+    <button id="action">Play</button>
     <script src="https://unpkg.com/@webcomponents/webcomponentsjs@^2/webcomponents-bundle.js"></script>
     <script src="https://unpkg.com/tone"></script>
     <script src="https://unpkg.com/@tonejs/ui"></script>

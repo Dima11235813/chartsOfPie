@@ -1,6 +1,6 @@
 #data-container{
 height: 2rem;
-width: 100vw;
+width: 97vw;
 }
 #data-container{
   display: grid;
@@ -8,6 +8,7 @@ width: 100vw;
 }
 .data-displayed{
   font-size: 1rem;
+  color: lightblue;
 }
 
 .charts-of-pie-main{
@@ -22,10 +23,11 @@ width: 100vw;
   width: 10rem;
   height: 2rem;
   background-color: grey;
+  z-index: 99;
 }
 .chartContainer{
-  height: 95vh;
-  width: 98vw;
+  height: 93vh;
+  width: 90vw;
   top: 0 ;
   right: 0;
 }
