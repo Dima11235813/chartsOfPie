@@ -1,3 +1,15 @@
+#data-container{
+height: 2rem;
+width: 100vw;
+}
+#data-container{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+.data-displayed{
+  font-size: 1rem;
+}
+
 .charts-of-pie-main{
   background-color: rgba(0, 0, 0, .9);
   z-index: 0;
