@@ -8,14 +8,23 @@
   let ctx //canvas context
   let chartInstance
 
+  //SYNTH
+  let synth = new Tone.Synth().toMaster()
+
   //APP WIDE OPTIONS
   let appOptions = {
     verboseLob: false
   }
   const { verboseLob } = appOptions
+  //SOUND TIME UTILS
+  const conversionFactor = 60000
+  const bpm = 750
+  const msPerBPM = conversionFactor / bpm
 
   //DEFAULT NUMBERS
-  let startingInterval = 100
+  let startingInterval = msPerBPM
+  let buffer = startingInterval / 100
+  let animationDuration = startingInterval - buffer
   let count = 0
   let minToChart = 0
   let maxToChart = 10
@@ -28,10 +37,46 @@
   //DATA FOR CHART
   let numberTracker = new Array(10).fill(0);
   let labels = Object.keys(numberTracker)
+  let currentNumberOnIteration = 0
 
   //OPTIONS
   const chartTypeOptions = ["polarArea", "bar", "horizontalBar", "line", "doughnut", "pie", "radar"]
-  let chartType = chartTypeOptions[0]
+  let chartType = chartTypeOptions[1]
+
+  //Sound UTIL
+  //C MAJ PENTATONIC
+  const numberToNoteLookup = {
+    0: "C4",
+    1: "D4",
+    2: "E4",
+    3: "G4",
+    4: "A4",
+    5: "C5",
+    6: "D5",
+    7: "E5",
+    8: "G5",
+    9: "A5"
+  }
+  const numberToTimeLookup = {
+    0: "16n",
+    1: "1n",
+    2: "1t",
+    3: "2n",
+    4: "2t",
+    5: "4n",
+    6: "4t",
+    7: "8n",
+    8: "8t",
+    9: "16t"
+  }
+  const getRandomTime = () => numberToTimeLookup[Math.random(1, 8).toFixed(1) * 10]
+  const makeSound = () => {
+    let time = getRandomTime()
+    let note = numberToNoteLookup[currentNumberOnIteration]
+    console.log(`Playing ${note} for ${time} time.`)
+    synth.triggerAttackRelease(note, time)
+  }
+
 
   //UTIL
   let returnInitialConfig = (labels, data, chartType, minToChart) => {
@@ -85,7 +130,7 @@
         //   }
         // },
         animation: {
-          duration: 10,
+          duration: animationDuration,
           // https://www.chartjs.org/docs/latest/configuration/animations.html
           //https://github.com/chartjs/Chart.js/blob/master/samples/advanced/progress-bar.html
           // onProgress: function(animation) {
@@ -120,18 +165,20 @@
   let config = returnInitialConfig(labels, numberTracker, chartType, minToChart)
 
   const updateChartData = () => {
-    config.data.datasets[0].data = numberTracker
-    let ticks = config.options.scales.yAxes[0].ticks
-    ticks.min = minToChart
-    ticks.min = minToChart
-    // console.log(`Data: ${JSON.stringify(config.data.datasets[0].data)}`)
-  }
-  const actionInChart = () => {
     minToChart = numberTracker.reduce((accum, current) => current < accum ? current : accum)
     maxToChart = numberTracker.reduce((accum, current) => current > accum ? current : accum)
+    config.data.datasets[0].data = numberTracker
+    config.options.scales.yAxes[0].ticks.max = maxToChart
+    config.options.scales.yAxes[0].ticks.min = minToChart
+    //Verbose log
+    verboseLob ? console.log(`Data: ${JSON.stringify(config.data.datasets[0].data)}`) : null
+    verboseLob ? console.log(`Max count is ${maxToChart} and min count is ${minToChart}`) : null
+  }
+  const actionInChart = () => {
     // let maxToChart = data.reduce((accum, current) => current > accum ? current : accum, 0)
     if (chart_created) {
       updateChartData()
+      makeSound()
       //throttle initial rendering
       if ((count % 2 === 0 && count < 100) || count >= 100) {
         chartInstance.update(config)
@@ -140,7 +187,6 @@
     } else if (!chart_created) {// debugger
       ctx = document.getElementById("number-count-chart").getContext("2d");
       chartInstance = new Chart(ctx, config);
-      //verboseLob ? console.log(`Max count is ${maxToChart} and min count is ${minToChart}`) : null
       // var ctx = document.getElementById("number-count-chart").getContext("2d");
       // let total = 0
       // data.forEach(datum => total += datum)
@@ -150,8 +196,6 @@
   }
 
   const action = () => {
-    console.log('Action called!')
-    // debugger
     if (graph_is_in_action) {
       clearInterval(actionInterval)
       graph_is_in_action = false
@@ -160,6 +204,8 @@
       actionInterval = setInterval(() => {
         chartTypeUserOption = document.getElementById("chart-type-options-container")
         let num = pieArray[count]
+        //update the sound to make
+        currentNumberOnIteration = num
         numberTracker[num] += 1
         actionInChart()
         count += 1
