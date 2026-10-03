@@ -225,7 +225,7 @@ test('artistic views draw and follow the colour palette', async ({ page }, testI
 
   // The music clock can switch to the circle of fifths.
   await view.selectOption({ label: 'Music clock' })
-  await page.getByLabel('Circle of fifths').check()
+  await page.getByRole('checkbox', { name: 'Circle of fifths' }).check()
   await expect(page.getByRole('img', { name: /Music clock \(circle of fifths\)/ })).toBeVisible()
   await view.selectOption({ label: 'Sunflower' })
 
@@ -268,4 +268,25 @@ test('downloads a print-size poster', async ({ page }, testInfo) => {
   expect(png.subarray(1, 4).toString('latin1')).toBe('PNG')
   expect([png.readUInt32BE(16), png.readUInt32BE(20)]).toEqual([2048, 2048])
   await expect(page.getByRole('button', { name: 'Download poster' })).toBeEnabled()
+})
+
+test('the view and its options travel in the link and survive a reload', async ({ page }) => {
+  await page.goto('/#p=lydian-dream')
+  await expect(page.getByRole('button', { name: 'Play' })).toBeEnabled({ timeout: 15_000 })
+  await page.getByRole('combobox', { name: 'View' }).selectOption({ label: 'Music clock' })
+  await page.getByRole('checkbox', { name: 'Circle of fifths' }).check()
+  await page.getByRole('combobox', { name: 'Colours' }).selectOption({ label: 'Ink (sequential)' })
+  await expect(page).toHaveURL(/#p=lydian-dream&v=/)
+
+  await page.reload()
+  await expect(page.getByRole('combobox', { name: 'View' })).toHaveValue('clock')
+  await expect(page.getByRole('checkbox', { name: 'Circle of fifths' })).toBeChecked()
+  await expect(page.getByRole('combobox', { name: 'Colours' })).toHaveValue('ink')
+  await expect(page.getByLabel('Preset')).toHaveValue('lydian-dream')
+
+  // Links made before views were shareable still open exactly as before.
+  await page.goto('/#p=music-box')
+  await page.reload()
+  await expect(page.getByRole('combobox', { name: 'View' })).toHaveValue('chart')
+  await expect(page.getByLabel('Preset')).toHaveValue('music-box')
 })

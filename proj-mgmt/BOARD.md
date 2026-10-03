@@ -1,6 +1,6 @@
 # Board
 
-_Last updated with the E10 plan (save on device + installable PWA, R-007)._
+_Last updated with E10 slice 1: versioned piece schema, compatibility suite, shareable views._
 
 ## Epics
 
@@ -15,14 +15,14 @@ _Last updated with the E10 plan (save on device + installable PWA, R-007)._
 | E07  | Backend platform: API, authN & authZ        | backlog     | 5     |
 | E08  | Save, gallery & share                       | in-progress | 6     |
 | E09  | Platform quality: PWA, accessibility, perf  | backlog     | ∞     |
-| E10  | Local-first saved pieces & installable PWA  | ready       | 2.5   |
+| E10  | Local-first saved pieces & installable PWA  | in-progress | 2.5   |
 
 ## Next: E10 — save on device & PWA (R-007)
 
 | Feature | Title                                           | Status |
 | ------- | ----------------------------------------------- | ------ |
-| F10.1   | Versioned piece schema & compatibility contract | ready  |
-| F10.2   | VisualConfig: one state for the view            | ready  |
+| F10.1   | Versioned piece schema & compatibility contract | done   |
+| F10.2   | VisualConfig: one state for the view            | doing  |
 | F10.3   | On-device piece store                           | ready  |
 | F10.4   | Save & "My pieces"                              | ready  |
 | F10.5   | Installable, offline PWA                        | ready  |

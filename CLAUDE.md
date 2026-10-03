@@ -16,6 +16,7 @@ The long-term plan lives in [`proj-mgmt/ROADMAP.md`](proj-mgmt/ROADMAP.md).
 | `apps/web/public/data/`              | Verified digit data (`pi-1m.txt`, sha256 pinned in tests)                                                                                             |
 | `apps/web/e2e/`                      | Playwright smoke tests on desktop, tablet and mobile viewports                                                                                        |
 | `apps/web/src/core/composition/`     | `CompositionConfig` (zod), presets, `Arranger`, `PerformanceLog` (what was played, chords)                                                            |
+| `apps/web/src/core/piece/`           | Saved-piece + `VisualConfig` schemas, share links, migrations, golden fixtures, schema snapshots                                                      |
 | `apps/web/src/core/midi/`            | Dependency-free MIDI writer and performance → MIDI export                                                                                             |
 | `apps/web/src/viz/`                  | Pure geometry/colour maths for views (spectrogram, staff), unit-tested                                                                                |
 | `apps/web/src/viz/render/`           | React-free renderers + registry shared by live art views and posters (`posters.ts`)                                                                   |
@@ -60,6 +61,12 @@ In the cloud container, Playwright uses the pre-installed Chromium; never run `p
 6. Layouts must work at 360 px wide with no horizontal scroll, 44 px touch targets, and visible focus.
 7. Track work in `proj-mgmt/` (see the `proj-mgmt` skill): update the story/task status in the same
    commit as the code, and log any bug you find as `proj-mgmt/bugs/B-xxx-*.md`.
+8. **Saved data stays readable forever** (contract: `proj-mgmt/research/R-007`). Share links and
+   saved pieces use the versioned schemas in `core/composition/config.ts` and `core/piece/`. A new
+   field needs a default; any other shape change bumps that schema's version and adds a migration.
+   Persisted ids (views, palettes, scales, instruments, presets) are never renamed. Never delete or
+   edit the golden fixtures in `core/piece/fixtures/`; the schema snapshots in
+   `core/piece/__schemas__/` change only together with a default, or a version bump with a migration.
 
 ## Agents, skills and MCP
 

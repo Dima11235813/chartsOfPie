@@ -1,3 +1,5 @@
+import type { VisualConfig } from '../core/piece/visualConfig'
+
 /** Visualizations the stage can show, grouped in the View selector (see R-006). */
 export const VIEWS = [
   { id: 'chart', label: 'Digit chart', group: 'Analytical' },
@@ -13,9 +15,10 @@ export const VIEWS = [
   { id: 'clock', label: 'Music clock', group: 'Sound shapes' },
   { id: 'harmonograph', label: 'Harmonograph', group: 'Sound shapes' },
   { id: 'scope', label: 'Oscilloscope', group: 'Sound shapes' },
-] as const
+] as const satisfies readonly { id: ViewId; label: string; group: string }[]
 
-export type ViewId = (typeof VIEWS)[number]['id']
+/** View ids are persisted (links, saved pieces): the list lives in core/piece/visualConfig. */
+export type ViewId = VisualConfig['view']
 
 export const VIEW_GROUPS = [...new Set(VIEWS.map((v) => v.group))]
 

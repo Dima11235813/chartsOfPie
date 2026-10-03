@@ -8,6 +8,8 @@ import { useDigitColors } from '../palette'
 import { useCanvas } from './useCanvas'
 
 interface MusicClockViewProps {
+  order: ClockOrder
+  onOrderChange: (order: ClockOrder) => void
   log: PerformanceLog
   /** The ten notes the current scale gives the digits (to highlight the scale on the rim). */
   noteTable: readonly string[]
@@ -23,10 +25,15 @@ const pitchClass = (midi: number) => ((midi % 12) + 12) % 12
  * glowing polygon, and when they make a chord its name appears in the middle. The scale's notes are
  * lit on the rim and dot size shows how often each pitch class has been played.
  */
-export function MusicClockView({ log, noteTable, onCanvas }: MusicClockViewProps) {
+export function MusicClockView({
+  log,
+  noteTable,
+  order,
+  onOrderChange,
+  onCanvas,
+}: MusicClockViewProps) {
   const { ref, canvasRef, size } = useCanvas(onCanvas)
   const colors = useDigitColors()
-  const [order, setOrder] = useState<ClockOrder>('chromatic')
   const [summary, setSummary] = useState('No notes yet.')
   const counts = useRef(new Uint32Array(12))
   const counted = useRef(0)
@@ -165,7 +172,7 @@ export function MusicClockView({ log, noteTable, onCanvas }: MusicClockViewProps
         <input
           type="checkbox"
           checked={order === 'fifths'}
-          onChange={(e) => setOrder(e.target.checked ? 'fifths' : 'chromatic')}
+          onChange={(e) => onOrderChange(e.target.checked ? 'fifths' : 'chromatic')}
         />
         Circle of fifths
       </label>

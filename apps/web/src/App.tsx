@@ -4,7 +4,7 @@ import { findMatchingPreset } from './core/composition/presets'
 import type { DigitSource } from './core/digits/digitSource'
 import { loadPiDigits } from './core/digits/pi'
 import { Controls } from './components/Controls'
-import { VIEWS, type ViewId } from './components/views'
+import { VIEWS } from './components/views'
 import { DigitChart } from './components/DigitChart'
 import { ExportPanel } from './components/ExportPanel'
 import { SoundPanel } from './components/SoundPanel'
@@ -18,23 +18,32 @@ import { StringArtView } from './components/viz/StringArtView'
 import { PosterPanel } from './components/PosterPanel'
 import { PaletteContext } from './components/palette'
 import { noteTableFor } from './core/composition/arranger'
-import { DEFAULT_PALETTE_ID, getPalette, PALETTES } from './viz/palettes'
+import { getPalette, PALETTES } from './viz/palettes'
 import { StatsPanel } from './components/StatsPanel'
-import { DEFAULT_CHART_STYLE, type ChartStyle } from './components/chartConfig'
-import { useCompositionConfig } from './hooks/useCompositionConfig'
+import { DEFAULT_VISUAL_CONFIG, type VisualConfig } from './core/piece/visualConfig'
+import { useLinkedState } from './hooks/useLinkedState'
 import { usePiPlayback } from './hooks/usePiPlayback'
 
 const PALETTE_KEY = 'charts-of-pie:palette'
 
-function readStoredPalette(): string {
+type PaletteId = VisualConfig['palette']
+
+/** The palette is also remembered as a device preference (it applies when a link names no view). */
+function readStoredPalette(): PaletteId {
   try {
     const stored = localStorage.getItem(PALETTE_KEY)
-    if (stored && PALETTES.some((p) => p.id === stored)) return stored
+    const palette = PALETTES.find((p) => p.id === stored)
+    if (palette) return palette.id as PaletteId
   } catch {
     // storage unavailable
   }
-  return DEFAULT_PALETTE_ID
+  return DEFAULT_VISUAL_CONFIG.palette
 }
+
+const initialVisual = (): VisualConfig => ({
+  ...DEFAULT_VISUAL_CONFIG,
+  palette: readStoredPalette(),
+})
 
 interface AppProps {
   createPlayer?: () => NotePlayer
@@ -46,20 +55,29 @@ export default function App({
   loadSource = loadPiDigits,
 }: AppProps) {
   const [player] = useState(createPlayer)
-  const [chartStyle, setChartStyle] = useState<ChartStyle>(DEFAULT_CHART_STYLE)
-  const [view, setView] = useState<ViewId>('chart')
-  const { config, setConfig, invalidLink } = useCompositionConfig()
-  const [paletteId, setPaletteId] = useState(readStoredPalette)
+  const { config, setConfig, visual, setVisual, invalidLink } = useLinkedState(initialVisual)
+  const { view, chartStyle, palette: paletteId, viewOptions } = visual
+  const updateVisual = useCallback(
+    (change: Partial<VisualConfig>) => setVisual({ ...visual, ...change }),
+    [visual, setVisual],
+  )
+  const updateViewOptions = <K extends keyof VisualConfig['viewOptions']>(
+    key: K,
+    options: VisualConfig['viewOptions'][K],
+  ) => updateVisual({ viewOptions: { ...viewOptions, [key]: options } })
   const noteTable = useMemo(() => noteTableFor(config), [config])
   const colors = useMemo(() => getPalette(paletteId).digitColors(noteTable), [paletteId, noteTable])
-  const changePalette = useCallback((id: string) => {
-    setPaletteId(id)
-    try {
-      localStorage.setItem(PALETTE_KEY, id)
-    } catch {
-      // storage unavailable (private mode): the choice just isn't remembered
-    }
-  }, [])
+  const changePalette = useCallback(
+    (id: string) => {
+      updateVisual({ palette: id as PaletteId })
+      try {
+        localStorage.setItem(PALETTE_KEY, id)
+      } catch {
+        // storage unavailable (private mode): the choice just isn't remembered
+      }
+    },
+    [updateVisual],
+  )
   const playback = usePiPlayback(player, config, loadSource)
   const { load } = playback
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
@@ -128,16 +146,29 @@ export default function App({
                   />
                 )}
                 {view === 'clock' && (
-                  <MusicClockView log={playback.log} noteTable={noteTable} onCanvas={setCanvas} />
+                  <MusicClockView
+                    log={playback.log}
+                    noteTable={noteTable}
+                    order={viewOptions.clock.order}
+                    onOrderChange={(order) => updateViewOptions('clock', { order })}
+                    onCanvas={setCanvas}
+                  />
                 )}
                 {view === 'harmonograph' && (
-                  <HarmonographView log={playback.log} onCanvas={setCanvas} />
+                  <HarmonographView
+                    log={playback.log}
+                    pure={viewOptions.harmonograph.pure}
+                    onPureChange={(pure) => updateViewOptions('harmonograph', { pure })}
+                    onCanvas={setCanvas}
+                  />
                 )}
                 {view === 'scope' && (
                   <OscilloscopeView
                     waveform={playback.audioReady ? player.getWaveform() : null}
                     isPlaying={playback.isPlaying}
                     color={colors[playback.lastStep?.digit ?? 3]!}
+                    mode={viewOptions.scope.mode}
+                    onModeChange={(mode) => updateViewOptions('scope', { mode })}
                     onCanvas={setCanvas}
                   />
                 )}
@@ -158,7 +189,7 @@ export default function App({
           <aside className="panel">
             {invalidLink && (
               <p className="notice error" role="status">
-                That share link could not be read, so the default sound is loaded.
+                That share link could not be read, so defaults are used for the parts that failed.
               </p>
             )}
             <SoundPanel config={config} onChange={setConfig} />
@@ -200,8 +231,8 @@ export default function App({
             onStep={() => void playback.step()}
             onReset={playback.reset}
             onMutedChange={playback.setMuted}
-            onChartStyleChange={setChartStyle}
-            onViewChange={setView}
+            onChartStyleChange={(style) => updateVisual({ chartStyle: style })}
+            onViewChange={(id) => updateVisual({ view: id })}
             paletteId={paletteId}
             onPaletteChange={changePalette}
           />

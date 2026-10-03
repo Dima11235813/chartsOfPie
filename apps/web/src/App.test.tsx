@@ -178,6 +178,23 @@ describe('App', () => {
     expect(screen.getByLabelText('Preset')).toHaveDisplayValue('Original (2019)')
   })
 
+  it('puts the view in the link and restores it, alongside the sound', async () => {
+    const user = userEvent.setup()
+    window.history.replaceState(null, '', '/#p=music-box')
+    const { unmount } = render(<App createPlayer={fakePlayer} loadSource={source} />)
+    await screen.findByTestId('chart')
+    await user.selectOptions(screen.getByLabelText('Chart style'), 'Radar')
+    await user.selectOptions(screen.getByLabelText('View'), 'Sheet music')
+    expect(window.location.hash).toMatch(/^#p=music-box&v=/)
+    unmount()
+
+    render(<App createPlayer={fakePlayer} loadSource={source} />)
+    expect(screen.getByLabelText('View')).toHaveValue('staff')
+    expect(screen.getByLabelText('Preset')).toHaveDisplayValue('Music box')
+    await user.selectOptions(screen.getByLabelText('View'), 'Digit chart')
+    expect(screen.getByLabelText('Chart style')).toHaveValue('radar')
+  })
+
   it('switches between chart, sheet music and spectrogram views', async () => {
     const user = userEvent.setup()
     render(<App createPlayer={fakePlayer} loadSource={source} />)

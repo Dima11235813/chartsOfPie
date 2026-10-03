@@ -1,7 +1,7 @@
 ---
 id: R-007
 title: Saving view configurations on the device & installable PWA — design
-status: in-progress
+status: done
 feeds: [E10, E08, E09, E07]
 ---
 

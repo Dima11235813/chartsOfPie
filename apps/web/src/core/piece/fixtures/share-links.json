@@ -1,0 +1,139 @@
+{
+  "description": "Share-link hashes that exist in the wild. Each must keep decoding to the same sound (and view, when v= is present). Never delete an entry.",
+  "links": [
+    {
+      "hash": "#p=lydian-dream",
+      "sound": {
+        "version": 1,
+        "scale": "lydian",
+        "root": "F",
+        "octave": 4,
+        "mapping": "centred",
+        "rhythm": "steady",
+        "timing": "tempo",
+        "bpm": 68,
+        "subdivision": 2,
+        "legato": 1.8,
+        "dynamics": "accented",
+        "humanize": 0.3,
+        "instrument": "electric-piano",
+        "reverb": 0.45,
+        "echo": 0.2,
+        "drone": true,
+        "compress": true,
+        "volume": 3
+      },
+      "visual": null,
+      "invalid": false
+    },
+    {
+      "hash": "#p=original",
+      "sound": {
+        "version": 1,
+        "scale": "major-pentatonic",
+        "root": "C",
+        "octave": 4,
+        "mapping": "ascending",
+        "rhythm": "legacy",
+        "timing": "legacy-random",
+        "bpm": 120,
+        "subdivision": 2,
+        "legato": 1,
+        "dynamics": "flat",
+        "humanize": 0,
+        "instrument": "classic",
+        "reverb": 0,
+        "echo": 0,
+        "drone": false,
+        "compress": false,
+        "volume": 0
+      },
+      "visual": null,
+      "invalid": false
+    },
+    {
+      "hash": "#c=eyJ2ZXJzaW9uIjoxLCJzY2FsZSI6ImRvcmlhbiIsInJvb3QiOiJGIiwib2N0YXZlIjo0LCJtYXBwaW5nIjoiY2VudHJlZCIsInJoeXRobSI6InN0ZWFkeSIsInRpbWluZyI6InRlbXBvIiwiYnBtIjo5Niwic3ViZGl2aXNpb24iOjIsImxlZ2F0byI6MS44LCJkeW5hbWljcyI6ImFjY2VudGVkIiwiaHVtYW5pemUiOjAuMywiaW5zdHJ1bWVudCI6ImVsZWN0cmljLXBpYW5vIiwicmV2ZXJiIjowLjQ1LCJlY2hvIjowLjIsImRyb25lIjp0cnVlLCJjb21wcmVzcyI6dHJ1ZSwidm9sdW1lIjozfQ",
+      "sound": {
+        "version": 1,
+        "scale": "dorian",
+        "root": "F",
+        "octave": 4,
+        "mapping": "centred",
+        "rhythm": "steady",
+        "timing": "tempo",
+        "bpm": 96,
+        "subdivision": 2,
+        "legato": 1.8,
+        "dynamics": "accented",
+        "humanize": 0.3,
+        "instrument": "electric-piano",
+        "reverb": 0.45,
+        "echo": 0.2,
+        "drone": true,
+        "compress": true,
+        "volume": 3
+      },
+      "visual": null,
+      "invalid": false
+    },
+    {
+      "hash": "",
+      "sound": null,
+      "visual": null,
+      "invalid": false
+    },
+    {
+      "hash": "#p=no-such-preset",
+      "sound": null,
+      "visual": null,
+      "invalid": true
+    },
+    {
+      "hash": "#p=lydian-dream&v=eyJ2ZXJzaW9uIjoxLCJ2aWV3IjoicmluZyIsInBhbGV0dGUiOiJzY3JpYWJpbiJ9",
+      "sound": {
+        "version": 1,
+        "scale": "lydian",
+        "root": "F",
+        "octave": 4,
+        "mapping": "centred",
+        "rhythm": "steady",
+        "timing": "tempo",
+        "bpm": 68,
+        "subdivision": 2,
+        "legato": 1.8,
+        "dynamics": "accented",
+        "humanize": 0.3,
+        "instrument": "electric-piano",
+        "reverb": 0.45,
+        "echo": 0.2,
+        "drone": true,
+        "compress": true,
+        "volume": 3
+      },
+      "visual": {
+        "version": 1,
+        "view": "ring",
+        "palette": "scriabin",
+        "chartStyle": "bar",
+        "viewOptions": {
+          "clock": {
+            "order": "chromatic"
+          },
+          "harmonograph": {
+            "pure": false
+          },
+          "scope": {
+            "mode": "vector"
+          }
+        }
+      },
+      "invalid": false
+    },
+    {
+      "hash": "#v=not-base64!",
+      "sound": null,
+      "visual": null,
+      "invalid": true
+    }
+  ]
+}
