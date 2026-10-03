@@ -1,0 +1,8 @@
+legacy/
+docs/inspiration/
+apps/web/public/data/
+package-lock.json
+dist/
+coverage/
+playwright-report/
+test-results/
