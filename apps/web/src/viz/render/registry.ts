@@ -1,10 +1,13 @@
+import { createHilbertRenderer } from './hilbertRenderer'
 import { createMosaicRenderer } from './mosaicRenderer'
 import type { DigitRenderer, RendererOptions } from './renderer'
 import { createRingRenderer } from './ringRenderer'
 import { createSunflowerRenderer } from './sunflowerRenderer'
+import { createTypeRenderer } from './typeRenderer'
 import { createWalkRenderer } from './walkRenderer'
+import { hilbertSide } from '../art'
 
-export type ArtKind = 'ring' | 'walk' | 'sunflower' | 'mosaic'
+export type ArtKind = 'ring' | 'walk' | 'sunflower' | 'mosaic' | 'hilbert' | 'type'
 
 export interface ArtDefinition {
   kind: ArtKind
@@ -61,5 +64,25 @@ export const ART: Record<ArtKind, ArtDefinition> = {
     live: (options) => createMosaicRenderer(options),
     poster: (options, count) => createMosaicRenderer(options, { fitCount: Math.max(1, count) }),
     maxPosterDigits: 250_000,
+  },
+  hilbert: {
+    kind: 'hilbert',
+    name: 'Hilbert carpet',
+    describe:
+      'Hilbert carpet: all million digits of π, one pixel each along a space-filling curve; digits light up as they play.',
+    summary: (count) => `${n(count)} of 1,000,001 digits lit.`,
+    live: (options) => createHilbertRenderer(options),
+    poster: (options, count) => createHilbertRenderer(options, { side: hilbertSide(count) }),
+    maxPosterDigits: 1_000_000,
+  },
+  type: {
+    kind: 'type',
+    name: 'Typographic π',
+    describe:
+      'Typographic π: the digits themselves, coloured; runs of three or more equal digits glow.',
+    summary: (count) => `${n(count)} digits set in type.`,
+    live: (options) => createTypeRenderer(options),
+    poster: (options, count) => createTypeRenderer(options, { fitCount: Math.max(1, count) }),
+    maxPosterDigits: 100_000,
   },
 }

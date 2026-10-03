@@ -11,7 +11,9 @@ import { SoundPanel } from './components/SoundPanel'
 import { SpectrogramView } from './components/viz/SpectrogramView'
 import { StaffView } from './components/viz/StaffView'
 import { DigitArtView } from './components/viz/DigitArtView'
+import { HarmonographView } from './components/viz/HarmonographView'
 import { MusicClockView } from './components/viz/MusicClockView'
+import { OscilloscopeView } from './components/viz/OscilloscopeView'
 import { StringArtView } from './components/viz/StringArtView'
 import { PosterPanel } from './components/PosterPanel'
 import { PaletteContext } from './components/palette'
@@ -114,7 +116,9 @@ export default function App({
                 {(view === 'ring' ||
                   view === 'walk' ||
                   view === 'sunflower' ||
-                  view === 'mosaic') && (
+                  view === 'mosaic' ||
+                  view === 'hilbert' ||
+                  view === 'type') && (
                   <DigitArtView
                     key={view}
                     kind={view}
@@ -125,6 +129,17 @@ export default function App({
                 )}
                 {view === 'clock' && (
                   <MusicClockView log={playback.log} noteTable={noteTable} onCanvas={setCanvas} />
+                )}
+                {view === 'harmonograph' && (
+                  <HarmonographView log={playback.log} onCanvas={setCanvas} />
+                )}
+                {view === 'scope' && (
+                  <OscilloscopeView
+                    waveform={playback.audioReady ? player.getWaveform() : null}
+                    isPlaying={playback.isPlaying}
+                    color={colors[playback.lastStep?.digit ?? 3]!}
+                    onCanvas={setCanvas}
+                  />
                 )}
                 {view === 'strings' && (
                   <StringArtView source={load.source} log={playback.log} onCanvas={setCanvas} />

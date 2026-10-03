@@ -14,7 +14,7 @@ test('every artwork renders as recorded in its poster baseline', async ({ page }
   await page.goto('/lab.html')
   await page.waitForFunction(() => window.posterLab !== undefined)
   const kinds = await page.evaluate(() => window.posterLab.kinds)
-  expect(kinds).toEqual(['ring', 'walk', 'sunflower', 'mosaic', 'string-art'])
+  expect(kinds).toEqual(['ring', 'walk', 'sunflower', 'mosaic', 'hilbert', 'type', 'string-art'])
 
   for (const kind of kinds) {
     const dataUrl = await page.evaluate((k) => window.posterLab.render(k), kind)

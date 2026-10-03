@@ -194,3 +194,48 @@ export function clockPosition(pitchClass: number, order: ClockOrder): number {
 
 export const clockAngle = (pitchClass: number, order: ClockOrder) =>
   -Math.PI / 2 + (clockPosition(pitchClass, order) / 12) * TAU
+
+// ── Hilbert carpet ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Position of index d along a Hilbert curve filling an n × n grid (n a power of two). Successive
+ * indices are always adjacent cells, so neighbours in π stay neighbours in the image.
+ * Classic iterative algorithm (Hilbert, 1891; formulation after Wikipedia "Hilbert curve").
+ */
+export function hilbertPoint(n: number, d: number): [number, number] {
+  let x = 0
+  let y = 0
+  let t = d
+  for (let s = 1; s < n; s *= 2) {
+    const rx = 1 & (t / 2)
+    const ry = 1 & (t ^ rx)
+    if (ry === 0) {
+      if (rx === 1) {
+        x = s - 1 - x
+        y = s - 1 - y
+      }
+      ;[x, y] = [y, x]
+    }
+    x += s * rx
+    y += s * ry
+    t = Math.floor(t / 4)
+  }
+  return [x, y]
+}
+
+/** Smallest power-of-two grid side whose square holds `count` cells. */
+export function hilbertSide(count: number): number {
+  let n = 1
+  while (n * n < count) n *= 2
+  return n
+}
+
+// ── Runs (typographic π) ───────────────────────────────────────────────────────────────────────
+
+/** Length of the run of equal digits ending at index i (1 = no repeat). */
+export function runLengthEndingAt(digitAt: (i: number) => number, i: number): number {
+  const digit = digitAt(i)
+  let length = 1
+  while (i - length >= 0 && digitAt(i - length) === digit) length++
+  return length
+}

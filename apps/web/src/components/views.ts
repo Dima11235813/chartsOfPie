@@ -1,16 +1,22 @@
-/** Visualizations the stage can show (analytical first, then the artistic gallery — R-006). */
+/** Visualizations the stage can show, grouped in the View selector (see R-006). */
 export const VIEWS = [
-  { id: 'chart', label: 'Digit chart' },
-  { id: 'staff', label: 'Sheet music' },
-  { id: 'spectrogram', label: 'Spectrogram' },
-  { id: 'ring', label: 'Digit ring' },
-  { id: 'walk', label: 'π walk' },
-  { id: 'sunflower', label: 'Sunflower' },
-  { id: 'mosaic', label: 'Neighbour mosaic' },
-  { id: 'clock', label: 'Music clock' },
-  { id: 'strings', label: 'String art' },
+  { id: 'chart', label: 'Digit chart', group: 'Analytical' },
+  { id: 'staff', label: 'Sheet music', group: 'Analytical' },
+  { id: 'spectrogram', label: 'Spectrogram', group: 'Analytical' },
+  { id: 'ring', label: 'Digit ring', group: 'Artistic' },
+  { id: 'walk', label: 'π walk', group: 'Artistic' },
+  { id: 'sunflower', label: 'Sunflower', group: 'Artistic' },
+  { id: 'mosaic', label: 'Neighbour mosaic', group: 'Artistic' },
+  { id: 'hilbert', label: 'Hilbert carpet', group: 'Artistic' },
+  { id: 'type', label: 'Typographic π', group: 'Artistic' },
+  { id: 'strings', label: 'String art', group: 'Artistic' },
+  { id: 'clock', label: 'Music clock', group: 'Sound shapes' },
+  { id: 'harmonograph', label: 'Harmonograph', group: 'Sound shapes' },
+  { id: 'scope', label: 'Oscilloscope', group: 'Sound shapes' },
 ] as const
 
 export type ViewId = (typeof VIEWS)[number]['id']
+
+export const VIEW_GROUPS = [...new Set(VIEWS.map((v) => v.group))]
 
 export const isViewId = (value: string): value is ViewId => VIEWS.some((v) => v.id === value)

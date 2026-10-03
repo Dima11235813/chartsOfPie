@@ -17,9 +17,18 @@ export interface NotePlayer {
   setMuted(muted: boolean): void
   /** Live spectrum of the output (null until audio has started). */
   getAnalyser(): FrequencySource | null
+  /** Stereo time-domain samples of the output (null until audio has started). */
+  getWaveform(): WaveformSource | null
   /** The output as a MediaStream for recording (null until audio has started). */
   getAudioStream(): MediaStream | null
   dispose(): void
+}
+
+/** Left/right time-domain samples (−1…1) of the output, for the oscilloscope. */
+export interface WaveformSource {
+  readonly size: number
+  readonly sampleRate: number
+  read(left: Float32Array<ArrayBuffer>, right: Float32Array<ArrayBuffer>): void
 }
 
 /** The part of an AnalyserNode the spectrogram needs. */
@@ -44,6 +53,7 @@ export function createToneNotePlayer(): NotePlayer {
   let lastTime: number | null = null
   let muted = false
   let analyser: FrequencySource | null = null
+  let waveform: WaveformSource | null = null
   let stream: MediaStream | null = null
 
   const applyMute = () => {
@@ -103,6 +113,31 @@ export function createToneNotePlayer(): NotePlayer {
       }
       return analyser
     },
+    getWaveform() {
+      if (!tone || !chain) return null
+      if (!waveform) {
+        const context = tone.getContext()
+        const splitter = context.createChannelSplitter(2)
+        const left = context.createAnalyser()
+        const right = context.createAnalyser()
+        for (const node of [left, right]) {
+          node.fftSize = 2048
+          node.smoothingTimeConstant = 0
+        }
+        chain.tap(splitter)
+        splitter.connect(left, 0)
+        splitter.connect(right, 1)
+        waveform = {
+          size: left.fftSize,
+          sampleRate: context.sampleRate,
+          read: (l, r) => {
+            left.getFloatTimeDomainData(l)
+            right.getFloatTimeDomainData(r)
+          },
+        }
+      }
+      return waveform
+    },
     getAudioStream() {
       if (!tone || !chain) return null
       if (!stream) {
@@ -118,6 +153,7 @@ export function createToneNotePlayer(): NotePlayer {
       chainPromise = null
       lastTime = null
       analyser = null
+      waveform = null
       stream = null
     },
   }

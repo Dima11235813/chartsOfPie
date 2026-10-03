@@ -40,8 +40,10 @@ Switch the **View** in the bottom bar:
 
 - **Analytical:** digit chart, sheet music (with chords that form by coincidence), live
   spectrogram.
-- **Artistic:** digit ring, π walk, sunflower, neighbour mosaic, music clock (with a circle-of-fifths
-  mode), times-table string art.
+- **Artistic:** digit ring, π walk, sunflower, neighbour mosaic, Hilbert carpet (all million digits),
+  typographic π, times-table string art.
+- **Sound shapes:** music clock (with a circle-of-fifths mode), harmonograph (pure vs tempered
+  ratios), oscilloscope.
 
 **Colours** offers the original rainbow, a colour-blind friendly palette, Scriabin's note colours
 and a calm "ink" ramp. **Export** downloads MIDI, a PNG of the view, or a video/audio recording; **Poster** renders any
