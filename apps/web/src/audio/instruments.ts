@@ -97,14 +97,21 @@ export const INSTRUMENTS: readonly InstrumentDefinition[] = [
     name: 'Grand piano',
     description: 'Sampled Yamaha grand (Salamander, CC BY 3.0)',
     async create(tone) {
-      const sampler = new tone.Sampler({
-        urls: salamanderUrls(),
-        baseUrl: `${import.meta.env.BASE_URL}audio/salamander/`,
-        release: 1.2,
+      // Wait for this sampler's own onload: `tone.loaded()` can resolve before every sample is
+      // decoded, and the Sampler then re-pitches notes from a more distant sample (audibly worse,
+      // and it made the first offline render differ from later ones).
+      let sampler!: ToneNamespace.Sampler
+      await new Promise<void>((resolve, reject) => {
+        sampler = new tone.Sampler({
+          urls: salamanderUrls(),
+          baseUrl: `${import.meta.env.BASE_URL}audio/salamander/`,
+          release: 1.2,
+          onload: () => resolve(),
+          onerror: (error) => reject(error),
+        })
       })
       const output = new tone.Gain(tone.dbToGain(INSTRUMENT_TRIM_DB.piano))
       sampler.connect(output)
-      await tone.loaded()
       return {
         output,
         play: (note, durationSec, time, velocity) =>

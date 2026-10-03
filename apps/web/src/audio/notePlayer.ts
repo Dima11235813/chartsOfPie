@@ -15,7 +15,18 @@ export interface NotePlayer {
   /** Called on pause: release sounding notes and the drone, forget the timing grid. */
   stop(): void
   setMuted(muted: boolean): void
+  /** Live spectrum of the output (null until audio has started). */
+  getAnalyser(): FrequencySource | null
+  /** The output as a MediaStream for recording (null until audio has started). */
+  getAudioStream(): MediaStream | null
   dispose(): void
+}
+
+/** The part of an AnalyserNode the spectrogram needs. */
+export interface FrequencySource {
+  readonly frequencyBinCount: number
+  readonly sampleRate: number
+  getFloatFrequencyData(target: Float32Array<ArrayBuffer>): void
 }
 
 /** If the ideal grid time drifts further than this from "now", re-anchor to now. */
@@ -32,6 +43,8 @@ export function createToneNotePlayer(): NotePlayer {
   let settings: SoundSettings | null = null
   let lastTime: number | null = null
   let muted = false
+  let analyser: FrequencySource | null = null
+  let stream: MediaStream | null = null
 
   const applyMute = () => {
     if (tone) tone.getDestination().mute = muted
@@ -75,11 +88,37 @@ export function createToneNotePlayer(): NotePlayer {
       muted = value
       applyMute()
     },
+    getAnalyser() {
+      if (!tone || !chain) return null
+      if (!analyser) {
+        const node = tone.getContext().createAnalyser()
+        node.fftSize = 4096
+        node.smoothingTimeConstant = 0.3
+        chain.tap(node)
+        analyser = {
+          frequencyBinCount: node.frequencyBinCount,
+          sampleRate: node.context.sampleRate,
+          getFloatFrequencyData: (target) => node.getFloatFrequencyData(target),
+        }
+      }
+      return analyser
+    },
+    getAudioStream() {
+      if (!tone || !chain) return null
+      if (!stream) {
+        const destination = tone.getContext().createMediaStreamDestination()
+        chain.tap(destination)
+        stream = destination.stream
+      }
+      return stream
+    },
     dispose() {
       chain?.dispose()
       chain = null
       chainPromise = null
       lastTime = null
+      analyser = null
+      stream = null
     },
   }
 }

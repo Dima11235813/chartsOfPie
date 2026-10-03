@@ -1,22 +1,22 @@
 # Board
 
-_Last updated with the E02 “configurable music & presets” slice._
+_Last updated with the “sheet music, spectrogram, export & artistic roadmap” slice._
 
 ## Epics
 
 | Epic | Title                                       | Status      | Phase |
 | ---- | ------------------------------------------- | ----------- | ----- |
 | E01  | Modernise the foundation                    | done        | 0     |
-| E02  | Music theory engine: scales, modes & rhythm | ready       | 1     |
-| E03  | Visualization gallery & playgrounds         | backlog     | 2     |
+| E02  | Music theory engine: scales, modes & rhythm | in-progress | 1     |
+| E03  | Visualization gallery & playgrounds         | in-progress | 2     |
 | E04  | Learn: guided lessons                       | backlog     | 4     |
 | E05  | More numbers: Fibonacci, φ, e, √2, primes   | backlog     | 3     |
 | E06  | Developer experience & AI agents            | in-progress | ∞     |
 | E07  | Backend platform: API, authN & authZ        | backlog     | 5     |
-| E08  | Save, gallery & share                       | backlog     | 6     |
+| E08  | Save, gallery & share                       | in-progress | 6     |
 | E09  | Platform quality: PWA, accessibility, perf  | backlog     | ∞     |
 
-## E02 progress (current slice: configurable music, presets, pleasant sound)
+## E02 progress (previous slice: configurable music, presets, pleasant sound)
 
 | Story   | Title                                           | Status      |
 | ------- | ----------------------------------------------- | ----------- |
@@ -37,6 +37,19 @@ _Last updated with the E02 “configurable music & presets” slice._
 | S02.4.3 | Export the performance as MIDI                  | backlog     |
 | S02.4.4 | Reliable audio on iOS and Android               | backlog     |
 
+## Current slice (sheet music, spectrogram, export)
+
+| Story   | Title                                     | Status  |
+| ------- | ----------------------------------------- | ------- |
+| S03.8.1 | Scrolling grand staff                     | done    |
+| S03.8.2 | Spot and label coincidental chords        | done    |
+| S03.9.1 | Live scrolling spectrogram view           | done    |
+| S02.6.4 | Spectrogram snapshot regression tests     | done    |
+| S02.4.3 | Export the performance as MIDI            | done    |
+| S08.4.1 | Record video and audio of a session       | done    |
+| S03.8.3 | Metric notation for tempo presets         | backlog |
+| —       | Next: artistic gallery slice 2b-1 (R-006) | ready   |
+
 ## Done
 
 E01 stories S01.1.1, S01.1.2, S01.2.1, S01.3.1, S01.3.2, S01.4.1, S01.5.1, S01.5.2, S01.6.1 ·
@@ -44,19 +57,20 @@ E06 story S06.1.1 · E02 stories listed above as done.
 
 ## Bugs
 
-| Bug   | Title                                               | Severity | Status  |
-| ----- | --------------------------------------------------- | -------- | ------- |
-| B-001 | Inline π digits corrupted near the end              | medium   | done    |
-| B-002 | Playback auto-starts on load and audio is blocked   | high     | done    |
-| B-003 | Chart.js loaded twice from CDN                      | low      | done    |
-| B-004 | Tone.js loaded unpinned from unpkg                  | medium   | done    |
-| B-005 | Functions leak as implicit globals                  | low      | done    |
-| B-006 | Memory logger runs forever and is Chrome-only       | low      | done    |
-| B-007 | Duplicate DOM ids and unused containers             | low      | done    |
-| B-008 | `Math.random(0, 9)` arguments ignored; 0 ms delays  | low      | done    |
-| B-009 | Layout not usable on phones or tablets              | medium   | done    |
-| B-010 | Page title is “Document”                            | low      | done    |
-| B-011 | Pentatonic generator only correct for C             | medium   | done    |
-| B-012 | Pause then quick resume can double the tempo        | medium   | done    |
-| B-013 | Indigo digits low contrast; palette repeats colours | low      | backlog |
-| B-014 | Orphaned `charts-of-pie` submodule pointer          | low      | backlog |
+| Bug   | Title                                                        | Severity | Status  |
+| ----- | ------------------------------------------------------------ | -------- | ------- |
+| B-001 | Inline π digits corrupted near the end                       | medium   | done    |
+| B-002 | Playback auto-starts on load and audio is blocked            | high     | done    |
+| B-003 | Chart.js loaded twice from CDN                               | low      | done    |
+| B-004 | Tone.js loaded unpinned from unpkg                           | medium   | done    |
+| B-005 | Functions leak as implicit globals                           | low      | done    |
+| B-006 | Memory logger runs forever and is Chrome-only                | low      | done    |
+| B-007 | Duplicate DOM ids and unused containers                      | low      | done    |
+| B-008 | `Math.random(0, 9)` arguments ignored; 0 ms delays           | low      | done    |
+| B-009 | Layout not usable on phones or tablets                       | medium   | done    |
+| B-010 | Page title is “Document”                                     | low      | done    |
+| B-011 | Pentatonic generator only correct for C                      | medium   | done    |
+| B-012 | Pause then quick resume can double the tempo                 | medium   | done    |
+| B-013 | Indigo digits low contrast; palette repeats colours          | low      | backlog |
+| B-014 | Orphaned `charts-of-pie` submodule pointer                   | low      | backlog |
+| B-015 | Tone's first reverb render in a page differs from later ones | low      | done    |

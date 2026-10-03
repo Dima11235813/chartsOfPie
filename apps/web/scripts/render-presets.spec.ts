@@ -1,6 +1,7 @@
 /**
- * Listening harness: renders presets offline in Chromium with the exact live audio graph, writes
- * WAV files plus a loudness/brightness report to apps/web/audio-renders/ (git-ignored).
+ * Listening harness: renders presets offline in Chromium with the exact live audio graph (via the
+ * audio lab page, src/lab/audioLab.ts), writes WAV files, spectrogram PNGs and a loudness/brightness
+ * report to apps/web/audio-renders/ (git-ignored).
  *
  *   npm run audio:render                          # all presets
  *   PRESETS=lydian-dream,music-box npm run audio:render
@@ -36,61 +37,51 @@ interface Row {
   centroidHz: number
   highBandRatio: number
   wavBase64: string
+  /** PNG data URL. */
+  spectrogram: string
 }
 
 test('render presets', async ({ page }) => {
   test.setTimeout(10 * 60_000)
-  await page.goto('/')
+  await page.goto('/audio-lab.html')
+  await page.waitForFunction(() => window.audioLab !== undefined)
   const only = process.env.PRESETS?.split(',').filter(Boolean) ?? []
 
   const rows: Row[] = await page.evaluate(
     async ({ seconds, seed, start, only, calibrate }) => {
-      const load = (path: string) => import(/* @vite-ignore */ path)
-      const { PRESETS, getPreset } = await load('/src/core/composition/presets.ts')
-      const { INSTRUMENTS } = await load('/src/audio/instruments.ts')
-      const { loadPiDigits } = await load('/src/core/digits/pi.ts')
-      const { renderConfig } = await load('/src/audio/offlineRender.ts')
-      const { analyse, encodeWav } = await load('/src/audio/analysis.ts')
-      const source = await loadPiDigits('/data/pi-1m.txt')
-
-      type Job = { id: string; name: string; config: unknown }
+      const lab = window.audioLab
+      await lab.ready
+      type Job = string | { id: string; name: string; config: unknown }
       let jobs: Job[]
       if (calibrate) {
         // Neutral phrase: steady eighths at 100 BPM, dry, flat dynamics, original scale.
         const neutral = {
-          ...getPreset('original').config,
+          ...(lab.presetConfig('original') as object),
           timing: 'tempo',
           rhythm: 'steady',
           bpm: 100,
           subdivision: 2,
           legato: 1,
         }
-        jobs = INSTRUMENTS.map((i: { id: string; name: string }) => ({
+        jobs = lab.instruments.map((i) => ({
           id: `instrument-${i.id}`,
           name: i.name,
           config: { ...neutral, instrument: i.id },
         }))
       } else {
-        jobs = PRESETS.filter(
-          (p: { id: string }) => !only.length || only.includes(p.id) || p.id === 'original',
-        )
+        jobs = lab.presetIds.filter((id) => !only.length || only.includes(id) || id === 'original')
       }
 
       const out = []
       for (const job of jobs) {
-        const result = await renderConfig(job.config, source, { seconds, seed, startIndex: start })
-        const stats = analyse(result.channels, result.sampleRate)
-        const wav: Uint8Array = encodeWav(result.channels, result.sampleRate)
-        let binary = ''
-        for (let i = 0; i < wav.length; i += 0x8000) {
-          binary += String.fromCharCode(...wav.subarray(i, i + 0x8000))
-        }
+        const r = await lab.render(job, { seconds, seed, start, wav: true })
         out.push({
-          id: job.id,
-          name: job.name,
-          notes: result.notes,
-          ...stats,
-          wavBase64: btoa(binary),
+          id: r.id,
+          name: r.name,
+          notes: r.notes,
+          ...r.stats,
+          wavBase64: r.wavBase64!,
+          spectrogram: r.spectrogram,
         })
       }
       return out
@@ -109,6 +100,10 @@ test('render presets', async ({ page }) => {
   ]
   for (const row of rows) {
     writeFileSync(join(OUT, `${row.id}.wav`), Buffer.from(row.wavBase64, 'base64'))
+    writeFileSync(
+      join(OUT, `${row.id}.spectrogram.png`),
+      Buffer.from(row.spectrogram.split(',')[1]!, 'base64'),
+    )
     const trim = CALIBRATE ? ` ${(CALIBRATION_TARGET_DB - row.loudnessDb).toFixed(1)} |` : ''
     lines.push(
       `| ${row.name} | ${row.notes} | ${row.peakDb.toFixed(1)} | ${row.loudnessDb.toFixed(1)} | ${row.rmsDb.toFixed(1)} | ${row.maxMomentaryDb.toFixed(1)} | ${row.clippedSamples} | ${Math.round(row.centroidHz)} | ${(row.highBandRatio * 100).toFixed(1)}% |${trim}`,

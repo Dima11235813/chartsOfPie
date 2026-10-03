@@ -1,3 +1,4 @@
+import { VIEWS, type ViewId } from './views'
 import { CHART_STYLES, type ChartStyle } from './chartConfig'
 
 interface ControlsProps {
@@ -6,15 +7,17 @@ interface ControlsProps {
   isFinished: boolean
   muted: boolean
   chartStyle: ChartStyle
+  view: ViewId
   onToggle: () => void
   onStep: () => void
   onReset: () => void
   onMutedChange: (muted: boolean) => void
   onChartStyleChange: (style: ChartStyle) => void
+  onViewChange: (view: ViewId) => void
 }
 
 export function Controls(props: ControlsProps) {
-  const { disabled, isPlaying, isFinished, muted, chartStyle } = props
+  const { disabled, isPlaying, isFinished, muted, chartStyle, view } = props
   return (
     <div className="controls" role="toolbar" aria-label="Playback controls">
       <button
@@ -46,19 +49,33 @@ export function Controls(props: ControlsProps) {
       >
         {muted ? 'Unmute' : 'Mute'}
       </button>
-      <label className="select">
-        <span>Chart style</span>
-        <select
-          value={chartStyle}
-          onChange={(e) => props.onChartStyleChange(e.target.value as ChartStyle)}
-        >
-          {CHART_STYLES.map((style) => (
-            <option key={style.id} value={style.id}>
-              {style.label}
-            </option>
-          ))}
-        </select>
-      </label>
+      <div className="view-selects">
+        <label className="select">
+          <span>View</span>
+          <select value={view} onChange={(e) => props.onViewChange(e.target.value as ViewId)}>
+            {VIEWS.map((v) => (
+              <option key={v.id} value={v.id}>
+                {v.label}
+              </option>
+            ))}
+          </select>
+        </label>
+        {view === 'chart' && (
+          <label className="select">
+            <span>Chart style</span>
+            <select
+              value={chartStyle}
+              onChange={(e) => props.onChartStyleChange(e.target.value as ChartStyle)}
+            >
+              {CHART_STYLES.map((style) => (
+                <option key={style.id} value={style.id}>
+                  {style.label}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
+      </div>
     </div>
   )
 }
