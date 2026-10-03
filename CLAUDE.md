@@ -1,0 +1,55 @@
+# Charts of Pie — guide for AI agents
+
+**Vision:** a "Math is Art" platform where people discover how mathematics, music and visual art
+connect — starting with the digits of π, then scales/modes, Fibonacci and other sequences, and
+eventually saved/shared compositions on a full-stack, mobile/tablet/desktop app.
+The long-term plan lives in [`proj-mgmt/ROADMAP.md`](proj-mgmt/ROADMAP.md).
+
+## Repository map
+
+| Path                                 | What it is                                                               |
+| ------------------------------------ | ------------------------------------------------------------------------ |
+| `apps/web/`                          | React 19 + TypeScript + Vite app (Chart.js 4, Tone.js 15)                |
+| `apps/web/src/core/`                 | Framework-free math/music engine — **no DOM/React/Tone/Chart imports**   |
+| `apps/web/src/audio/`                | Tone.js adapter behind the `NotePlayer` interface (lazy-loaded)          |
+| `apps/web/src/components/`, `hooks/` | UI                                                                       |
+| `apps/web/public/data/`              | Verified digit data (`pi-1m.txt`, sha256 pinned in tests)                |
+| `apps/web/e2e/`                      | Playwright smoke tests on desktop, tablet and mobile viewports           |
+| `legacy/simpleHtml/`                 | The original 2019 app, kept read-only as the behavioural reference       |
+| `proj-mgmt/`                         | Epics, features, stories, tasks, bugs, research — **keep it up to date** |
+| `docs/`                              | Inspiration images and notes                                             |
+
+## Commands (run from the repo root)
+
+```bash
+npm install
+npm run dev          # http://localhost:5173
+npm run check        # format:check + lint + typecheck + unit tests + build — run before every push
+npm run test:e2e     # Playwright (builds and serves the app itself)
+```
+
+In the cloud container, Playwright uses the pre-installed Chromium; never run `playwright install` there.
+
+## Rules
+
+1. **No regressions to the legacy behaviour** without a recorded decision. The legacy encoding
+   (C major pentatonic from C4, digit → duration table, 0–420 ms random wait in 42 ms steps,
+   min..max-scaled bar chart) lives in `core/music/legacyMapping.ts` and is pinned by tests.
+   New encodings are added alongside it, never by editing it.
+2. `core/` stays pure and deterministic: inject randomness and scheduling (see `PlaybackEngine`).
+3. Every musical fact (scale intervals, mode names) needs a unit test citing the expected notes.
+4. Audio must only start from a user gesture (`NotePlayer.start()` inside a click handler).
+5. Layouts must work at 360 px wide with no horizontal scroll, 44 px touch targets, and visible focus.
+6. Track work in `proj-mgmt/` (see the `proj-mgmt` skill): update the story/task status in the same
+   commit as the code, and log any bug you find as `proj-mgmt/bugs/B-xxx-*.md`.
+
+## Agents, skills and MCP
+
+- Subagents in `.claude/agents/`: `music-theory-expert`, `visualization-engineer`,
+  `regression-guardian`, `product-steward`.
+- Skills in `.claude/skills/`: `proj-mgmt`, `add-scale`, `add-visualization`, `verify-parity`.
+- `.mcp.json` registers the [Serena](https://github.com/oraios/serena) MCP server for semantic,
+  symbol-level code navigation and editing. Requires [`uv`](https://docs.astral.sh/uv/)
+  (`uvx` on PATH). Prefer Serena's symbol tools (`find_symbol`, `find_referencing_symbols`,
+  `replace_symbol_body`) for refactors that cross files. Serena generates `.serena/project.yml` on
+  first activation — commit it; its cache/logs are git-ignored.
