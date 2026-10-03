@@ -74,8 +74,13 @@ test('every sound preset plays without errors', async ({ page }) => {
   }
   await page.getByRole('button', { name: 'Pause' }).click()
 
-  // Customising switches to a shareable custom config that survives a reload.
+  // The semitones mapping (Raw digits) ignores the scale, so the picker is disabled there.
+  await preset.selectOption({ label: 'Raw digits' })
   await page.getByText('Customize').click()
+  await expect(page.getByLabel('Scale')).toBeDisabled()
+
+  // Customising switches to a shareable custom config that survives a reload.
+  await preset.selectOption({ label: 'Pentatonic piano' })
   await page.getByLabel('Scale').selectOption({ label: 'Lydian' })
   await expect(preset).toHaveValue('custom')
   await expect(page).toHaveURL(/#c=/)
