@@ -7,3 +7,6 @@ coverage/
 playwright-report/
 test-results/
 .serena/
+# Generated / golden files: exact bytes matter (schema snapshots, compatibility fixtures).
+**/__schemas__/
+**/core/piece/fixtures/

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import type { WaveformSource } from '../../audio/notePlayer'
 import { useCanvas } from './useCanvas'
 
@@ -8,10 +8,12 @@ interface OscilloscopeViewProps {
   isPlaying: boolean
   /** Colour of the trace (the current digit's colour). */
   color: string
+  mode: ScopeMode
+  onModeChange: (mode: ScopeMode) => void
   onCanvas?: (canvas: HTMLCanvasElement | null) => void
 }
 
-type ScopeMode = 'vector' | 'wave'
+export type ScopeMode = 'vector' | 'wave'
 
 const TAIL_MS = 3000
 
@@ -21,9 +23,15 @@ const TAIL_MS = 3000
  *   stereo width (reverb, the piano's two microphones) blooms sideways into shapes.
  * - Waveform: both channels against time, triggered on a rising zero crossing so it stands still.
  */
-export function OscilloscopeView({ waveform, isPlaying, color, onCanvas }: OscilloscopeViewProps) {
+export function OscilloscopeView({
+  waveform,
+  isPlaying,
+  color,
+  mode,
+  onModeChange,
+  onCanvas,
+}: OscilloscopeViewProps) {
   const { ref, canvasRef, size } = useCanvas(onCanvas)
-  const [mode, setMode] = useState<ScopeMode>('vector')
   const stopAt = useRef(0)
   const colorRef = useRef(color)
 
@@ -118,7 +126,7 @@ export function OscilloscopeView({ waveform, isPlaying, color, onCanvas }: Oscil
         <input
           type="checkbox"
           checked={mode === 'wave'}
-          onChange={(e) => setMode(e.target.checked ? 'wave' : 'vector')}
+          onChange={(e) => onModeChange(e.target.checked ? 'wave' : 'vector')}
         />
         Waveform
       </label>

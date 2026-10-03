@@ -7,6 +7,9 @@ import { useDigitColors } from '../palette'
 import { prefersReducedMotion, useCanvas } from './useCanvas'
 
 interface HarmonographViewProps {
+  /** Draw the nearest pure ratio instead of the equal-tempered one. */
+  pure: boolean
+  onPureChange: (pure: boolean) => void
   log: PerformanceLog
   onCanvas?: (canvas: HTMLCanvasElement | null) => void
 }
@@ -27,10 +30,9 @@ function currentPair(log: PerformanceLog): [PerformedNote, PerformedNote] | null
  * intervals are a few cents off those ratios, so their figures never quite close and slowly turn.
  * The toggle swaps in the pure ratio to compare.
  */
-export function HarmonographView({ log, onCanvas }: HarmonographViewProps) {
+export function HarmonographView({ log, pure, onPureChange, onCanvas }: HarmonographViewProps) {
   const { ref, canvasRef, size } = useCanvas(onCanvas)
   const colors = useDigitColors()
-  const [pure, setPure] = useState(false)
   const [caption, setCaption] = useState('Press Play — each interval draws its own figure.')
   const pair = useRef<[PerformedNote, PerformedNote] | null>(null)
 
@@ -106,7 +108,7 @@ export function HarmonographView({ log, onCanvas }: HarmonographViewProps) {
       />
       <p className="viz-caption">{caption}</p>
       <label className="viz-toggle">
-        <input type="checkbox" checked={pure} onChange={(e) => setPure(e.target.checked)} />
+        <input type="checkbox" checked={pure} onChange={(e) => onPureChange(e.target.checked)} />
         Pure ratios
       </label>
     </div>

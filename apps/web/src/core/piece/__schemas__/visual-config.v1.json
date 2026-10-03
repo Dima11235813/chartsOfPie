@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "version": {
+      "type": "number",
+      "const": 1
+    },
+    "view": {
+      "default": "chart",
+      "type": "string",
+      "enum": [
+        "chart",
+        "staff",
+        "spectrogram",
+        "ring",
+        "walk",
+        "sunflower",
+        "mosaic",
+        "hilbert",
+        "type",
+        "strings",
+        "clock",
+        "harmonograph",
+        "scope"
+      ]
+    },
+    "palette": {
+      "default": "rainbow",
+      "type": "string",
+      "enum": [
+        "rainbow",
+        "colour-blind",
+        "scriabin",
+        "ink"
+      ]
+    },
+    "chartStyle": {
+      "default": "bar",
+      "type": "string",
+      "enum": [
+        "bar",
+        "horizontalBar",
+        "line",
+        "polarArea",
+        "doughnut",
+        "pie",
+        "radar"
+      ]
+    },
+    "viewOptions": {
+      "default": {},
+      "type": "object",
+      "properties": {
+        "clock": {
+          "default": {},
+          "type": "object",
+          "properties": {
+            "order": {
+              "default": "chromatic",
+              "type": "string",
+              "enum": [
+                "chromatic",
+                "fifths"
+              ]
+            }
+          }
+        },
+        "harmonograph": {
+          "default": {},
+          "type": "object",
+          "properties": {
+            "pure": {
+              "default": false,
+              "type": "boolean"
+            }
+          }
+        },
+        "scope": {
+          "default": {},
+          "type": "object",
+          "properties": {
+            "mode": {
+              "default": "vector",
+              "type": "string",
+              "enum": [
+                "vector",
+                "wave"
+              ]
+            }
+          }
+        }
+      }
+    }
+  },
+  "required": [
+    "version"
+  ]
+}

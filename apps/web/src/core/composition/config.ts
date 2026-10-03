@@ -1,4 +1,11 @@
 import * as z from 'zod/mini'
+import {
+  assertMigrationChain,
+  decodeJson,
+  encodeJson,
+  migrate,
+  type Migrations,
+} from '../schema/migrate'
 import { MAPPING_STRATEGIES } from '../music/mapping'
 import { PITCH_CLASSES } from '../music/notes'
 import { SCALE_CATALOGUE } from '../music/scaleCatalogue'
@@ -43,8 +50,9 @@ const ids = <T extends readonly { id: string }[]>(items: T) =>
   items.map((item) => item.id) as [T[number]['id'], ...T[number]['id'][]]
 
 /**
- * Everything that determines how digits become sound. Versioned because configs will be saved
- * and shared (E08); add a migration in `migrateConfig` whenever the shape changes.
+ * Everything that determines how digits become sound. Versioned because configs live in share
+ * links and saved pieces: a new optional field gets a default; any other shape change bumps
+ * `COMPOSITION_CONFIG_VERSION` and adds a migration below (contract: proj-mgmt R-007).
  */
 export const compositionConfigSchema = z.object({
   version: z.literal(1),
@@ -78,41 +86,32 @@ export const compositionConfigSchema = z.object({
 
 export type CompositionConfig = z.infer<typeof compositionConfigSchema>
 
+export const COMPOSITION_CONFIG_VERSION = 1
+
+/** `[n]` upgrades a version-n config to n + 1. Never delete one. */
+const MIGRATIONS: Migrations = {}
+assertMigrationChain(COMPOSITION_CONFIG_VERSION, MIGRATIONS, 'CompositionConfig')
+
+/** Upgrade any past config version to the current one. */
+export function migrateConfig(input: unknown) {
+  return migrate(input, COMPOSITION_CONFIG_VERSION, MIGRATIONS)
+}
+
 /** Validate unknown input (URL, storage, API). Returns null when it cannot be used. */
 export function parseConfig(input: unknown): CompositionConfig | null {
-  const result = compositionConfigSchema.safeParse(migrateConfig(input))
+  const migrated = migrateConfig(input)
+  if (migrated.status !== 'ok') return null
+  const result = compositionConfigSchema.safeParse(migrated.doc)
   return result.success ? result.data : null
-}
-
-/** Upgrade older config versions. Only version 1 exists so far. */
-export function migrateConfig(input: unknown): unknown {
-  return input
-}
-
-const toBase64Url = (text: string) =>
-  btoa(String.fromCharCode(...new TextEncoder().encode(text)))
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=+$/, '')
-
-const fromBase64Url = (encoded: string) => {
-  const base64 = encoded.replace(/-/g, '+').replace(/_/g, '/')
-  const bytes = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0))
-  return new TextDecoder().decode(bytes)
 }
 
 /** Compact, URL-safe encoding for share links (`#c=…`). */
 export function encodeConfig(config: CompositionConfig): string {
-  return toBase64Url(JSON.stringify(config))
+  return encodeJson(config)
 }
 
 export const MAX_ENCODED_CONFIG_LENGTH = 2000
 
 export function decodeConfig(encoded: string): CompositionConfig | null {
-  if (encoded.length > MAX_ENCODED_CONFIG_LENGTH) return null
-  try {
-    return parseConfig(JSON.parse(fromBase64Url(encoded)))
-  } catch {
-    return null
-  }
+  return parseConfig(decodeJson(encoded, MAX_ENCODED_CONFIG_LENGTH))
 }

@@ -1,0 +1,33 @@
+{
+  "schema": "charts-of-pie/piece",
+  "version": 1,
+  "id": "00000000-0000-4000-8000-000000000003",
+  "name": "π в дорийском ладу 🎹",
+  "createdAt": "2026-10-04T10:00:00.000Z",
+  "updatedAt": "2026-10-04T10:00:00.000Z",
+  "sound": {
+    "version": 1,
+    "scale": "dorian",
+    "root": "F",
+    "octave": 4,
+    "mapping": "centred",
+    "rhythm": "steady",
+    "timing": "tempo",
+    "bpm": 96,
+    "subdivision": 2,
+    "legato": 1.8,
+    "dynamics": "accented",
+    "humanize": 0.3,
+    "instrument": "electric-piano",
+    "reverb": 0.45,
+    "echo": 0.2,
+    "drone": true,
+    "compress": true,
+    "volume": 3
+  },
+  "visual": {
+    "version": 1,
+    "view": "hilbert",
+    "palette": "ink"
+  }
+}

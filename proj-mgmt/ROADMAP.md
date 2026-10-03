@@ -10,16 +10,17 @@ responsive by default · every item tracked in this folder.
 
 ## Phases
 
-| Phase | Theme                                      | Epics                  | Status                                                                                |
-| ----- | ------------------------------------------ | ---------------------- | ------------------------------------------------------------------------------------- |
-| 0     | Modernise the original app, no regressions | E01, E06 (first slice) | **done**                                                                              |
-| 1     | Music is math: scales, modes, rhythm       | E02                    | **in progress** — scales, modes, presets, sound design, MIDI shipped                  |
-| 2     | Visualization gallery & playgrounds        | E03                    | **in progress** — sheet music + spectrogram shipped; artistic gallery planned (R-006) |
-| 3     | Beyond π: Fibonacci, φ, e, √2, primes      | E05                    | backlog                                                                               |
-| 4     | Learn: guided lessons                      | E04                    | backlog                                                                               |
-| 5     | Accounts: backend, authN/authZ             | E07                    | backlog                                                                               |
-| 6     | Save, gallery & share                      | E08                    | export (MIDI, PNG, video, audio) shipped early; saving needs E07                      |
-| ∞     | Platform quality (PWA, a11y, perf, i18n)   | E09, E06               | continuous                                                                            |
+| Phase | Theme                                      | Epics                  | Status                                                                                      |
+| ----- | ------------------------------------------ | ---------------------- | ------------------------------------------------------------------------------------------- |
+| 0     | Modernise the original app, no regressions | E01, E06 (first slice) | **done**                                                                                    |
+| 1     | Music is math: scales, modes, rhythm       | E02                    | **in progress** — scales, modes, presets, sound design, MIDI shipped                        |
+| 2     | Visualization gallery & playgrounds        | E03                    | **in progress** — sheet music + spectrogram shipped; artistic gallery planned (R-006)       |
+| 2.5   | **Next:** save on device + installable PWA | E10                    | ready — planned in R-007, prioritised by the owner                                          |
+| 3     | Beyond π: Fibonacci, φ, e, √2, primes      | E05                    | backlog                                                                                     |
+| 4     | Learn: guided lessons                      | E04                    | backlog                                                                                     |
+| 5     | Accounts: backend, authN/authZ             | E07                    | backlog                                                                                     |
+| 6     | Save, gallery & share                      | E08                    | export (MIDI, PNG, video, audio) shipped early; cloud saving needs E07; local saving is E10 |
+| ∞     | Platform quality (PWA, a11y, perf, i18n)   | E09, E06               | continuous                                                                                  |
 
 Phases 2–4 can interleave once E02's configuration model (F02.5) exists, because every
 visualization, sequence and lesson plugs into the same `CompositionConfig`.
@@ -46,6 +47,7 @@ visualization, sequence and lesson plugs into the same `CompositionConfig`.
 - [E07 — Backend platform: API, authN & authZ](epics/E07-backend-platform.md)
 - [E08 — Save, gallery & share](epics/E08-save-and-share.md)
 - [E09 — Platform quality: PWA, accessibility, performance](epics/E09-platform-quality.md)
+- [E10 — Local-first saved pieces & installable PWA](epics/E10-local-first-pieces-pwa.md) — next
 
 ## Research
 
@@ -55,3 +57,4 @@ visualization, sequence and lesson plugs into the same `CompositionConfig`.
 - [R-004 — Fibonacci and other sequences](research/R-004-fibonacci-and-sequences.md)
 - [R-005 — Making π sound pleasant](research/R-005-pleasant-sound-design.md)
 - [R-006 — Artistic visualizations of π](research/R-006-artistic-visualizations.md)
+- [R-007 — Saving on the device & installable PWA](research/R-007-saved-pieces-and-pwa.md)
