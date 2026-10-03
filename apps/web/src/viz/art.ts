@@ -141,3 +141,56 @@ export class TransitionCounts {
     this.max = 0
   }
 }
+
+// ── Neighbour mosaic (our third inspiration image) ─────────────────────────────────────────────
+
+/**
+ * Earlier cells adjacent to cell `index` in a row-major grid with `cols` columns: left, up-left,
+ * up and up-right. Linking a new dot to equal earlier neighbours draws every equal-neighbour link
+ * exactly once.
+ */
+export function earlierNeighbours(index: number, cols: number): number[] {
+  const col = index % cols
+  const neighbours: number[] = []
+  if (col > 0) neighbours.push(index - 1)
+  if (index >= cols) {
+    if (col > 0) neighbours.push(index - cols - 1)
+    neighbours.push(index - cols)
+    if (col < cols - 1) neighbours.push(index - cols + 1)
+  }
+  return neighbours
+}
+
+// ── Times-table string art (modular multiplication on a circle) ────────────────────────────────
+
+/** Multiplier chosen by the two latest digits: 2 + d₁ + d₂/10, i.e. 2.0 … 11.9. */
+export function stringArtMultiplier(previousDigit: number, digit: number): number {
+  return 2 + previousDigit + digit / 10
+}
+
+/** End point (as a fractional point index) of the chord from point n: k·n mod N. */
+export function stringArtTarget(n: number, multiplier: number, points: number): number {
+  return (n * multiplier) % points
+}
+
+/** Angle of a (fractional) point index on a circle of N points, 0 at the top, clockwise. */
+export function circlePointAngle(index: number, points: number): number {
+  return -Math.PI / 2 + (index / points) * TAU
+}
+
+// ── Music clock ────────────────────────────────────────────────────────────────────────────────
+
+export type ClockOrder = 'chromatic' | 'fifths'
+
+/**
+ * Position (0–11, clockwise from the top) of a pitch class on the clock. Chromatic order steps by
+ * semitones; the circle of fifths steps by 7 semitones (C G D A E B F♯ C♯ G♯ D♯ A♯ F), which puts
+ * notes of the same key next to each other.
+ */
+export function clockPosition(pitchClass: number, order: ClockOrder): number {
+  const pc = ((pitchClass % 12) + 12) % 12
+  return order === 'chromatic' ? pc : (pc * 7) % 12
+}
+
+export const clockAngle = (pitchClass: number, order: ClockOrder) =>
+  -Math.PI / 2 + (clockPosition(pitchClass, order) / 12) * TAU

@@ -6,6 +6,9 @@ export const VIEWS = [
   { id: 'ring', label: 'Digit ring' },
   { id: 'walk', label: 'π walk' },
   { id: 'sunflower', label: 'Sunflower' },
+  { id: 'mosaic', label: 'Neighbour mosaic' },
+  { id: 'clock', label: 'Music clock' },
+  { id: 'strings', label: 'String art' },
 ] as const
 
 export type ViewId = (typeof VIEWS)[number]['id']

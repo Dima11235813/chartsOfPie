@@ -43,7 +43,7 @@ interface Row {
 
 test('render presets', async ({ page }) => {
   test.setTimeout(10 * 60_000)
-  await page.goto('/audio-lab.html')
+  await page.goto('/lab.html')
   await page.waitForFunction(() => window.audioLab !== undefined)
   const only = process.env.PRESETS?.split(',').filter(Boolean) ?? []
 

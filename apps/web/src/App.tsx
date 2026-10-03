@@ -10,9 +10,10 @@ import { ExportPanel } from './components/ExportPanel'
 import { SoundPanel } from './components/SoundPanel'
 import { SpectrogramView } from './components/viz/SpectrogramView'
 import { StaffView } from './components/viz/StaffView'
-import { RingView } from './components/viz/RingView'
-import { SunflowerView } from './components/viz/SunflowerView'
-import { WalkView } from './components/viz/WalkView'
+import { DigitArtView } from './components/viz/DigitArtView'
+import { MusicClockView } from './components/viz/MusicClockView'
+import { StringArtView } from './components/viz/StringArtView'
+import { PosterPanel } from './components/PosterPanel'
 import { PaletteContext } from './components/palette'
 import { noteTableFor } from './core/composition/arranger'
 import { DEFAULT_PALETTE_ID, getPalette, PALETTES } from './viz/palettes'
@@ -47,10 +48,8 @@ export default function App({
   const [view, setView] = useState<ViewId>('chart')
   const { config, setConfig, invalidLink } = useCompositionConfig()
   const [paletteId, setPaletteId] = useState(readStoredPalette)
-  const colors = useMemo(
-    () => getPalette(paletteId).digitColors(noteTableFor(config)),
-    [paletteId, config],
-  )
+  const noteTable = useMemo(() => noteTableFor(config), [config])
+  const colors = useMemo(() => getPalette(paletteId).digitColors(noteTable), [paletteId, noteTable])
   const changePalette = useCallback((id: string) => {
     setPaletteId(id)
     try {
@@ -112,14 +111,23 @@ export default function App({
                     onCanvas={setCanvas}
                   />
                 )}
-                {view === 'ring' && (
-                  <RingView source={load.source} log={playback.log} onCanvas={setCanvas} />
+                {(view === 'ring' ||
+                  view === 'walk' ||
+                  view === 'sunflower' ||
+                  view === 'mosaic') && (
+                  <DigitArtView
+                    key={view}
+                    kind={view}
+                    source={load.source}
+                    log={playback.log}
+                    onCanvas={setCanvas}
+                  />
                 )}
-                {view === 'walk' && (
-                  <WalkView source={load.source} log={playback.log} onCanvas={setCanvas} />
+                {view === 'clock' && (
+                  <MusicClockView log={playback.log} noteTable={noteTable} onCanvas={setCanvas} />
                 )}
-                {view === 'sunflower' && (
-                  <SunflowerView source={load.source} log={playback.log} onCanvas={setCanvas} />
+                {view === 'strings' && (
+                  <StringArtView source={load.source} log={playback.log} onCanvas={setCanvas} />
                 )}
                 {view === 'spectrogram' && (
                   <SpectrogramView
@@ -149,6 +157,7 @@ export default function App({
               getCanvas={() => canvasRef.current}
               getCaption={() => captionRef.current}
             />
+            {load.status === 'ready' && <PosterPanel source={load.source} />}
             <StatsPanel
               counts={playback.counts}
               total={playback.total}

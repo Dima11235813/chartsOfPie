@@ -1,4 +1,4 @@
-/** Shape of `window.audioLab` (src/lab/audioLab.ts) as used by the audio tests. */
+/** Shapes of `window.audioLab` and `window.posterLab` (src/lab/) as used by the tests. */
 interface AudioLabResult {
   id: string
   name: string
@@ -17,6 +17,13 @@ interface AudioLabResult {
 }
 
 interface Window {
+  posterLab: {
+    kinds: string[]
+    render(
+      kind: string,
+      options?: { count?: number; size?: number; palette?: string },
+    ): Promise<string>
+  }
   audioLab: {
     presetIds: string[]
     instruments: { id: string; name: string }[]

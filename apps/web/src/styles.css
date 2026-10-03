@@ -538,3 +538,31 @@ body {
 .readout .readout-wide {
   grid-column: 1 / -1;
 }
+
+/* Views with HTML controls over the canvas */
+.viz-layer {
+  position: absolute;
+  inset: 0;
+}
+
+.viz-toggle {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 44px;
+  padding: 0 0.75rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface-2) 85%, transparent);
+  border: 1px solid var(--border);
+  font-size: 0.85rem;
+  color: var(--text);
+}
+
+.viz-toggle input {
+  width: 1.1rem;
+  height: 1.1rem;
+  accent-color: var(--accent);
+}

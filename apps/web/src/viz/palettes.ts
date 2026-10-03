@@ -114,6 +114,33 @@ export function getPalette(id: string): Palette {
   return PALETTES.find((p) => p.id === id) ?? PALETTES[0]!
 }
 
+/** Parse `#rrggbb` or `rgb(r, g, b)` into [r, g, b]; null if unrecognised. */
+export function parseColor(color: string): [number, number, number] | null {
+  const hex = /^#([0-9a-f]{6})$/i.exec(color)
+  if (hex) {
+    const n = parseInt(hex[1]!, 16)
+    return [(n >> 16) & 255, (n >> 8) & 255, n & 255]
+  }
+  const rgb = /^rgb\(\s*(\d+),\s*(\d+),\s*(\d+)\s*\)$/.exec(color)
+  return rgb ? [Number(rgb[1]), Number(rgb[2]), Number(rgb[3])] : null
+}
+
+/**
+ * `steps` colours interpolated smoothly through a palette's ten colours (0 → 9), e.g. to colour a
+ * path by position in time.
+ */
+export function paletteRamp(colors: readonly string[], steps: number): string[] {
+  const rgb = colors.map((c) => parseColor(c) ?? [255, 255, 255])
+  return Array.from({ length: steps }, (_, i) => {
+    const t = (steps === 1 ? 0 : i / (steps - 1)) * (rgb.length - 1)
+    const k = Math.min(rgb.length - 2, Math.floor(t))
+    const f = t - k
+    const [a, b] = [rgb[k]!, rgb[k + 1]!]
+    const mix = (j: number) => Math.round(a[j]! + (b[j]! - a[j]!) * f)
+    return `rgb(${mix(0)}, ${mix(1)}, ${mix(2)})`
+  })
+}
+
 /** `rgb(…)`/`#rrggbb` → `rgba(r, g, b, a)`. */
 export function withAlpha(color: string, alpha: number): string {
   const hex = /^#([0-9a-f]{6})$/i.exec(color)

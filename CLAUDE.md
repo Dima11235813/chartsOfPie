@@ -7,25 +7,26 @@ The long-term plan lives in [`proj-mgmt/ROADMAP.md`](proj-mgmt/ROADMAP.md).
 
 ## Repository map
 
-| Path                                  | What it is                                                                                             |
-| ------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| `apps/web/`                           | React 19 + TypeScript + Vite app (Chart.js 4, Tone.js 15)                                              |
-| `apps/web/src/core/`                  | Framework-free math/music engine — **no DOM/React/Tone/Chart imports**                                 |
-| `apps/web/src/audio/`                 | Tone.js: instruments, sound chain, `NotePlayer` (analyser + recording taps), offline render & analysis |
-| `apps/web/src/components/`, `hooks/`  | UI                                                                                                     |
-| `apps/web/public/data/`               | Verified digit data (`pi-1m.txt`, sha256 pinned in tests)                                              |
-| `apps/web/e2e/`                       | Playwright smoke tests on desktop, tablet and mobile viewports                                         |
-| `apps/web/src/core/composition/`      | `CompositionConfig` (zod), presets, `Arranger`, `PerformanceLog` (what was played, chords)             |
-| `apps/web/src/core/midi/`             | Dependency-free MIDI writer and performance → MIDI export                                              |
-| `apps/web/src/viz/`                   | Pure geometry/colour maths for views (spectrogram, staff), unit-tested                                 |
-| `apps/web/src/components/viz/`        | Canvas views: `StaffView` (sheet music), `SpectrogramView`                                             |
-| `apps/web/src/media/`                 | `SessionRecorder` (video + audio via MediaRecorder), download helpers                                  |
-| `apps/web/src/lab/`, `audio-lab.html` | Audio lab page: deterministic offline renders for tests and the harness                                |
-| `apps/web/e2e/__snapshots__/`         | Spectrogram baselines for every preset (audio regression tests)                                        |
-| `apps/web/scripts/`                   | Listening harness (`render-presets.spec.ts`, `npm run audio:render`)                                   |
-| `legacy/simpleHtml/`                  | The original 2019 app, kept read-only as the behavioural reference                                     |
-| `proj-mgmt/`                          | Epics, features, stories, tasks, bugs, research — **keep it up to date**                               |
-| `docs/`                               | Inspiration images and notes                                                                           |
+| Path                                 | What it is                                                                                                   |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------------ |
+| `apps/web/`                          | React 19 + TypeScript + Vite app (Chart.js 4, Tone.js 15)                                                    |
+| `apps/web/src/core/`                 | Framework-free math/music engine — **no DOM/React/Tone/Chart imports**                                       |
+| `apps/web/src/audio/`                | Tone.js: instruments, sound chain, `NotePlayer` (analyser + recording taps), offline render & analysis       |
+| `apps/web/src/components/`, `hooks/` | UI                                                                                                           |
+| `apps/web/public/data/`              | Verified digit data (`pi-1m.txt`, sha256 pinned in tests)                                                    |
+| `apps/web/e2e/`                      | Playwright smoke tests on desktop, tablet and mobile viewports                                               |
+| `apps/web/src/core/composition/`     | `CompositionConfig` (zod), presets, `Arranger`, `PerformanceLog` (what was played, chords)                   |
+| `apps/web/src/core/midi/`            | Dependency-free MIDI writer and performance → MIDI export                                                    |
+| `apps/web/src/viz/`                  | Pure geometry/colour maths for views (spectrogram, staff), unit-tested                                       |
+| `apps/web/src/viz/render/`           | React-free renderers + registry shared by live art views and posters (`posters.ts`)                          |
+| `apps/web/src/components/viz/`       | Canvas views: sheet music, spectrogram, `DigitArtView` (ring/walk/sunflower/mosaic), music clock, string art |
+| `apps/web/src/media/`                | `SessionRecorder` (video + audio via MediaRecorder), download helpers                                        |
+| `apps/web/src/lab/`, `lab.html`      | Lab page: deterministic offline renders (audio spectrograms, posters) for tests and the harness              |
+| `apps/web/e2e/__snapshots__/`        | Baselines: spectrogram per sound preset, poster per artwork (regression tests)                               |
+| `apps/web/scripts/`                  | Listening harness (`render-presets.spec.ts`, `npm run audio:render`)                                         |
+| `legacy/simpleHtml/`                 | The original 2019 app, kept read-only as the behavioural reference                                           |
+| `proj-mgmt/`                         | Epics, features, stories, tasks, bugs, research — **keep it up to date**                                     |
+| `docs/`                              | Inspiration images and notes                                                                                 |
 
 ## Commands (run from the repo root)
 
@@ -36,6 +37,7 @@ npm run check        # format:check + lint + typecheck + unit tests + build — 
 npm run test:e2e     # Playwright (builds and serves the app itself)
 npm run audio:render # offline-render every preset → apps/web/audio-renders/*.wav, spectrograms, report.md
 npm run test:e2e -- audio-snapshots --update-snapshots   # after an INTENDED sound change only
+npm run test:e2e -- poster-snapshots --update-snapshots  # after an INTENDED artwork change only
 ```
 
 In the cloud container, Playwright uses the pre-installed Chromium; never run `playwright install` there.

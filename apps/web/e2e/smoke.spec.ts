@@ -172,9 +172,7 @@ test('sheet music, live spectrogram and exports (MIDI, image, video, audio)', as
   expect(errors).toEqual([])
 })
 
-test('artistic views (ring, walk, sunflower) draw and follow the colour palette', async ({
-  page,
-}, testInfo) => {
+test('artistic views draw and follow the colour palette', async ({ page }, testInfo) => {
   test.setTimeout(60_000)
   const errors: string[] = []
   page.on('pageerror', (error) => errors.push(error.message))
@@ -202,25 +200,30 @@ test('artistic views (ring, walk, sunflower) draw and follow the colour palette'
     })
 
   const view = page.getByRole('combobox', { name: 'View' })
-  for (const [label, name] of [
-    ['Digit ring', /Digit ring/],
-    ['π walk', /π walk/],
-    ['Sunflower', /Sunflower/],
+  for (const [label, name, summary] of [
+    ['Digit ring', /Digit ring/, /\d+ digits woven/],
+    ['π walk', /π walk/, /\d+ steps/],
+    ['Sunflower', /Sunflower/, /\d+ seeds/],
+    ['Neighbour mosaic', /Neighbour mosaic/, /\d+ digits in rows/],
+    ['Music clock', /Music clock/, /Now: /],
+    ['String art', /Times-table string art/, /k = \d/],
   ] as const) {
     await view.selectOption({ label })
-    await expect(page.getByRole('img', { name })).toHaveAttribute(
-      'aria-label',
-      /\d+ (digits|steps|seeds)/,
-      {
-        timeout: 10_000,
-      },
-    )
+    await expect(page.getByRole('img', { name })).toHaveAttribute('aria-label', summary, {
+      timeout: 10_000,
+    })
     await expect.poll(() => inkedPixels(name)).toBeGreaterThan(200)
     await testInfo.attach(`${label}.png`, {
       body: await page.getByRole('img', { name }).screenshot(),
       contentType: 'image/png',
     })
   }
+
+  // The music clock can switch to the circle of fifths.
+  await view.selectOption({ label: 'Music clock' })
+  await page.getByLabel('Circle of fifths').check()
+  await expect(page.getByRole('img', { name: /Music clock \(circle of fifths\)/ })).toBeVisible()
+  await view.selectOption({ label: 'Sunflower' })
 
   // Changing the palette redraws the picture in the new colours.
   await page.getByRole('button', { name: 'Pause' }).click()
@@ -238,7 +241,27 @@ test('artistic views (ring, walk, sunflower) draw and follow the colour palette'
   await page.getByRole('button', { name: 'Reset' }).click()
   await expect(page.getByRole('img', { name: /Sunflower/ })).toHaveAttribute(
     'aria-label',
-    /No seeds yet/,
+    /No digits yet/,
   )
   expect(errors).toEqual([])
+})
+
+test('downloads a print-size poster', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop', 'one viewport is enough for a file download')
+  await page.goto('/')
+  await expect(page.getByRole('button', { name: 'Play' })).toBeEnabled({ timeout: 15_000 })
+  await page.getByLabel('Artwork').selectOption({ label: 'Neighbour mosaic' })
+  await page.getByLabel('Digits of π', { exact: true }).selectOption('1000')
+  const [download] = await Promise.all([
+    page.waitForEvent('download'),
+    page.getByRole('button', { name: 'Download poster' }).click(),
+  ])
+  expect(download.suggestedFilename()).toMatch(
+    /^charts-of-pie-poster-mosaic-1000-\d{8}-\d{6}\.png$/,
+  )
+  const { readFileSync } = await import('node:fs')
+  const png = readFileSync(await download.path())
+  expect(png.subarray(1, 4).toString('latin1')).toBe('PNG')
+  expect([png.readUInt32BE(16), png.readUInt32BE(20)]).toEqual([2048, 2048])
+  await expect(page.getByRole('button', { name: 'Download poster' })).toBeEnabled()
 })

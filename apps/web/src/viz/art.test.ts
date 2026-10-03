@@ -1,17 +1,23 @@
 import { describe, expect, it } from 'vitest'
 import {
+  circlePointAngle,
+  clockAngle,
+  clockPosition,
+  earlierNeighbours,
   fitBounds,
   GOLDEN_ANGLE,
   ringAngle,
   ringSegment,
   RING_GAP,
   seedPosition,
+  stringArtMultiplier,
+  stringArtTarget,
   sunflowerCapacity,
   TransitionCounts,
   WalkPath,
   walkStep,
 } from './art'
-import { getPalette, PALETTES, SCRIABIN, withAlpha } from './palettes'
+import { getPalette, PALETTES, paletteRamp, parseColor, SCRIABIN, withAlpha } from './palettes'
 
 describe('π walk', () => {
   it('steps in ten directions, 0 up and clockwise', () => {
@@ -124,5 +130,51 @@ describe('palettes', () => {
     expect(getPalette('nope').id).toBe('rainbow')
     expect(withAlpha('#ff8000', 0.5)).toBe('rgba(255, 128, 0, 0.5)')
     expect(withAlpha('rgb(1, 2, 3)', 0.25)).toBe('rgba(1, 2, 3, 0.25)')
+  })
+})
+
+describe('neighbour mosaic', () => {
+  it('lists earlier neighbours without wrapping across rows', () => {
+    expect(earlierNeighbours(0, 5)).toEqual([])
+    expect(earlierNeighbours(3, 5)).toEqual([2])
+    expect(earlierNeighbours(5, 5)).toEqual([0, 1]) // row start: up, up-right
+    expect(earlierNeighbours(7, 5)).toEqual([6, 1, 2, 3])
+    expect(earlierNeighbours(9, 5)).toEqual([8, 3, 4]) // row end: no up-right
+  })
+})
+
+describe('times-table string art', () => {
+  it('derives the multiplier from the two latest digits', () => {
+    expect(stringArtMultiplier(3, 1)).toBeCloseTo(5.1)
+    expect(stringArtMultiplier(0, 0)).toBe(2) // the cardioid
+    expect(stringArtMultiplier(9, 9)).toBeCloseTo(11.9)
+  })
+
+  it('maps n to k·n mod N', () => {
+    expect(stringArtTarget(7, 2, 10)).toBe(4)
+    expect(stringArtTarget(3, 2.5, 10)).toBeCloseTo(7.5)
+    expect(circlePointAngle(0, 12)).toBeCloseTo(-Math.PI / 2)
+    expect(circlePointAngle(3, 12)).toBeCloseTo(0)
+  })
+})
+
+describe('music clock', () => {
+  it('orders pitch classes chromatically or by fifths', () => {
+    expect([0, 1, 7, 11].map((pc) => clockPosition(pc, 'chromatic'))).toEqual([0, 1, 7, 11])
+    // circle of fifths: C=0, G=1, D=2, A=3, E=4, B=5, F♯=6, C♯=7 … F=11
+    expect([0, 7, 2, 9, 4, 11, 6, 1, 5].map((pc) => clockPosition(pc, 'fifths'))).toEqual([
+      0, 1, 2, 3, 4, 5, 6, 7, 11,
+    ])
+    expect(clockPosition(-1, 'chromatic')).toBe(11)
+    expect(clockAngle(0, 'fifths')).toBeCloseTo(-Math.PI / 2)
+  })
+})
+
+describe('palette ramp', () => {
+  it('interpolates through the palette from the first to the last colour', () => {
+    const ramp = paletteRamp(['#000000', '#ffffff'], 3)
+    expect(ramp).toEqual(['rgb(0, 0, 0)', 'rgb(128, 128, 128)', 'rgb(255, 255, 255)'])
+    expect(parseColor('rgb(1, 2, 3)')).toEqual([1, 2, 3])
+    expect(parseColor('hsl(0, 0%, 0%)')).toBeNull()
   })
 })
