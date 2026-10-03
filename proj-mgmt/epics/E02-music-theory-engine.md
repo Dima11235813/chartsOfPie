@@ -1,7 +1,7 @@
 ---
 id: E02
 title: 'Music theory engine: scales, modes & rhythm'
-status: ready
+status: in-progress
 phase: 1
 ---
 
@@ -17,10 +17,14 @@ modes as rotations). Every choice is captured in a versioned, shareable `Composi
 ## Features
 
 - [ ] [F02.1 — Scale & mode catalogue](../features/F02.1-scale-and-mode-catalogue.md)
-- [ ] [F02.2 — Digit → pitch mapping strategies](../features/F02.2-digit-pitch-mapping.md)
+- [x] [F02.2 — Digit → pitch mapping strategies](../features/F02.2-digit-pitch-mapping.md)
 - [ ] [F02.3 — Rhythm & tempo](../features/F02.3-rhythm-and-tempo.md)
 - [ ] [F02.4 — Sound design: instruments, harmony, export](../features/F02.4-sound-design.md)
-- [ ] [F02.5 — Composition config model & URL sharing](../features/F02.5-composition-config.md)
+- [x] [F02.5 — Composition config model & URL sharing](../features/F02.5-composition-config.md)
+
+## Features added during delivery
+
+- [ ] [F02.6 — Presets & listening harness](../features/F02.6-presets-and-listening.md)
 
 ## Out of scope
 
@@ -28,4 +32,5 @@ Accounts and server-side saving (E07/E08); non-12-TET tunings beyond a prototype
 
 ## Research
 
-[R-001 — Encoding numbers as music](../research/R-001-music-encoding.md)
+[R-001 — Encoding numbers as music](../research/R-001-music-encoding.md) ·
+[R-005 — Making π sound pleasant](../research/R-005-pleasant-sound-design.md)

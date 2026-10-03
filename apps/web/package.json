@@ -11,13 +11,15 @@
     "lint": "eslint .",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "audio:render": "playwright test -c playwright.audio.config.ts"
   },
   "dependencies": {
     "chart.js": "^4.5.1",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
-    "tone": "^15.1.22"
+    "tone": "^15.1.22",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

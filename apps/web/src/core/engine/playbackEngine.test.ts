@@ -38,9 +38,13 @@ function makeEngine(digits = '31415') {
   const states: boolean[] = []
   const engine = new PlaybackEngine({
     source: createDigitSource('t', 'test', parseDigits(digits)),
-    noteForDigit: (d) => `N${d}`,
-    durationForDigit: (d) => `D${d}`,
-    nextDelayMs: () => 84,
+    arrange: (d) => ({
+      note: `N${d}`,
+      durationLabel: `D${d}`,
+      durationSec: 0.1,
+      velocity: 1,
+      delayMs: 84,
+    }),
     scheduler: clock.scheduler,
     onStep: (event) => steps.push(event),
     onStateChange: (playing) => states.push(playing),
@@ -56,7 +60,7 @@ describe('PlaybackEngine', () => {
     expect(clock.delays).toEqual([84])
     clock.flush()
     clock.flush()
-    expect(steps.map((s) => [s.index, s.digit, s.note, s.duration])).toEqual([
+    expect(steps.map((s) => [s.index, s.digit, s.note, s.durationLabel])).toEqual([
       [0, 3, 'N3', 'D3'],
       [1, 1, 'N1', 'D1'],
       [2, 4, 'N4', 'D4'],
@@ -109,14 +113,37 @@ describe('PlaybackEngine', () => {
     expect(engine.counts.every((c) => c === 0)).toBe(true)
   })
 
+  it('waits the delay chosen for each digit', () => {
+    const clock = manualScheduler()
+    const engine = new PlaybackEngine({
+      source: createDigitSource('t', 'test', parseDigits('314')),
+      arrange: (d) => ({
+        note: null,
+        durationLabel: 'rest',
+        durationSec: 0,
+        velocity: 0,
+        delayMs: d * 10,
+      }),
+      scheduler: clock.scheduler,
+    })
+    engine.play()
+    expect(clock.delays).toEqual([30])
+    clock.flush()
+    expect(clock.delays).toEqual([10])
+  })
+
   it('uses setTimeout by default', () => {
     vi.useFakeTimers()
     const onStep = vi.fn()
     const engine = new PlaybackEngine({
       source: createDigitSource('t', 'test', parseDigits('31')),
-      noteForDigit: () => 'C4',
-      durationForDigit: () => '4n',
-      nextDelayMs: () => 100,
+      arrange: () => ({
+        note: 'C4',
+        durationLabel: '4n',
+        durationSec: 0.5,
+        velocity: 1,
+        delayMs: 100,
+      }),
       onStep,
     })
     engine.play()

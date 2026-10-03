@@ -1,0 +1,225 @@
+import type { CompositionConfig } from './config'
+
+export interface Preset {
+  readonly id: string
+  readonly name: string
+  readonly description: string
+  readonly config: CompositionConfig
+}
+
+const base: CompositionConfig = {
+  version: 1,
+  scale: 'major-pentatonic',
+  root: 'C',
+  octave: 4,
+  mapping: 'ascending',
+  rhythm: 'legacy',
+  timing: 'legacy-random',
+  bpm: 120,
+  subdivision: 2,
+  legato: 1,
+  dynamics: 'flat',
+  humanize: 0,
+  instrument: 'classic',
+  reverb: 0,
+  echo: 0,
+  drone: false,
+  compress: false,
+  volume: 0,
+}
+
+/** Shared by the new presets: master compression on (Original keeps the raw 2019 signal path). */
+const polished = { ...base, compress: true }
+
+/**
+ * Out-of-the-box presets. "Original (2019)" reproduces the legacy app exactly and must not change
+ * (see the verify-parity skill). The others are starting points to listen to and iterate on —
+ * render them with `npm run audio:render` (apps/web/scripts) and compare.
+ */
+export const PRESETS: readonly Preset[] = [
+  {
+    id: 'original',
+    name: 'Original (2019)',
+    description: 'The first Charts of Pie: C major pentatonic, random gaps, a plain synth.',
+    config: base,
+  },
+  {
+    id: 'pentatonic-piano',
+    name: 'Pentatonic piano',
+    description: 'The original scale on a grand piano, in a steady, gentle pulse.',
+    config: {
+      ...polished,
+      rhythm: 'steady-rests',
+      timing: 'tempo',
+      bpm: 84,
+      subdivision: 2,
+      legato: 1.6,
+      dynamics: 'accented',
+      humanize: 0.35,
+      instrument: 'piano',
+      reverb: 0.3,
+      volume: 3.5,
+    },
+  },
+  {
+    id: 'lydian-dream',
+    name: 'Lydian dream',
+    description: 'F Lydian on a soft electric piano over a drone — bright and floating.',
+    config: {
+      ...polished,
+      scale: 'lydian',
+      root: 'F',
+      mapping: 'centred',
+      rhythm: 'steady',
+      timing: 'tempo',
+      bpm: 68,
+      subdivision: 2,
+      legato: 1.8,
+      dynamics: 'accented',
+      humanize: 0.3,
+      instrument: 'electric-piano',
+      reverb: 0.45,
+      echo: 0.2,
+      drone: true,
+      volume: 3,
+    },
+  },
+  {
+    id: 'dorian-marimba',
+    name: 'Dorian marimba',
+    description: 'D Dorian sixteenths on a woody marimba — rhythmic and bright-minor.',
+    config: {
+      ...polished,
+      scale: 'dorian',
+      root: 'D',
+      rhythm: 'steady-rests',
+      timing: 'tempo',
+      bpm: 96,
+      subdivision: 4,
+      legato: 1,
+      dynamics: 'accented',
+      humanize: 0.4,
+      instrument: 'marimba',
+      reverb: 0.2,
+      volume: 1,
+    },
+  },
+  {
+    id: 'minor-nocturne',
+    name: 'Minor nocturne',
+    description: 'A minor around a low drone; each digit lasts as many steps as its value.',
+    config: {
+      ...polished,
+      scale: 'aeolian',
+      root: 'A',
+      octave: 4,
+      mapping: 'centred',
+      rhythm: 'digit-length',
+      timing: 'tempo',
+      bpm: 76,
+      subdivision: 4,
+      legato: 1.2,
+      dynamics: 'accented',
+      humanize: 0.3,
+      instrument: 'piano',
+      reverb: 0.4,
+      drone: true,
+      volume: 5.5,
+    },
+  },
+  {
+    id: 'music-box',
+    name: 'Music box',
+    description: 'C major, high and delicate, with a soft echo.',
+    config: {
+      ...polished,
+      scale: 'ionian',
+      octave: 5,
+      rhythm: 'steady-rests',
+      timing: 'tempo',
+      bpm: 100,
+      subdivision: 2,
+      legato: 1.5,
+      dynamics: 'accented',
+      humanize: 0.25,
+      instrument: 'music-box',
+      reverb: 0.35,
+      echo: 0.25,
+      volume: 1.5,
+    },
+  },
+  {
+    id: 'blues-pluck',
+    name: 'Blues pluck',
+    description: 'A blues scale on plucked strings — the ♭5 “blue note” adds grit.',
+    config: {
+      ...polished,
+      scale: 'blues',
+      root: 'A',
+      octave: 3,
+      rhythm: 'steady-rests',
+      timing: 'tempo',
+      bpm: 92,
+      subdivision: 2,
+      legato: 2,
+      dynamics: 'accented',
+      humanize: 0.35,
+      instrument: 'harp',
+      reverb: 0.3,
+      volume: 2,
+    },
+  },
+  {
+    id: 'whole-tone-mist',
+    name: 'Whole-tone mist',
+    description: 'Slow, overlapping pads in the whole-tone scale — no home key at all.',
+    config: {
+      ...polished,
+      scale: 'whole-tone',
+      rhythm: 'steady',
+      timing: 'tempo',
+      bpm: 50,
+      subdivision: 1,
+      legato: 2,
+      dynamics: 'flat',
+      humanize: 0.2,
+      instrument: 'warm-pad',
+      reverb: 0.6,
+      echo: 0.3,
+      volume: -4.5,
+    },
+  },
+  {
+    id: 'raw-semitones',
+    name: 'Raw digits',
+    description: 'Digit n is n semitones above C on a pure sine — the numbers, unfiltered.',
+    config: {
+      ...polished,
+      scale: 'chromatic',
+      mapping: 'semitones',
+      rhythm: 'steady',
+      timing: 'tempo',
+      bpm: 120,
+      subdivision: 2,
+      legato: 0.9,
+      instrument: 'pure-sine',
+      reverb: 0.1,
+      volume: -1,
+    },
+  },
+]
+
+export const DEFAULT_PRESET_ID = 'original'
+
+export function getPreset(id: string): Preset | undefined {
+  return PRESETS.find((preset) => preset.id === id)
+}
+
+/** The preset whose config equals `config`, if any (to label the UI "Custom" otherwise). */
+export function findMatchingPreset(config: CompositionConfig): Preset | undefined {
+  return PRESETS.find((preset) => sameConfig(preset.config, config))
+}
+
+export function sameConfig(a: CompositionConfig, b: CompositionConfig): boolean {
+  return (Object.keys(a) as (keyof CompositionConfig)[]).every((key) => a[key] === b[key])
+}

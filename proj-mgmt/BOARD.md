@@ -1,6 +1,6 @@
 # Board
 
-_Last updated with the E01 modernisation milestone._
+_Last updated with the E02 “configurable music & presets” slice._
 
 ## Epics
 
@@ -16,25 +16,31 @@ _Last updated with the E01 modernisation milestone._
 | E08  | Save, gallery & share                       | backlog     | 6     |
 | E09  | Platform quality: PWA, accessibility, perf  | backlog     | ∞     |
 
-## Up next (ready)
+## E02 progress (current slice: configurable music, presets, pleasant sound)
 
-| Story   | Title                                           | Feature |
-| ------- | ----------------------------------------------- | ------- |
-| S06.2.1 | Rebrand and relocate to Math Art (owner-driven) | F06.2   |
-| S02.1.1 | Scale & mode catalogue in the core              | F02.1   |
-| S02.1.2 | Choose scale, root and octave in the UI         | F02.1   |
-| S02.2.1 | Selectable digit → pitch mapping strategies     | F02.2   |
-| S02.5.1 | Versioned CompositionConfig with URL sharing    | F02.5   |
-| S02.3.1 | Tempo-locked playback with BPM control          | F02.3   |
-| S02.3.2 | Selectable rhythm encodings                     | F02.3   |
-| S02.1.3 | Explain the selected scale as math              | F02.1   |
-
-Backlog in E02: S02.4.1 instruments · S02.4.2 harmony · S02.4.3 MIDI export.
+| Story   | Title                                           | Status      |
+| ------- | ----------------------------------------------- | ----------- |
+| S02.1.1 | Scale & mode catalogue in the core              | done        |
+| S02.1.2 | Choose scale, root and octave in the UI         | done        |
+| S02.2.1 | Selectable digit → pitch mapping strategies     | done        |
+| S02.3.1 | Tempo-locked playback with BPM control          | done        |
+| S02.3.2 | Selectable rhythm encodings                     | done        |
+| S02.4.1 | Instrument selection                            | done        |
+| S02.5.1 | Versioned CompositionConfig with URL sharing    | done        |
+| S02.6.1 | Out-of-the-box presets                          | done        |
+| S02.6.2 | Offline render & loudness harness               | done        |
+| S02.4.2 | Harmony: drones (done), intervals, chords       | in-progress |
+| S02.6.3 | Owner listening review & preset iteration       | ready       |
+| S02.1.3 | Explain the selected scale as math              | ready       |
+| S06.2.1 | Rebrand and relocate to Math Art (owner-driven) | ready       |
+| S02.3.3 | Euclidean rhythms and swing                     | backlog     |
+| S02.4.3 | Export the performance as MIDI                  | backlog     |
+| S02.4.4 | Reliable audio on iOS and Android               | backlog     |
 
 ## Done
 
 E01 stories S01.1.1, S01.1.2, S01.2.1, S01.3.1, S01.3.2, S01.4.1, S01.5.1, S01.5.2, S01.6.1 ·
-E06 story S06.1.1.
+E06 story S06.1.1 · E02 stories listed above as done.
 
 ## Bugs
 

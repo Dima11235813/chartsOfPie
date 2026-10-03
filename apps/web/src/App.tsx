@@ -1,11 +1,13 @@
 import { useState } from 'react'
-import { createToneNotePlayer, type NotePlayer } from './audio/toneAudio'
+import { createToneNotePlayer, type NotePlayer } from './audio/notePlayer'
 import type { DigitSource } from './core/digits/digitSource'
 import { loadPiDigits } from './core/digits/pi'
 import { Controls } from './components/Controls'
 import { DigitChart } from './components/DigitChart'
+import { SoundPanel } from './components/SoundPanel'
 import { StatsPanel } from './components/StatsPanel'
 import { DEFAULT_CHART_STYLE, type ChartStyle } from './components/chartConfig'
+import { useCompositionConfig } from './hooks/useCompositionConfig'
 import { usePiPlayback } from './hooks/usePiPlayback'
 
 interface AppProps {
@@ -19,7 +21,8 @@ export default function App({
 }: AppProps) {
   const [player] = useState(createPlayer)
   const [chartStyle, setChartStyle] = useState<ChartStyle>(DEFAULT_CHART_STYLE)
-  const playback = usePiPlayback(player, loadSource)
+  const { config, setConfig, invalidLink } = useCompositionConfig()
+  const playback = usePiPlayback(player, config, loadSource)
   const { load } = playback
 
   return (
@@ -50,6 +53,12 @@ export default function App({
         </section>
 
         <aside className="panel">
+          {invalidLink && (
+            <p className="notice error" role="status">
+              That share link could not be read, so the default sound is loaded.
+            </p>
+          )}
+          <SoundPanel config={config} onChange={setConfig} />
           <StatsPanel
             counts={playback.counts}
             total={playback.total}

@@ -1,12 +1,21 @@
 import { DigitCounter } from '../digits/digitCounter'
 import type { DigitSource } from '../digits/digitSource'
 
-export interface StepEvent {
+/** How one digit should sound; produced by an arranger (see `composition/arranger.ts`). */
+export interface ArrangedStep {
+  /** Note name, or null for a rest. */
+  readonly note: string | null
+  readonly durationLabel: string
+  readonly durationSec: number
+  readonly velocity: number
+  /** Wait before the next digit, in ms. */
+  readonly delayMs: number
+}
+
+export interface StepEvent extends ArrangedStep {
   /** Zero-based position of the digit in the source. */
   readonly index: number
   readonly digit: number
-  readonly note: string
-  readonly duration: string
   /** Counts per digit after this step (index = digit). */
   readonly counts: readonly number[]
   /** Digits processed so far, including this one. */
@@ -16,27 +25,34 @@ export interface StepEvent {
 export interface Scheduler {
   schedule(callback: () => void, delayMs: number): unknown
   cancel(handle: unknown): void
+  /**
+   * Optional monotonic clock in ms. When present the engine aims each tick at an absolute target
+   * time, so timer lateness does not accumulate into tempo drift.
+   */
+  now?(): number
 }
 
 export const timeoutScheduler: Scheduler = {
   schedule: (callback, delayMs) => setTimeout(callback, delayMs),
   cancel: (handle) => clearTimeout(handle as ReturnType<typeof setTimeout>),
+  now: () => performance.now(),
 }
+
+/** Beyond this lateness (e.g. a throttled background tab) the engine re-anchors instead of rushing. */
+const MAX_CATCH_UP_MS = 250
 
 export interface PlaybackEngineOptions {
   source: DigitSource
-  noteForDigit: (digit: number) => string
-  durationForDigit: (digit: number) => string
-  /** Wait before the following digit, in ms. */
-  nextDelayMs: () => number
+  /** Decide how a digit sounds and how long to wait before the next one. */
+  arrange: (digit: number, index: number) => ArrangedStep
   scheduler?: Scheduler
   onStep?: (event: StepEvent) => void
   onStateChange?: (playing: boolean) => void
 }
 
 /**
- * Steps through a digit source one digit at a time: count it, map it to a note, notify listeners,
- * then wait before the next digit. Rendering and audio live in the listeners so the engine stays
+ * Steps through a digit source one digit at a time: count it, arrange it into a note, notify
+ * listeners, then wait as long as the arrangement says before the next digit. Rendering and audio live in the listeners so the engine stays
  * pure and deterministic under a fake scheduler.
  */
 export class PlaybackEngine {
@@ -45,6 +61,8 @@ export class PlaybackEngine {
   private position = 0
   private playing = false
   private pending: unknown = null
+  private lastDelayMs = 0
+  private nextTargetMs: number | null = null
 
   constructor(private readonly options: PlaybackEngineOptions) {
     this.scheduler = options.scheduler ?? timeoutScheduler
@@ -70,6 +88,7 @@ export class PlaybackEngine {
   play(): void {
     if (this.playing || this.isFinished) return
     this.setPlaying(true)
+    this.nextTargetMs = null
     this.tick()
   }
 
@@ -98,11 +117,12 @@ export class PlaybackEngine {
     const digit = this.options.source.digitAt(index)
     this.counter.record(digit)
     this.position += 1
+    const arranged = this.options.arrange(digit, index)
+    this.lastDelayMs = arranged.delayMs
     const event: StepEvent = {
+      ...arranged,
       index,
       digit,
-      note: this.options.noteForDigit(digit),
-      duration: this.options.durationForDigit(digit),
       counts: this.counter.counts,
       total: this.counter.total,
     }
@@ -123,7 +143,16 @@ export class PlaybackEngine {
       this.setPlaying(false)
       return
     }
-    this.pending = this.scheduler.schedule(this.tick, this.options.nextDelayMs())
+    this.pending = this.scheduler.schedule(this.tick, this.compensatedDelay(this.lastDelayMs))
+  }
+
+  private compensatedDelay(delayMs: number): number {
+    const now = this.scheduler.now?.()
+    if (now === undefined) return delayMs
+    let target = (this.nextTargetMs ?? now) + delayMs
+    if (now - (target - delayMs) > MAX_CATCH_UP_MS) target = now + delayMs
+    this.nextTargetMs = target
+    return Math.max(0, target - now)
   }
 
   private cancelPending(): void {
