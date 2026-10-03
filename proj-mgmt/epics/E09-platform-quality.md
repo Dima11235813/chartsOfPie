@@ -9,7 +9,7 @@ phase: continuous
 
 ## Features
 
-- [ ] F09.1 — Installable PWA, offline cache of digit data (service worker)
+- [ ] F09.1 — Installable PWA, offline cache of digit data — **moved to E10 (F10.5)**
 - [ ] F09.2 — WCAG 2.2 AA audit (axe in e2e), keyboard shortcuts (space = play/pause, → = step),
       screen-reader summaries of charts, sonification is itself an accessibility feature
 - [ ] F09.3 — Colour palettes: high-contrast & colour-blind-safe alternatives (see B-013)
