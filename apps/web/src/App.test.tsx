@@ -32,6 +32,7 @@ function fakePlayer() {
     stop: vi.fn(),
     setMuted: vi.fn(),
     getAnalyser: vi.fn(() => null),
+    getWaveform: vi.fn(() => null),
     getAudioStream: vi.fn(() => null),
     dispose: vi.fn(),
   } satisfies NotePlayer

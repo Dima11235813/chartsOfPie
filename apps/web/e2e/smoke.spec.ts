@@ -207,6 +207,10 @@ test('artistic views draw and follow the colour palette', async ({ page }, testI
     ['Neighbour mosaic', /Neighbour mosaic/, /\d+ digits in rows/],
     ['Music clock', /Music clock/, /Now: /],
     ['String art', /Times-table string art/, /k = \d/],
+    ['Hilbert carpet', /Hilbert carpet/, /\d+ of 1,000,001 digits lit/],
+    ['Typographic π', /Typographic π/, /\d+ digits set in type/],
+    ['Harmonograph', /Harmonograph/, / · ratio \d/],
+    ['Oscilloscope', /Oscilloscope/, /vectorscope/],
   ] as const) {
     await view.selectOption({ label })
     await expect(page.getByRole('img', { name })).toHaveAttribute('aria-label', summary, {

@@ -32,10 +32,10 @@ Artistic gallery, ordered by [R-006](../research/R-006-artistic-visualizations.m
 | 2b-2  | F03.4 — Neighbour mosaic (dot rows, equal neighbours linked)                                       | **done** |
 | 2b-2  | F03.11 — Times-table string art (k·n mod N driven by digits)                                       | **done** |
 | 2b-2  | F03.7 — Poster mode: print-size PNG/SVG export of any view for a digit range                       | **done** |
-| 2b-3  | F03.12 — Harmonograph / Lissajous of sounding intervals                                            | backlog  |
-| 2b-3  | F03.13 — Hilbert carpet of the full million digits (1024² Hilbert curve)                           | backlog  |
-| 2b-3  | F03.14 — Oscilloscope (XY) view of the audio                                                       | backlog  |
-| 2b-3  | F03.15 — Typographic π (runs, Feynman point)                                                       | backlog  |
+| 2b-3  | F03.12 — Harmonograph / Lissajous of sounding intervals                                            | **done** |
+| 2b-3  | F03.13 — Hilbert carpet of the full million digits (1024² Hilbert curve)                           | **done** |
+| 2b-3  | F03.14 — Oscilloscope (XY) view of the audio                                                       | **done** |
+| 2b-3  | F03.15 — Typographic π (runs, Feynman point)                                                       | **done** |
 | 2b-4  | F03.16 — WebGL particles / flow field                                                              | backlog  |
 | 2b-4  | F03.17 — Cymatics / Chladni plates per note                                                        | backlog  |
 | 2b-4  | F03.18 — 3D π helix (three.js)                                                                     | backlog  |

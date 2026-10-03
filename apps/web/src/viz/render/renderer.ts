@@ -12,6 +12,11 @@ export interface RendererOptions {
   scale: number
   /** Ten digit colours. */
   colors: readonly string[]
+  /**
+   * The whole digit source, for renderers that show what is still to come (the Hilbert carpet
+   * draws all million digits faintly and lights them up as they play).
+   */
+  ghost?: { count: number; digitAt: DigitAt }
 }
 
 export interface ComposeOverlay {

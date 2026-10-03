@@ -1,5 +1,5 @@
 import { PALETTES } from '../viz/palettes'
-import { VIEWS, type ViewId } from './views'
+import { VIEW_GROUPS, VIEWS, type ViewId } from './views'
 import { CHART_STYLES, type ChartStyle } from './chartConfig'
 
 interface ControlsProps {
@@ -56,10 +56,14 @@ export function Controls(props: ControlsProps) {
         <label className="select">
           <span>View</span>
           <select value={view} onChange={(e) => props.onViewChange(e.target.value as ViewId)}>
-            {VIEWS.map((v) => (
-              <option key={v.id} value={v.id}>
-                {v.label}
-              </option>
+            {VIEW_GROUPS.map((group) => (
+              <optgroup key={group} label={group}>
+                {VIEWS.filter((v) => v.group === group).map((v) => (
+                  <option key={v.id} value={v.id}>
+                    {v.label}
+                  </option>
+                ))}
+              </optgroup>
             ))}
           </select>
         </label>

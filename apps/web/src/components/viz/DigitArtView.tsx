@@ -46,6 +46,7 @@ export function DigitArtView({ kind, source, log, onCanvas }: DigitArtViewProps)
         height: canvas.height,
         scale: size.ratio,
         colors,
+        ghost: { count: source.length, digitAt: (i) => source.digitAt(i) },
       })
       compose()
       setSummary('No digits yet.')
