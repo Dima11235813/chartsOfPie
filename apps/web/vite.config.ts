@@ -9,8 +9,8 @@ export default defineConfig({
   plugins: [react()],
   build: {
     rollupOptions: {
-      // audio-lab.html: deterministic offline renders for the audio regression tests.
-      input: { main: page('./index.html'), lab: page('./audio-lab.html') },
+      // lab.html: deterministic offline renders (audio spectrograms, posters) for regression tests.
+      input: { main: page('./index.html'), lab: page('./lab.html') },
     },
   },
   test: {

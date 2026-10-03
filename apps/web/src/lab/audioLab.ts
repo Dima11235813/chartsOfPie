@@ -1,5 +1,5 @@
 /**
- * Audio lab: a tiny page (audio-lab.html) exposing deterministic offline renders to Playwright —
+ * Audio lab: a tiny page (lab.html) exposing deterministic offline renders to Playwright —
  * the spectrogram snapshot tests (e2e/audio-snapshots.spec.ts) and the listening harness
  * (scripts/render-presets.spec.ts) — and to humans via a "Render all" button.
  */

@@ -28,10 +28,10 @@ Artistic gallery, ordered by [R-006](../research/R-006-artistic-visualizations.m
 | 2b-1  | F03.3 — Digit ring / chord ribbons (Vasile/Krzywinski), transition bubbles                         | **done** |
 | 2b-1  | F03.5 — π walk (Bremer), 10 directions, zoomable                                                   | **done** |
 | 2b-1  | F03.2 — Sunflower: digits on a golden-angle (Fermat) spiral                                        | **done** |
-| 2b-2  | F03.10 — Music clock: notes on the 12-tone circle, chords as polygons, circle-of-fifths toggle     | backlog  |
-| 2b-2  | F03.4 — Neighbour mosaic (dot rows, equal neighbours linked)                                       | backlog  |
-| 2b-2  | F03.11 — Times-table string art (k·n mod N driven by digits)                                       | backlog  |
-| 2b-2  | F03.7 — Poster mode: print-size PNG/SVG export of any view for a digit range                       | backlog  |
+| 2b-2  | F03.10 — Music clock: notes on the 12-tone circle, chords as polygons, circle-of-fifths toggle     | **done** |
+| 2b-2  | F03.4 — Neighbour mosaic (dot rows, equal neighbours linked)                                       | **done** |
+| 2b-2  | F03.11 — Times-table string art (k·n mod N driven by digits)                                       | **done** |
+| 2b-2  | F03.7 — Poster mode: print-size PNG/SVG export of any view for a digit range                       | **done** |
 | 2b-3  | F03.12 — Harmonograph / Lissajous of sounding intervals                                            | backlog  |
 | 2b-3  | F03.13 — Hilbert carpet of the full million digits (1024² Hilbert curve)                           | backlog  |
 | 2b-3  | F03.14 — Oscilloscope (XY) view of the audio                                                       | backlog  |

@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="robots" content="noindex" />
-    <title>Charts of Pie — audio lab</title>
+    <title>Charts of Pie — lab</title>
     <style>
       body {
         background: #0b0b12;
@@ -20,12 +20,14 @@
     </style>
   </head>
   <body>
-    <h1>Audio lab</h1>
+    <h1>Lab</h1>
     <p>
-      Offline renders of every preset with the live audio graph (used by the audio regression tests
-      and <code>npm run audio:render</code>). <button id="render" type="button">Render all</button>
+      Deterministic offline renders used by the regression tests: every sound preset with the live
+      audio graph (spectrograms) and every artwork as a poster.
+      <button id="render" type="button">Render presets</button>
+      <button id="posters" type="button">Render posters</button>
     </p>
     <div id="out"></div>
-    <script type="module" src="/src/lab/audioLab.ts"></script>
+    <script type="module" src="/src/lab/main.ts"></script>
   </body>
 </html>

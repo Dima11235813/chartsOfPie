@@ -19,7 +19,7 @@ test.describe('audio snapshots', () => {
   }, testInfo) => {
     test.skip(testInfo.project.name !== 'desktop', 'audio is the same on every viewport')
     test.setTimeout(180_000)
-    await page.goto('/audio-lab.html')
+    await page.goto('/lab.html')
     await page.waitForFunction(() => window.audioLab !== undefined)
     const presetIds = await page.evaluate(() => window.audioLab.presetIds)
     expect(presetIds).toContain('original')

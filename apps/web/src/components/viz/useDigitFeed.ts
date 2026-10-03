@@ -45,11 +45,3 @@ export function useDigitFeed(log: PerformanceLog, redrawKey: string, handlers: D
     }
   }, [log, redrawKey])
 }
-
-/** An offscreen canvas the same size as `canvas`, used to accumulate drawing between frames. */
-export function createLayer(canvas: HTMLCanvasElement): HTMLCanvasElement {
-  const layer = document.createElement('canvas')
-  layer.width = canvas.width
-  layer.height = canvas.height
-  return layer
-}
