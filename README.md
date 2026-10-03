@@ -17,22 +17,33 @@ npm install
 npm run dev        # http://localhost:5173
 ```
 
-| Command            | What it does                                               |
-| ------------------ | ---------------------------------------------------------- |
-| `npm run dev`      | Start the dev server                                       |
-| `npm run build`    | Type-check and build the static site to `apps/web/dist`    |
-| `npm test`         | Unit tests (Vitest)                                        |
-| `npm run test:e2e` | Playwright smoke tests on desktop, tablet and mobile sizes |
-| `npm run check`    | Everything CI runs except e2e                              |
+| Command                | What it does                                               |
+| ---------------------- | ---------------------------------------------------------- |
+| `npm run dev`          | Start the dev server                                       |
+| `npm run build`        | Type-check and build the static site to `apps/web/dist`    |
+| `npm test`             | Unit tests (Vitest)                                        |
+| `npm run test:e2e`     | Playwright smoke tests on desktop, tablet and mobile sizes |
+| `npm run check`        | Everything CI runs except e2e                              |
+| `npm run audio:render` | Render every sound preset to WAV + a loudness report       |
 
-## How it works
+## Sound presets
+
+Pick a preset in the **Sound** panel, or open **Customize** to choose the scale (major, minor,
+the seven modes including Lydian, pentatonics, blues, whole tone…), root, octave, how digits map
+onto notes, tempo, rhythm, instrument (sampled grand piano, electric piano, marimba, music box,
+plucked strings, pad, sine, or the original synth), reverb, echo and a drone. Every sound is a
+link: the URL updates as you change settings, and **Copy share link** shares it.
+
+## How the original works
+
+The **Original (2019)** preset reproduces the first version exactly:
 
 | Digit  | 0   | 1   | 2   | 3   | 4   | 5   | 6   | 7   | 8   | 9   |
 | ------ | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | Note   | C4  | D4  | E4  | G4  | A4  | C5  | D5  | E5  | G5  | A5  |
 | Length | 16n | 1n  | 1t  | 2n  | 2t  | 4n  | 4t  | 8n  | 8t  | 16t |
 
-Between digits the app waits a random 0–420 ms (in 42 ms steps), exactly like the original.
+Between digits it waits a random 0–420 ms (in 42 ms steps).
 The digits in `apps/web/public/data/pi-1m.txt` were independently computed and are checksum-pinned
 in the tests.
 
@@ -47,6 +58,9 @@ proj-mgmt/       roadmap, epics, features, stories, tasks, bugs, research
 .claude/         AI agent definitions and skills; CLAUDE.md is the agent guide
 .mcp.json        Serena MCP server for semantic code navigation (needs `uv`)
 ```
+
+Piano samples: Salamander Grand Piano V3 by Alexander Holm, CC BY 3.0
+(`apps/web/public/audio/salamander/README.md`).
 
 ## Working with AI agents
 

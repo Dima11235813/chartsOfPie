@@ -72,8 +72,23 @@ body {
 
 /* Tablet landscape & desktop: chart beside the stats panel. */
 @media (min-width: 960px) {
+  /* App fills the viewport; the side panel scrolls on its own so the chart stays in view. */
+  .app {
+    height: 100dvh;
+  }
+
   .layout {
-    grid-template-columns: minmax(0, 1fr) 320px;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    overflow: hidden;
+  }
+
+  .stage {
+    min-height: 0;
+  }
+
+  .panel {
+    overflow-y: auto;
+    overscroll-behavior: contain;
   }
 }
 
@@ -274,4 +289,140 @@ body {
   * {
     scroll-behavior: auto !important;
   }
+}
+
+/* Sound panel */
+.sound-panel {
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 1rem;
+  margin-bottom: 1rem;
+}
+
+.sound-panel h2,
+.stats h2 {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin: 0 0 0.5rem;
+}
+
+.field {
+  display: grid;
+  gap: 0.25rem;
+  margin-bottom: 0.6rem;
+  min-width: 0;
+}
+
+.field label {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.field output {
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.field select {
+  min-height: 44px;
+  width: 100%;
+  padding: 0 0.75rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text);
+  font: inherit;
+}
+
+.field input[type='range'] {
+  width: 100%;
+  min-height: 32px;
+  accent-color: var(--accent);
+}
+
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.hint {
+  margin: -0.2rem 0 0.75rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.note-legend {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 0.75rem;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.3rem;
+}
+
+.note-legend li {
+  background: var(--surface-2);
+  border-radius: 6px;
+  padding: 0.2rem 0.3rem;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.8rem;
+}
+
+.legend-digit {
+  font-weight: 700;
+  margin-right: 0.3em;
+}
+
+.customize {
+  margin-bottom: 0.75rem;
+}
+
+.customize summary {
+  cursor: pointer;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.customize fieldset {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem 0.25rem;
+  margin: 0 0 0.75rem;
+  min-width: 0;
+}
+
+.customize legend {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  padding: 0 0.25rem;
+}
+
+.check {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 44px;
+  font-size: 0.9rem;
+}
+
+.check input {
+  width: 1.2rem;
+  height: 1.2rem;
+  accent-color: var(--accent);
+}
+
+.btn-small {
+  min-height: 40px;
+  font-size: 0.9rem;
 }

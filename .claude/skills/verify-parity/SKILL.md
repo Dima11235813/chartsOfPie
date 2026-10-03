@@ -19,5 +19,6 @@ browser to compare by ear and eye). Each row is pinned by a test — run `npm te
 | Play/Pause toggles; pause stops new notes                                | `App.test.tsx`, `e2e/smoke.spec.ts`   |
 | Chart types: bar, horizontal bar, line, polar area, doughnut, pie, radar | `components/chartConfig.test.ts`, e2e |
 
-Intentional differences (recorded in `proj-mgmt/bugs/`): no autoplay on load (B-002), corrupted
-digits fixed (B-001), pause/resume no longer doubles speed (B-012).
+Intentional differences (recorded in `proj-mgmt/bugs/` and stories): no autoplay on load (B-002),
+corrupted digits fixed (B-001), pause/resume no longer doubles speed (B-012), timer drift is
+compensated (S02.3.1), pause releases sounding notes, and a -1 dB limiter sits on the master.

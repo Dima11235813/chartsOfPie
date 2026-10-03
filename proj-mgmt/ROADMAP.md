@@ -38,7 +38,7 @@ visualization, sequence and lesson plugs into the same `CompositionConfig`.
 ## Epics
 
 - [E01 — Modernise the foundation](epics/E01-modernize-foundation.md) — done
-- [E02 — Music theory engine: scales, modes & rhythm](epics/E02-music-theory-engine.md) — ready
+- [E02 — Music theory engine: scales, modes & rhythm](epics/E02-music-theory-engine.md) — in progress
 - [E03 — Visualization gallery & playgrounds](epics/E03-visualization-gallery.md)
 - [E04 — Learn: guided lessons](epics/E04-learn-lessons.md)
 - [E05 — More numbers: Fibonacci, φ, e, √2, primes](epics/E05-number-sources-fibonacci.md)
@@ -53,3 +53,4 @@ visualization, sequence and lesson plugs into the same `CompositionConfig`.
 - [R-002 — Visualization catalogue](research/R-002-visualization-catalog.md)
 - [R-003 — Full-stack architecture, authN & authZ](research/R-003-platform-architecture.md)
 - [R-004 — Fibonacci and other sequences](research/R-004-fibonacci-and-sequences.md)
+- [R-005 — Making π sound pleasant](research/R-005-pleasant-sound-design.md)

@@ -45,7 +45,11 @@ export function StatsPanel({ counts, total, lastStep, recent }: StatsPanelProps)
         <div>
           <dt>Now playing</dt>
           <dd data-testid="sound-data">
-            {lastStep ? `${lastStep.note} for ${lastStep.duration}` : '–'}
+            {lastStep
+              ? lastStep.note
+                ? `${lastStep.note} for ${lastStep.durationLabel}`
+                : 'rest'
+              : '–'}
           </dd>
         </div>
       </dl>

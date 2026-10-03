@@ -10,3 +10,4 @@ test-results/
 !.env.example
 .serena/cache/
 .serena/logs/
+audio-renders/

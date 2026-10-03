@@ -26,6 +26,7 @@ npm install
 npm run dev          # http://localhost:5173
 npm run check        # format:check + lint + typecheck + unit tests + build — run before every push
 npm run test:e2e     # Playwright (builds and serves the app itself)
+npm run audio:render # offline-render every preset → apps/web/audio-renders/*.wav + report.md
 ```
 
 In the cloud container, Playwright uses the pre-installed Chromium; never run `playwright install` there.
@@ -34,13 +35,18 @@ In the cloud container, Playwright uses the pre-installed Chromium; never run `p
 
 1. **No regressions to the legacy behaviour** without a recorded decision. The legacy encoding
    (C major pentatonic from C4, digit → duration table, 0–420 ms random wait in 42 ms steps,
-   min..max-scaled bar chart) lives in `core/music/legacyMapping.ts` and is pinned by tests.
-   New encodings are added alongside it, never by editing it.
-2. `core/` stays pure and deterministic: inject randomness and scheduling (see `PlaybackEngine`).
-3. Every musical fact (scale intervals, mode names) needs a unit test citing the expected notes.
-4. Audio must only start from a user gesture (`NotePlayer.start()` inside a click handler).
-5. Layouts must work at 360 px wide with no horizontal scroll, 44 px touch targets, and visible focus.
-6. Track work in `proj-mgmt/` (see the `proj-mgmt` skill): update the story/task status in the same
+   min..max-scaled bar chart) lives in `core/music/legacyMapping.ts` and the **“Original (2019)”
+   preset**, both pinned by tests. New sounds are new presets — never edit the Original preset,
+   the `classic` instrument or their 0 dB trim.
+2. **Sound changes are measured.** After touching instruments, effects or presets, run
+   `npm run audio:render` (and `CALIBRATE=1 …` for instruments): no clipping, presets within
+   -14 ± 1.5 dB gated loudness. Bump `version` + add a migration if `CompositionConfig` changes
+   shape (configs live in share links).
+3. `core/` stays pure and deterministic: inject randomness and scheduling (see `PlaybackEngine`).
+4. Every musical fact (scale intervals, mode names) needs a unit test citing the expected notes.
+5. Audio must only start from a user gesture (`NotePlayer.start()` inside a click handler).
+6. Layouts must work at 360 px wide with no horizontal scroll, 44 px touch targets, and visible focus.
+7. Track work in `proj-mgmt/` (see the `proj-mgmt` skill): update the story/task status in the same
    commit as the code, and log any bug you find as `proj-mgmt/bugs/B-xxx-*.md`.
 
 ## Agents, skills and MCP
