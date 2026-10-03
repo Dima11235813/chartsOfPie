@@ -9,5 +9,6 @@ test-results/
 .env.*
 !.env.example
 .serena/cache/
+.serena/project.local.yml
 .serena/logs/
 audio-renders/

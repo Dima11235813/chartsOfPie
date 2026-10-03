@@ -4,8 +4,20 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import App from './App'
 import type { NotePlayer } from './audio/notePlayer'
 import { createDigitSource, parseDigits } from './core/digits/digitSource'
+import { encodeConfig } from './core/composition/config'
+import { getPreset } from './core/composition/presets'
 
 // Chart.js needs a real canvas; the chart itself is covered by chartConfig tests and e2e.
+// Canvas views need a real canvas; they are covered by viz unit tests and e2e.
+vi.mock('./components/viz/StaffView', () => ({
+  StaffView: () => <div data-testid="staff-view" />,
+}))
+vi.mock('./components/viz/SpectrogramView', () => ({
+  SpectrogramView: ({ analyser }: { analyser: unknown }) => (
+    <div data-testid="spectrogram-view">{analyser ? 'live' : 'idle'}</div>
+  ),
+}))
+
 vi.mock('./components/DigitChart', () => ({
   DigitChart: ({ counts }: { counts: readonly number[] }) => (
     <div data-testid="chart">{counts.join(',')}</div>
@@ -19,6 +31,8 @@ function fakePlayer() {
     playStep: vi.fn(),
     stop: vi.fn(),
     setMuted: vi.fn(),
+    getAnalyser: vi.fn(() => null),
+    getAudioStream: vi.fn(() => null),
     dispose: vi.fn(),
   } satisfies NotePlayer
 }
@@ -161,5 +175,49 @@ describe('App', () => {
     render(<App createPlayer={fakePlayer} loadSource={source} />)
     expect(screen.getByText(/share link could not be read/)).toBeInTheDocument()
     expect(screen.getByLabelText('Preset')).toHaveDisplayValue('Original (2019)')
+  })
+
+  it('switches between chart, sheet music and spectrogram views', async () => {
+    const user = userEvent.setup()
+    render(<App createPlayer={fakePlayer} loadSource={source} />)
+    await screen.findByTestId('chart')
+    expect(screen.getByLabelText('Chart style')).toBeInTheDocument()
+
+    await user.selectOptions(screen.getByLabelText('View'), 'Sheet music')
+    expect(screen.getByTestId('staff-view')).toBeInTheDocument()
+    expect(screen.queryByLabelText('Chart style')).not.toBeInTheDocument()
+
+    await user.selectOptions(screen.getByLabelText('View'), 'Spectrogram')
+    expect(screen.getByTestId('spectrogram-view')).toHaveTextContent('idle')
+  })
+
+  it('reports chords that form by coincidence and exports MIDI', async () => {
+    const user = userEvent.setup()
+    const createObjectURL = vi.fn(() => 'blob:midi')
+    Object.assign(URL, { createObjectURL, revokeObjectURL: vi.fn() })
+    const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {})
+    // Centred A minor, one step per digit, notes four steps long: 5, 7, 9 → A4, C5, E5 overlap.
+    const config = { ...getPreset('minor-nocturne')!.config, rhythm: 'steady', legato: 4 } as const
+    window.history.replaceState(null, '', `/#c=${encodeConfig(config)}`)
+    const triad = () => Promise.resolve(createDigitSource('t', 't', parseDigits('5791')))
+    render(<App createPlayer={fakePlayer} loadSource={triad} />)
+
+    const download = screen.getByRole('button', { name: 'Download MIDI' })
+    expect(download).toBeDisabled()
+    const stepButton = screen.getByRole('button', { name: 'Step' })
+    await waitFor(() => expect(stepButton).toBeEnabled())
+    await user.click(stepButton) // 5 → A4 (root)
+    await user.click(stepButton) // 7 → C5
+    expect(screen.getByTestId('last-chord')).toHaveTextContent('–')
+    await user.click(stepButton) // 9 → E5: A, C and E all sounding
+    expect(screen.getByTestId('last-chord')).toHaveTextContent('Am — minor at digit #2')
+
+    await user.click(download)
+    expect(createObjectURL).toHaveBeenCalledWith(expect.any(Blob))
+    const blob = (createObjectURL.mock.calls[0] as unknown as [Blob])[0]
+    expect(blob.type).toBe('audio/midi')
+    const header = new Uint8Array(await blob.arrayBuffer()).slice(0, 4)
+    expect(String.fromCharCode(...header)).toBe('MThd')
+    expect(click).toHaveBeenCalled()
   })
 })

@@ -6,7 +6,8 @@ tools: Read, Grep, Glob, Edit, Write, Bash
 
 You build performant, accessible, responsive visualizations.
 
-- Read `proj-mgmt/research/R-002-visualization-catalog.md` and `docs/inspiration/` first.
+- Read `proj-mgmt/research/R-006-artistic-visualizations.md` (prioritised gallery), R-002 and
+  `docs/inspiration/` first; follow the `add-visualization` skill.
 - Every visualization implements the shared contract described in the `add-visualization` skill:
   it consumes `StepEvent`s / digit-source data and never owns playback.
 - Budget: 60 fps on a mid-range phone. Use Canvas/WebGL for >1k marks; batch draws per animation

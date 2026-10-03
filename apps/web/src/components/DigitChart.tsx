@@ -43,15 +43,27 @@ interface DigitChartProps {
   style: ChartStyle
   counts: readonly number[]
   total: number
+  /** Told which canvas is on screen (for video recording and image export). */
+  onCanvas?: (canvas: HTMLCanvasElement | null) => void
 }
 
 const TEXT_COLOR = '#c9d6e8'
 const GRID_COLOR = 'rgba(201, 214, 232, 0.15)'
 
-export function DigitChart({ style, counts, total }: DigitChartProps) {
+export function DigitChart({ style, counts, total, onCanvas }: DigitChartProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const chartRef = useRef<Chart | null>(null)
   const countsRef = useRef(counts)
+  const onCanvasRef = useRef(onCanvas)
+
+  useEffect(() => {
+    onCanvasRef.current = onCanvas
+  })
+
+  useEffect(() => {
+    onCanvasRef.current?.(canvasRef.current)
+    return () => onCanvasRef.current?.(null)
+  }, [])
 
   // Keep the latest counts available to the chart-creation effect without re-running it.
   useEffect(() => {

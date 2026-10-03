@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex" />
+    <title>Charts of Pie — audio lab</title>
+    <style>
+      body {
+        background: #0b0b12;
+        color: #e6ecf5;
+        font-family: system-ui, sans-serif;
+        margin: 24px;
+      }
+      img {
+        display: block;
+        max-width: 100%;
+        margin: 4px 0 16px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Audio lab</h1>
+    <p>
+      Offline renders of every preset with the live audio graph (used by the audio regression tests
+      and <code>npm run audio:render</code>). <button id="render" type="button">Render all</button>
+    </p>
+    <div id="out"></div>
+    <script type="module" src="/src/lab/audioLab.ts"></script>
+  </body>
+</html>

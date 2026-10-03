@@ -1,3 +1,4 @@
+import type { CoincidentChord } from '../core/composition/performanceLog'
 import type { StepEvent } from '../core/engine/playbackEngine'
 import { DIGIT_COLORS } from './chartConfig'
 
@@ -6,11 +7,12 @@ interface StatsPanelProps {
   total: number
   lastStep: StepEvent | null
   recent: readonly (readonly [number, number])[]
+  lastChord?: CoincidentChord | null
 }
 
 const formatPercent = (value: number) => `${(value * 100).toFixed(2)}%`
 
-export function StatsPanel({ counts, total, lastStep, recent }: StatsPanelProps) {
+export function StatsPanel({ counts, total, lastStep, recent, lastChord }: StatsPanelProps) {
   return (
     <div className="stats">
       <section aria-labelledby="stream-heading">
@@ -49,6 +51,17 @@ export function StatsPanel({ counts, total, lastStep, recent }: StatsPanelProps)
               ? lastStep.note
                 ? `${lastStep.note} for ${lastStep.durationLabel}`
                 : 'rest'
+              : '–'}
+          </dd>
+        </div>
+        <div
+          className="readout-wide"
+          title="Chords formed when overlapping notes happen to line up"
+        >
+          <dt>Last chord (by coincidence)</dt>
+          <dd data-testid="last-chord">
+            {lastChord
+              ? `${lastChord.chord.symbol} — ${lastChord.chord.quality.name} at digit #${lastChord.index.toLocaleString()}`
               : '–'}
           </dd>
         </div>

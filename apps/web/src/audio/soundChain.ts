@@ -35,6 +35,8 @@ export interface SoundChain {
   startDrone(time: number): void
   stopDrone(time?: number): void
   releaseAll(time?: number): void
+  /** Also send the final mix (before mute) to `node`, e.g. an analyser or a recorder. */
+  tap(node: AudioNode): void
   dispose(): void
 }
 
@@ -151,6 +153,9 @@ export async function createSoundChain(tone: Tone, initial: SoundSettings): Prom
     releaseAll(time) {
       voice?.releaseAll(time)
       chain.stopDrone(time)
+    },
+    tap(node) {
+      ceiling.connect(node)
     },
     dispose() {
       voice?.dispose()

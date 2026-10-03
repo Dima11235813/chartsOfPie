@@ -4,6 +4,8 @@ const PORT = 4173
 
 export default defineConfig({
   testDir: './e2e',
+  // One baseline per snapshot for every OS (audio spectrograms are rendered in JS, not by the OS).
+  snapshotPathTemplate: '{testDir}/__snapshots__/{testFileName}/{arg}{ext}',
   timeout: 30_000,
   retries: process.env.CI ? 1 : 0,
   use: {

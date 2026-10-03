@@ -4,6 +4,7 @@ import { loadPiDigits } from '../core/digits/pi'
 import { PlaybackEngine, type StepEvent } from '../core/engine/playbackEngine'
 import { Arranger } from '../core/composition/arranger'
 import type { CompositionConfig } from '../core/composition/config'
+import { PerformanceLog, type CoincidentChord } from '../core/composition/performanceLog'
 import type { NotePlayer } from '../audio/notePlayer'
 import { soundSettingsFor } from '../audio/settings'
 
@@ -26,6 +27,12 @@ export interface PlaybackState {
   recent: readonly (readonly [number, number])[]
   muted: boolean
   audioError: string | null
+  /** True once audio has started, i.e. analysers and recording streams are available. */
+  audioReady: boolean
+  /** Everything played so far (sheet music, chord spotting, MIDI export). */
+  log: PerformanceLog
+  /** The most recent chord formed by overlapping notes. */
+  lastChord: CoincidentChord | null
   toggle: () => Promise<void>
   step: () => Promise<void>
   reset: () => void
@@ -44,6 +51,9 @@ export function usePiPlayback(
   const [recent, setRecent] = useState<readonly (readonly [number, number])[]>([])
   const [muted, setMutedState] = useState(false)
   const [audioError, setAudioError] = useState<string | null>(null)
+  const [audioReady, setAudioReady] = useState(false)
+  const [log] = useState(() => new PerformanceLog())
+  const [lastChord, setLastChord] = useState<CoincidentChord | null>(null)
   const engineRef = useRef<PlaybackEngine | null>(null)
   const configRef = useRef(config)
   const [arranger] = useState(() => new Arranger(config))
@@ -67,6 +77,8 @@ export function usePiPlayback(
           onStep: (event) => {
             player.playStep(event.note, event.durationSec, event.velocity, gapRef.current)
             gapRef.current = event.delayMs
+            const chord = log.record(event)
+            if (chord) setLastChord(chord)
             setLastStep(event)
             setRecent((prev) =>
               [...prev, [event.index, event.digit] as const].slice(-RECENT_DIGITS),
@@ -93,7 +105,7 @@ export function usePiPlayback(
       engineRef.current?.dispose()
       engineRef.current = null
     }
-  }, [player, loadSource, arranger])
+  }, [player, loadSource, arranger, log])
 
   useEffect(() => () => player.dispose(), [player])
 
@@ -101,6 +113,7 @@ export function usePiPlayback(
     try {
       await player.start(soundSettingsFor(configRef.current))
       setAudioError(null)
+      setAudioReady(true)
     } catch (error) {
       // Keep visualising even if audio is unavailable (e.g. blocked or unsupported).
       setAudioError(error instanceof Error ? error.message : String(error))
@@ -130,11 +143,13 @@ export function usePiPlayback(
   const reset = useCallback(() => {
     engineRef.current?.reset()
     arranger.reset()
+    log.reset()
     player.stop()
+    setLastChord(null)
     setLastStep(null)
     setRecent([])
     setIsFinished(false)
-  }, [arranger, player])
+  }, [arranger, player, log])
 
   const setMuted = useCallback(
     (value: boolean) => {
@@ -154,6 +169,9 @@ export function usePiPlayback(
     recent,
     muted,
     audioError,
+    audioReady,
+    log,
+    lastChord,
     toggle,
     step,
     reset,
