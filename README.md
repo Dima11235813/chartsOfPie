@@ -34,6 +34,17 @@ onto notes, tempo, rhythm, instrument (sampled grand piano, electric piano, mari
 plucked strings, pad, sine, or the original synth), reverb, echo and a drone. Every sound is a
 link: the URL updates as you change settings, and **Copy share link** shares it.
 
+## Views
+
+Switch the **View** in the bottom bar:
+
+- **Analytical:** digit chart, sheet music (with chords that form by coincidence), live
+  spectrogram.
+- **Artistic:** digit ring, π walk, sunflower.
+
+**Colours** offers the original rainbow, a colour-blind friendly palette, Scriabin's note colours
+and a calm "ink" ramp. **Export** downloads MIDI, a PNG of the view, or a video/audio recording.
+
 ## How the original works
 
 The **Original (2019)** preset reproduces the first version exactly:

@@ -7,7 +7,7 @@ import {
   staffPosition,
   TREBLE_LINES,
 } from '../../viz/staff'
-import { DIGIT_COLORS } from '../chartConfig'
+import { useDigitColors } from '../palette'
 import { useCanvas } from './useCanvas'
 
 interface StaffViewProps {
@@ -34,6 +34,12 @@ export function StaffView({ log, isPlaying, onCanvas }: StaffViewProps) {
   const anchor = useRef({ musical: 0, wall: 0 })
   const [summary, setSummary] = useState('No notes yet.')
   const playingRef = useRef(isPlaying)
+  const colors = useDigitColors()
+  const colorsRef = useRef(colors)
+
+  useEffect(() => {
+    colorsRef.current = colors
+  })
 
   useEffect(() => {
     playingRef.current = isPlaying
@@ -129,7 +135,7 @@ export function StaffView({ log, isPlaying, onCanvas }: StaffViewProps) {
         if (step < LOW_STEP - 4 || step > HIGH_STEP + 4) continue
         const nx = x(note.startSec)
         const ny = y(step)
-        const color = DIGIT_COLORS[note.digit]!
+        const color = colorsRef.current[note.digit]!
         const sounding = note.startSec <= now && now < note.startSec + note.durationSec
 
         ctx.globalAlpha = sounding ? 0.45 : 0.25
@@ -185,7 +191,7 @@ export function StaffView({ log, isPlaying, onCanvas }: StaffViewProps) {
       cancelAnimationFrame(frame)
       unsubscribe()
     }
-  }, [canvasRef, size, log, isPlaying])
+  }, [canvasRef, size, log, isPlaying, colors])
 
   return (
     <canvas

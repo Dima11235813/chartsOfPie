@@ -6,7 +6,7 @@ import { MAPPING_STRATEGIES } from '../core/music/mapping'
 import { PITCH_CLASSES } from '../core/music/notes'
 import { getScale, SCALE_CATALOGUE } from '../core/music/scaleCatalogue'
 import { INSTRUMENTS } from '../audio/instruments'
-import { DIGIT_COLORS } from './chartConfig'
+import { useDigitColors } from './palette'
 
 interface SoundPanelProps {
   config: CompositionConfig
@@ -16,6 +16,7 @@ interface SoundPanelProps {
 const CUSTOM = 'custom'
 
 export function SoundPanel({ config, onChange }: SoundPanelProps) {
+  const colors = useDigitColors()
   const preset = findMatchingPreset(config)
   const [lastPresetName, setLastPresetName] = useState(preset?.name ?? '')
   const [copied, setCopied] = useState(false)
@@ -74,7 +75,7 @@ export function SoundPanel({ config, onChange }: SoundPanelProps) {
       <ol className="note-legend" aria-label="Which note each digit plays">
         {notes.map((note, digit) => (
           <li key={digit} title={`Digit ${digit} plays ${note}`}>
-            <span className="legend-digit" style={{ color: DIGIT_COLORS[digit] }}>
+            <span className="legend-digit" style={{ color: colors[digit] }}>
               {digit}
             </span>
             <span className="legend-note">{note}</span>

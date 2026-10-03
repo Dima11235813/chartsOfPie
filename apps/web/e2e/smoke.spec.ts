@@ -171,3 +171,74 @@ test('sheet music, live spectrogram and exports (MIDI, image, video, audio)', as
 
   expect(errors).toEqual([])
 })
+
+test('artistic views (ring, walk, sunflower) draw and follow the colour palette', async ({
+  page,
+}, testInfo) => {
+  test.setTimeout(60_000)
+  const errors: string[] = []
+  page.on('pageerror', (error) => errors.push(error.message))
+  page.on('console', (msg) => {
+    if (msg.type() === 'error') errors.push(msg.text())
+  })
+  await page.goto('/#p=dorian-marimba') // fast sixteenths → many digits quickly
+  const play = page.getByRole('button', { name: 'Play' })
+  await expect(play).toBeEnabled({ timeout: 15_000 })
+  await play.click()
+  await expect
+    .poll(async () =>
+      Number((await page.getByTestId('total-count').textContent())?.replace(/,/g, '')),
+    )
+    .toBeGreaterThan(20)
+
+  /** Count of clearly coloured (non-background) pixels on the view canvas. */
+  const inkedPixels = (name: RegExp) =>
+    page.getByRole('img', { name }).evaluate((canvas: HTMLCanvasElement) => {
+      const { data } = canvas.getContext('2d')!.getImageData(0, 0, canvas.width, canvas.height)
+      let inked = 0
+      for (let i = 0; i < data.length; i += 4)
+        if (data[i + 3]! > 0 && data[i]! + data[i + 1]! + data[i + 2]! > 150) inked++
+      return inked
+    })
+
+  const view = page.getByRole('combobox', { name: 'View' })
+  for (const [label, name] of [
+    ['Digit ring', /Digit ring/],
+    ['π walk', /π walk/],
+    ['Sunflower', /Sunflower/],
+  ] as const) {
+    await view.selectOption({ label })
+    await expect(page.getByRole('img', { name })).toHaveAttribute(
+      'aria-label',
+      /\d+ (digits|steps|seeds)/,
+      {
+        timeout: 10_000,
+      },
+    )
+    await expect.poll(() => inkedPixels(name)).toBeGreaterThan(200)
+    await testInfo.attach(`${label}.png`, {
+      body: await page.getByRole('img', { name }).screenshot(),
+      contentType: 'image/png',
+    })
+  }
+
+  // Changing the palette redraws the picture in the new colours.
+  await page.getByRole('button', { name: 'Pause' }).click()
+  const before = await page.getByRole('img', { name: /Sunflower/ }).screenshot()
+  await page
+    .getByRole('combobox', { name: 'Colours' })
+    .selectOption({ label: 'Colour-blind friendly' })
+  await expect
+    .poll(async () =>
+      Buffer.compare(before, await page.getByRole('img', { name: /Sunflower/ }).screenshot()),
+    )
+    .not.toBe(0)
+
+  // Reset clears the drawing.
+  await page.getByRole('button', { name: 'Reset' }).click()
+  await expect(page.getByRole('img', { name: /Sunflower/ })).toHaveAttribute(
+    'aria-label',
+    /No seeds yet/,
+  )
+  expect(errors).toEqual([])
+})

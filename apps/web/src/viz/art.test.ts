@@ -1,0 +1,128 @@
+import { describe, expect, it } from 'vitest'
+import {
+  fitBounds,
+  GOLDEN_ANGLE,
+  ringAngle,
+  ringSegment,
+  RING_GAP,
+  seedPosition,
+  sunflowerCapacity,
+  TransitionCounts,
+  WalkPath,
+  walkStep,
+} from './art'
+import { getPalette, PALETTES, SCRIABIN, withAlpha } from './palettes'
+
+describe('π walk', () => {
+  it('steps in ten directions, 0 up and clockwise', () => {
+    const close = ([x, y]: [number, number], [ex, ey]: [number, number]) => {
+      expect(x).toBeCloseTo(ex)
+      expect(y).toBeCloseTo(ey)
+    }
+    close(walkStep(0), [0, -1])
+    close(walkStep(5), [0, 1])
+    close(walkStep(1), [Math.sin(Math.PI / 5), -Math.cos(Math.PI / 5)])
+    for (let d = 0; d < 10; d++) expect(Math.hypot(...walkStep(d))).toBeCloseTo(1)
+  })
+
+  it('accumulates the path, its bounds, and grows past its initial capacity', () => {
+    const walk = new WalkPath()
+    walk.push(0)
+    walk.push(0)
+    walk.push(5)
+    expect(walk.length).toBe(4)
+    expect(walk.ys[2]).toBeCloseTo(-2)
+    expect(walk.ys[3]).toBeCloseTo(-1)
+    expect(walk.minY).toBeCloseTo(-2)
+    for (let i = 0; i < 3000; i++) walk.push(i % 10)
+    expect(walk.length).toBe(3004)
+    expect(walk.xs.length).toBeGreaterThanOrEqual(3004)
+  })
+
+  it('fits bounds into a canvas, centred', () => {
+    const fit = fitBounds(-10, 10, -5, 5, 400, 200, 1)
+    expect(fit.scale).toBeCloseTo(20)
+    expect(fit.offsetX).toBeCloseTo(200)
+    expect(fit.offsetY).toBeCloseTo(100)
+  })
+})
+
+describe('sunflower', () => {
+  it('uses the golden angle ≈ 137.508°', () => {
+    expect((GOLDEN_ANGLE * 180) / Math.PI).toBeCloseTo(137.508, 3)
+  })
+
+  it('places seed n at radius spacing·√n', () => {
+    const [x, y] = seedPosition(16, 2)
+    expect(Math.hypot(x, y)).toBeCloseTo(8)
+    expect(seedPosition(0, 5)).toEqual([0, 0])
+  })
+
+  it('grows capacity by ×4 steps', () => {
+    expect(sunflowerCapacity(1)).toBe(400)
+    expect(sunflowerCapacity(400)).toBe(400)
+    expect(sunflowerCapacity(401)).toBe(1600)
+    expect(sunflowerCapacity(100_000)).toBe(102_400)
+  })
+})
+
+describe('digit ring', () => {
+  it('splits the circle into ten segments separated by a gap, starting at the top', () => {
+    const [start0, end0] = ringSegment(0)
+    expect(start0).toBeCloseTo(-Math.PI / 2 + RING_GAP / 2)
+    expect(end0 - start0).toBeCloseTo((2 * Math.PI) / 10 - RING_GAP)
+    expect(ringSegment(1)[0] - end0).toBeCloseTo(RING_GAP)
+  })
+
+  it('spreads link endpoints evenly within the segment and never moves old ones', () => {
+    const [start, end] = ringSegment(3)
+    const angles = Array.from({ length: 50 }, (_, k) => ringAngle(3, k))
+    angles.forEach((a) => {
+      expect(a).toBeGreaterThanOrEqual(start)
+      expect(a).toBeLessThanOrEqual(end)
+    })
+    const sorted = [...angles].sort((a, b) => a - b)
+    const gaps = sorted.slice(1).map((a, i) => a - sorted[i]!)
+    expect(Math.max(...gaps)).toBeLessThan((end - start) / 10)
+    expect(ringAngle(3, 7)).toBe(angles[7])
+  })
+
+  it('counts transitions', () => {
+    const counts = new TransitionCounts()
+    const pi = [3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5]
+    pi.slice(1).forEach((d, i) => counts.add(pi[i]!, d))
+    expect(counts.get(1, 4)).toBe(1)
+    expect(counts.get(5, 3)).toBe(1)
+    expect(counts.max).toBe(1)
+    counts.add(1, 4)
+    expect(counts.max).toBe(2)
+    counts.reset()
+    expect(counts.get(1, 4)).toBe(0)
+  })
+})
+
+describe('palettes', () => {
+  const cPentatonic = ['C4', 'D4', 'E4', 'G4', 'A4', 'C5', 'D5', 'E5', 'G5', 'A5']
+
+  it('every palette gives ten colours', () => {
+    for (const palette of PALETTES) expect(palette.digitColors(cPentatonic)).toHaveLength(10)
+  })
+
+  it('the colour-blind palette has ten distinct colours (the rainbow repeats three)', () => {
+    expect(new Set(getPalette('colour-blind').digitColors(cPentatonic)).size).toBe(10)
+    expect(new Set(getPalette('rainbow').digitColors(cPentatonic)).size).toBe(7)
+  })
+
+  it('Scriabin colours follow the pitch class of each digit’s note', () => {
+    const colors = getPalette('scriabin').digitColors(cPentatonic)
+    expect(colors[0]).toBe(SCRIABIN[0]) // C4 → C red
+    expect(colors[5]).toBe(SCRIABIN[0]) // C5 → same red
+    expect(colors[3]).toBe(SCRIABIN[7]) // G4 → orange
+  })
+
+  it('falls back to the default palette and converts colours to rgba', () => {
+    expect(getPalette('nope').id).toBe('rainbow')
+    expect(withAlpha('#ff8000', 0.5)).toBe('rgba(255, 128, 0, 0.5)')
+    expect(withAlpha('rgb(1, 2, 3)', 0.25)).toBe('rgba(1, 2, 3, 0.25)')
+  })
+})

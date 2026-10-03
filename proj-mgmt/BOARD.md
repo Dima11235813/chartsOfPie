@@ -1,6 +1,6 @@
 # Board
 
-_Last updated with the “sheet music, spectrogram, export & artistic roadmap” slice._
+_Last updated with artistic gallery slice 2b-1 (palettes, digit ring, π walk, sunflower)._
 
 ## Epics
 
@@ -37,18 +37,22 @@ _Last updated with the “sheet music, spectrogram, export & artistic roadmap”
 | S02.4.3 | Export the performance as MIDI                  | backlog     |
 | S02.4.4 | Reliable audio on iOS and Android               | backlog     |
 
-## Current slice (sheet music, spectrogram, export)
+## Recent slices (sheet music, spectrogram, export; artistic gallery 2b-1)
 
-| Story   | Title                                     | Status  |
-| ------- | ----------------------------------------- | ------- |
-| S03.8.1 | Scrolling grand staff                     | done    |
-| S03.8.2 | Spot and label coincidental chords        | done    |
-| S03.9.1 | Live scrolling spectrogram view           | done    |
-| S02.6.4 | Spectrogram snapshot regression tests     | done    |
-| S02.4.3 | Export the performance as MIDI            | done    |
-| S08.4.1 | Record video and audio of a session       | done    |
-| S03.8.3 | Metric notation for tempo presets         | backlog |
-| —       | Next: artistic gallery slice 2b-1 (R-006) | ready   |
+| Story   | Title                                                                   | Status  |
+| ------- | ----------------------------------------------------------------------- | ------- |
+| S03.8.1 | Scrolling grand staff                                                   | done    |
+| S03.8.2 | Spot and label coincidental chords                                      | done    |
+| S03.9.1 | Live scrolling spectrogram view                                         | done    |
+| S02.6.4 | Spectrogram snapshot regression tests                                   | done    |
+| S02.4.3 | Export the performance as MIDI                                          | done    |
+| S08.4.1 | Record video and audio of a session                                     | done    |
+| S03.8.3 | Metric notation for tempo presets                                       | backlog |
+| F03.1   | Visualization registry & shared palettes                                | done    |
+| F03.3   | Digit ring / chord ribbons                                              | done    |
+| F03.5   | π walk                                                                  | done    |
+| F03.2   | Sunflower (phyllotaxis)                                                 | done    |
+| —       | Next: gallery slice 2b-2 (music clock, mosaic, string art, poster mode) | ready   |
 
 ## Done
 
@@ -71,6 +75,7 @@ E06 story S06.1.1 · E02 stories listed above as done.
 | B-010 | Page title is “Document”                                     | low      | done    |
 | B-011 | Pentatonic generator only correct for C                      | medium   | done    |
 | B-012 | Pause then quick resume can double the tempo                 | medium   | done    |
-| B-013 | Indigo digits low contrast; palette repeats colours          | low      | backlog |
+| B-013 | Indigo digits low contrast; palette repeats colours          | low      | done    |
 | B-014 | Orphaned `charts-of-pie` submodule pointer                   | low      | backlog |
 | B-015 | Tone's first reverb render in a page differs from later ones | low      | done    |
+| B-016 | Canvas views blank when opened while paused                  | medium   | done    |

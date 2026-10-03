@@ -1,6 +1,6 @@
 import type { CoincidentChord } from '../core/composition/performanceLog'
 import type { StepEvent } from '../core/engine/playbackEngine'
-import { DIGIT_COLORS } from './chartConfig'
+import { useDigitColors } from './palette'
 
 interface StatsPanelProps {
   counts: readonly number[]
@@ -13,6 +13,7 @@ interface StatsPanelProps {
 const formatPercent = (value: number) => `${(value * 100).toFixed(2)}%`
 
 export function StatsPanel({ counts, total, lastStep, recent, lastChord }: StatsPanelProps) {
+  const colors = useDigitColors()
   return (
     <div className="stats">
       <section aria-labelledby="stream-heading">
@@ -25,7 +26,7 @@ export function StatsPanel({ counts, total, lastStep, recent, lastChord }: Stats
               <span
                 key={index}
                 className={i === recent.length - 1 ? 'digit current' : 'digit'}
-                style={{ color: DIGIT_COLORS[digit] }}
+                style={{ color: colors[digit] }}
                 title={`Digit #${index}`}
               >
                 {digit}
@@ -80,7 +81,7 @@ export function StatsPanel({ counts, total, lastStep, recent, lastChord }: Stats
           {counts.map((count, digit) => (
             <tr key={digit} className={lastStep?.digit === digit ? 'active' : undefined}>
               <th scope="row">
-                <span className="swatch" style={{ background: DIGIT_COLORS[digit] }} />
+                <span className="swatch" style={{ background: colors[digit] }} />
                 {digit}
               </th>
               <td>{count.toLocaleString()}</td>

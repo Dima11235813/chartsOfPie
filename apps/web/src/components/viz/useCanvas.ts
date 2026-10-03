@@ -28,12 +28,19 @@ export function useCanvas(onCanvas?: (canvas: HTMLCanvasElement | null) => void)
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
+    let measured = false
     const update = () => {
       const ratio = Math.min(2, window.devicePixelRatio || 1)
       const width = Math.max(1, Math.round(canvas.clientWidth))
       const height = Math.max(1, Math.round(canvas.clientHeight))
-      canvas.width = Math.round(width * ratio)
-      canvas.height = Math.round(height * ratio)
+      const backingWidth = Math.round(width * ratio)
+      const backingHeight = Math.round(height * ratio)
+      // Assigning canvas.width clears the canvas, even to the same value (ResizeObserver reports
+      // the initial size too), so only touch it — and re-render — when the size really changed.
+      if (measured && canvas.width === backingWidth && canvas.height === backingHeight) return
+      measured = true
+      if (canvas.width !== backingWidth) canvas.width = backingWidth
+      if (canvas.height !== backingHeight) canvas.height = backingHeight
       setSize({ width, height, ratio })
     }
     update()

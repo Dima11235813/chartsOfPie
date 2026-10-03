@@ -1,3 +1,4 @@
+import { PALETTES } from '../viz/palettes'
 import { VIEWS, type ViewId } from './views'
 import { CHART_STYLES, type ChartStyle } from './chartConfig'
 
@@ -14,6 +15,8 @@ interface ControlsProps {
   onMutedChange: (muted: boolean) => void
   onChartStyleChange: (style: ChartStyle) => void
   onViewChange: (view: ViewId) => void
+  paletteId: string
+  onPaletteChange: (id: string) => void
 }
 
 export function Controls(props: ControlsProps) {
@@ -56,6 +59,16 @@ export function Controls(props: ControlsProps) {
             {VIEWS.map((v) => (
               <option key={v.id} value={v.id}>
                 {v.label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="select">
+          <span>Colours</span>
+          <select value={props.paletteId} onChange={(e) => props.onPaletteChange(e.target.value)}>
+            {PALETTES.map((p) => (
+              <option key={p.id} value={p.id} title={p.description}>
+                {p.name}
               </option>
             ))}
           </select>
