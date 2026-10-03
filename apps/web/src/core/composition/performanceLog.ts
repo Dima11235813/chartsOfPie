@@ -61,9 +61,17 @@ export class PerformanceLog {
   /** Time of the most recent onset (rests included), or 0. */
   lastOnsetSec = 0
 
+  /** Steps (digits, rests included) recorded since the last reset. */
+  stepCount = 0
+
+  /** The most recent step, or null after a reset. */
+  lastStep: PerformedStep | null = null
+
   record(step: PerformedStep): CoincidentChord | null {
     const startSec = this.clock
     this.lastOnsetSec = startSec
+    this.stepCount += 1
+    this.lastStep = step
     this.clock += step.delayMs / 1000
     let chord: CoincidentChord | null = null
     if (step.note !== null) {
@@ -119,6 +127,8 @@ export class PerformanceLog {
     this.chordList.length = 0
     this.clock = 0
     this.lastOnsetSec = 0
+    this.stepCount = 0
+    this.lastStep = null
     this.listeners.forEach((listener) => listener())
   }
 

@@ -1,4 +1,5 @@
 import type { ChartConfiguration, ChartType } from 'chart.js'
+import { RAINBOW } from '../viz/palettes'
 
 /** Chart styles offered in the UI. `horizontalBar` was a Chart.js 2 type; v4 uses `indexAxis`. */
 export const CHART_STYLES = [
@@ -16,18 +17,7 @@ export type ChartStyle = (typeof CHART_STYLES)[number]['id']
 export const DEFAULT_CHART_STYLE: ChartStyle = 'bar'
 
 /** The original rainbow palette, one colour per digit 0–9. */
-export const DIGIT_COLORS = [
-  'rgb(148, 0, 211)',
-  'rgb(75, 0, 130)',
-  'rgb(0, 0, 255)',
-  'rgb(255, 0, 0)',
-  'rgb(255, 127, 0)',
-  'rgb(255, 255, 0)',
-  'rgb(0, 255, 0)',
-  'rgb(0, 0, 255)',
-  'rgb(75, 0, 130)',
-  'rgb(148, 0, 211)',
-] as const
+export const DIGIT_COLORS = RAINBOW
 
 export const DIGIT_LABELS = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
 
@@ -47,6 +37,7 @@ export function buildChartConfig(
   counts: readonly number[],
   textColor: string,
   gridColor: string,
+  colors: readonly string[] = DIGIT_COLORS,
 ): ChartConfiguration {
   const type: ChartType = style === 'horizontalBar' ? 'bar' : style
   const min = Math.min(...counts)
@@ -68,10 +59,10 @@ export function buildChartConfig(
         {
           label: 'Numbers of Pie',
           data: [...counts],
-          backgroundColor: [...DIGIT_COLORS],
+          backgroundColor: [...colors],
           borderColor: style === 'line' || style === 'radar' ? '#8fd3ff' : '#000',
           borderWidth: 1,
-          pointBackgroundColor: [...DIGIT_COLORS],
+          pointBackgroundColor: [...colors],
         },
       ],
     },

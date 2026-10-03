@@ -19,6 +19,7 @@ import {
   Tooltip,
 } from 'chart.js'
 import { applyCounts, buildChartConfig, shouldRedraw, type ChartStyle } from './chartConfig'
+import { useDigitColors } from './palette'
 
 Chart.register(
   ArcElement,
@@ -51,6 +52,7 @@ const TEXT_COLOR = '#c9d6e8'
 const GRID_COLOR = 'rgba(201, 214, 232, 0.15)'
 
 export function DigitChart({ style, counts, total, onCanvas }: DigitChartProps) {
+  const colors = useDigitColors()
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const chartRef = useRef<Chart | null>(null)
   const countsRef = useRef(counts)
@@ -70,11 +72,11 @@ export function DigitChart({ style, counts, total, onCanvas }: DigitChartProps) 
     countsRef.current = counts
   })
 
-  // (Re)create the chart only when the style changes.
+  // (Re)create the chart only when the style or palette changes.
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
-    const config = buildChartConfig(style, countsRef.current, TEXT_COLOR, GRID_COLOR)
+    const config = buildChartConfig(style, countsRef.current, TEXT_COLOR, GRID_COLOR, colors)
     if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches && config.options) {
       config.options.animation = false
     }
@@ -84,7 +86,7 @@ export function DigitChart({ style, counts, total, onCanvas }: DigitChartProps) 
       chart.destroy()
       chartRef.current = null
     }
-  }, [style])
+  }, [style, colors])
 
   useEffect(() => {
     const chart = chartRef.current

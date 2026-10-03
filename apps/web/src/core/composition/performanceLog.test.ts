@@ -27,6 +27,10 @@ describe('PerformanceLog', () => {
     ])
     expect(log.elapsedSec).toBeCloseTo(0.75)
     expect(log.lastOnsetSec).toBeCloseTo(0.5)
+    expect(log.stepCount).toBe(3) // rests count as steps
+    expect(log.lastStep?.index).toBe(2)
+    log.reset()
+    expect([log.stepCount, log.lastStep]).toEqual([0, null])
   })
 
   it('spots chords formed by coincidentally overlapping notes', () => {

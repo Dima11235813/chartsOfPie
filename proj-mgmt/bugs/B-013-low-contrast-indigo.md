@@ -1,7 +1,7 @@
 ---
 id: B-013
 title: 'Indigo digits 1 and 8 have low contrast on the dark background'
-status: backlog
+status: done
 severity: low
 found-in: apps/web/src/components/chartConfig.ts
 fixed-by: F09.3
@@ -20,3 +20,8 @@ Every digit distinguishable and ≥ 3:1 contrast for graphical objects.
 ## Fix
 
 Kept for parity in this pass; add an alternative palette (F09.3) and consider outlining dark digits.
+
+## Resolution
+
+The "Colour-blind friendly" palette (F03.1) gives ten distinct, high-contrast colours. The
+original rainbow stays the default for parity.
