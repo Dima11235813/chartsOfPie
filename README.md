@@ -8,6 +8,9 @@ platform for discovering how math, music and visual art connect — scales and m
 pentatonic, …), Fibonacci and the golden ratio, visualization playgrounds, lessons, and later
 accounts to save and share your creations. See the [roadmap](proj-mgmt/ROADMAP.md).
 
+**Try it:** <https://dima11235813.github.io/chartsOfPie/> — deployed from `master` by
+[GitHub Pages](.github/workflows/deploy-pages.yml) after CI passes.
+
 ## Quick start
 
 Requires Node.js ≥ 20.19 (see `.nvmrc`).
