@@ -25,6 +25,7 @@ modes as rotations). Every choice is captured in a versioned, shareable `Composi
 ## Features added during delivery
 
 - [ ] [F02.6 — Presets & listening harness](../features/F02.6-presets-and-listening.md)
+- [ ] [F02.7 — Play through hardware (Web MIDI), e.g. a Nord](../features/F02.7-hardware-midi.md) — next
 
 ## Out of scope
 

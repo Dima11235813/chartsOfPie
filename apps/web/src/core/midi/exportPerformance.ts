@@ -15,6 +15,11 @@ export const GENERAL_MIDI_PROGRAM: Record<InstrumentId, number> = {
   'warm-pad': 89, // Pad 2 (warm)
   'pure-sine': 79, // Ocarina — the closest to a pure tone
   'electric-guitar': 29, // Overdriven Guitar
+  'acoustic-guitar': 25, // Acoustic Guitar (steel)
+  wurlitzer: 5, // Electric Piano 2
+  clavinet: 7, // Clavi
+  organ: 16, // Drawbar Organ
+  'analog-synth': 81, // Lead 2 (sawtooth)
 }
 
 /**

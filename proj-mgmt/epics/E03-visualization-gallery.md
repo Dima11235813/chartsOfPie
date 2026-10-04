@@ -36,6 +36,7 @@ Artistic gallery, ordered by [R-006](../research/R-006-artistic-visualizations.m
 | 2b-3  | F03.13 — Hilbert carpet of the full million digits (1024² Hilbert curve)                           | **done** |
 | 2b-3  | F03.14 — Oscilloscope (XY) view of the audio                                                       | **done** |
 | 2b-3  | F03.15 — Typographic π (runs, Feynman point)                                                       | **done** |
+| 2b-4  | [F03.20 — Guitar fretboard](../features/F03.20-guitar-fretboard.md) (owner request, R-008)         | **done** |
 | 2b-4  | F03.16 — WebGL particles / flow field                                                              | backlog  |
 | 2b-4  | F03.17 — Cymatics / Chladni plates per note                                                        | backlog  |
 | 2b-4  | F03.18 — 3D π helix (three.js)                                                                     | backlog  |

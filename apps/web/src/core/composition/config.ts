@@ -21,6 +21,11 @@ export const INSTRUMENT_IDS = [
   'warm-pad',
   'pure-sine',
   'electric-guitar',
+  'acoustic-guitar',
+  'wurlitzer',
+  'clavinet',
+  'organ',
+  'analog-synth',
 ] as const
 export type InstrumentId = (typeof INSTRUMENT_IDS)[number]
 
