@@ -1,6 +1,6 @@
 # Board
 
-_Last updated with the Cloudflare API (GitHub sign-in, pieces with owner/visibility rules) and account backup in the web app._
+_Last updated with cymatics (Chladni plate), swing + Organ swing preset, and full-screen stage._
 
 ## Epics
 
@@ -44,7 +44,7 @@ _Last updated with the Cloudflare API (GitHub sign-in, pieces with owner/visibil
 | S02.6.3 | Owner listening review & preset iteration           | ready       |
 | S02.1.3 | Explain the selected scale as math                  | ready       |
 | S06.2.1 | Rebrand and relocate to Math Art (owner-driven)     | ready       |
-| S02.3.3 | Euclidean rhythms and swing                         | backlog     |
+| S02.3.3 | Euclidean rhythms and swing (swing done)            | in-progress |
 | S02.4.3 | Export the performance as MIDI                      | backlog     |
 | S02.4.4 | Reliable audio on iOS and Android                   | backlog     |
 | S02.4.5 | Electric guitar + “Pentatonic rock” preset          | done        |
@@ -73,6 +73,7 @@ _Last updated with the Cloudflare API (GitHub sign-in, pieces with owner/visibil
 | F03.12  | Harmonograph (pure vs tempered ratios)                                                               | done    |
 | F03.13  | Hilbert carpet (zooming live view)                                                                   | done    |
 | F03.14  | Oscilloscope (vectorscope / waveform)                                                                | done    |
+| F03.17  | Cymatics (Chladni plate)                                                                             | done    |
 | F03.20  | Guitar fretboard (tunings, fingering model)                                                          | done    |
 | F09.2   | Keyboard shortcuts (Space, →, M)                                                                     | done    |
 | F03.15  | Typographic π                                                                                        | done    |

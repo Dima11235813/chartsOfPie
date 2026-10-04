@@ -152,3 +152,12 @@ export function withAlpha(color: string, alpha: number): string {
   if (rgb) return `rgba(${rgb[1]}, ${rgb[2]}, ${rgb[3]}, ${alpha})`
   return color
 }
+
+/** Blend `a` towards `b` by `t` (0 = a, 1 = b); returns `rgb(…)`. Unparsable colours return `a`. */
+export function mixColors(a: string, b: string, t: number): string {
+  const ca = parseColor(a)
+  const cb = parseColor(b)
+  if (!ca || !cb) return a
+  const mix = (i: number) => Math.round(ca[i]! + (cb[i]! - ca[i]!) * t)
+  return `rgb(${mix(0)}, ${mix(1)}, ${mix(2)})`
+}

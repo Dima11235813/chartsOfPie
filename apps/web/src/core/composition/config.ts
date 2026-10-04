@@ -73,6 +73,12 @@ export const compositionConfigSchema = z.object({
   bpm: z.number().check(z.gte(30), z.lte(240)),
   /** Steps per beat: 1 = quarter notes, 2 = eighths, 4 = sixteenths. */
   subdivision: z.union([z.literal(1), z.literal(2), z.literal(4)]),
+  /**
+   * Swing, 0–0.5: on-beat steps of each pair are lengthened by this fraction and off-beats
+   * shortened (1/3 ≈ triplet swing, long:short = 2:1). Tempo timing with 2 or 4 steps per beat.
+   * Added after v1 with a default, so older links read as 0 (straight).
+   */
+  swing: z._default(z.number().check(z.gte(0), z.lte(0.5)), 0),
   /** Note length as a multiple of its step (values > 1 overlap and blend). */
   legato: z.number().check(z.gte(0.25), z.lte(4)),
   dynamics: z.enum(ids(DYNAMICS)),

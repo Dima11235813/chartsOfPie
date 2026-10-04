@@ -69,6 +69,29 @@ describe('Arranger', () => {
     expect(step.note).toBe('A4')
   })
 
+  it('swing 1/3 is triplet swing: eighths alternate 2:1 (≈333 ms + 167 ms at 120 BPM)', () => {
+    const swung = new Arranger({ ...tempo, swing: 1 / 3 })
+    const delays = [1, 2, 3, 4].map((d) => swung.arrange(d).delayMs)
+    expect(delays[0]).toBeCloseTo(333.33, 1)
+    expect(delays[1]).toBeCloseTo(166.67, 1)
+    expect(delays[0]! / delays[1]!).toBeCloseTo(2) // long : short = 2 : 1
+    expect(delays[2]! + delays[3]!).toBeCloseTo(500) // each beat keeps its length
+  })
+
+  it('swing spans the steps a long digit covers, and is ignored for quarter notes', () => {
+    // digit-length: digit 3 covers steps 0,1,2 → (1+s)+(1−s)+(1+s) units.
+    const long = new Arranger({ ...tempo, rhythm: 'digit-length', swing: 0.2 }).arrange(3)
+    expect(long.delayMs).toBeCloseTo((1.2 + 0.8 + 1.2) * 250)
+    const quarters = new Arranger({ ...tempo, subdivision: 1, swing: 0.3 })
+    expect(quarters.arrange(5).delayMs).toBe(500)
+  })
+
+  it('old configs without swing read as straight', () => {
+    const withoutSwing: Record<string, unknown> = { ...tempo }
+    delete withoutSwing.swing
+    expect(parseConfig(withoutSwing)?.swing).toBe(0)
+  })
+
   it('steady-rests: zero is silent but still takes a step', () => {
     const step = new Arranger({ ...tempo, rhythm: 'steady-rests' }).arrange(0)
     expect(step.note).toBeNull()

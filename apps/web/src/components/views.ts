@@ -16,6 +16,7 @@ export const VIEWS = [
   { id: 'harmonograph', label: 'Harmonograph', group: 'Sound shapes' },
   { id: 'scope', label: 'Oscilloscope', group: 'Sound shapes' },
   { id: 'fretboard', label: 'Guitar fretboard', group: 'Sound shapes' },
+  { id: 'cymatics', label: 'Cymatics (Chladni plate)', group: 'Sound shapes' },
 ] as const satisfies readonly { id: ViewId; label: string; group: string }[]
 
 /** View ids are persisted (links, saved pieces): the list lives in core/piece/visualConfig. */

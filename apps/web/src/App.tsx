@@ -14,6 +14,7 @@ import { DigitArtView } from './components/viz/DigitArtView'
 import { HarmonographView } from './components/viz/HarmonographView'
 import { MusicClockView } from './components/viz/MusicClockView'
 import { FretboardView } from './components/viz/FretboardView'
+import { CymaticsView } from './components/viz/CymaticsView'
 import { OscilloscopeView } from './components/viz/OscilloscopeView'
 import { StringArtView } from './components/viz/StringArtView'
 import { PosterPanel } from './components/PosterPanel'
@@ -116,7 +117,13 @@ export default function App({
       if (!playback.isFinished) void playback.step()
     },
     mute: () => playback.setMuted(!playback.muted),
+    fullscreen: () => toggleFullscreen(),
   })
+  const stageRef = useRef<HTMLElement | null>(null)
+  const toggleFullscreen = () => {
+    if (document.fullscreenElement) void document.exitFullscreen()
+    else void stageRef.current?.requestFullscreen?.()
+  }
   const label = findMatchingPreset(config)?.name ?? 'Custom'
   const openPiece = (piece: Piece) => {
     setConfig(piece.sound)
@@ -145,7 +152,11 @@ export default function App({
         </header>
 
         <main className="layout">
-          <section className="stage" aria-label={VIEWS.find((v) => v.id === view)?.label}>
+          <section
+            className="stage"
+            ref={stageRef}
+            aria-label={VIEWS.find((v) => v.id === view)?.label}
+          >
             {load.status === 'loading' && <p className="notice">Loading a million digits of π…</p>}
             {load.status === 'error' && (
               <p className="notice error" role="alert">
@@ -202,6 +213,9 @@ export default function App({
                     onTuningChange={(tuning) => updateViewOptions('fretboard', { tuning })}
                     onCanvas={setCanvas}
                   />
+                )}
+                {view === 'cymatics' && (
+                  <CymaticsView log={playback.log} noteTable={noteTable} onCanvas={setCanvas} />
                 )}
                 {view === 'harmonograph' && (
                   <HarmonographView
@@ -308,6 +322,7 @@ export default function App({
             onMutedChange={playback.setMuted}
             onChartStyleChange={(style) => updateVisual({ chartStyle: style })}
             onViewChange={(id) => updateVisual({ view: id })}
+            onFullscreen={toggleFullscreen}
             paletteId={paletteId}
             onPaletteChange={changePalette}
           />

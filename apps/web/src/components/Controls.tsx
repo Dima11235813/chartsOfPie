@@ -17,6 +17,8 @@ interface ControlsProps {
   onViewChange: (view: ViewId) => void
   paletteId: string
   onPaletteChange: (id: string) => void
+  /** Show the stage full screen (hidden where the browser can't). */
+  onFullscreen?: () => void
 }
 
 export function Controls(props: ControlsProps) {
@@ -58,6 +60,17 @@ export function Controls(props: ControlsProps) {
       >
         {muted ? 'Unmute' : 'Mute'}
       </button>
+      {props.onFullscreen && typeof document !== 'undefined' && document.fullscreenEnabled && (
+        <button
+          type="button"
+          className="btn"
+          onClick={props.onFullscreen}
+          aria-keyshortcuts="F"
+          title="Full screen (F)"
+        >
+          Full screen
+        </button>
+      )}
       <div className="view-selects">
         <label className="select">
           <span>View</span>

@@ -81,12 +81,19 @@ describe('golden piece fixtures', () => {
 
 describe('documents from newer versions of the app', () => {
   test('additive changes open, unknown values fall back and are reported', () => {
-    const raw = fixture('forward/additive-from-newer-app.json')
-    const read = readPiece(raw)
+    // The fixture was written when "cymatics" did not exist yet; it does now, and still opens.
+    const read = readPiece(fixture('forward/additive-from-newer-app.json'))
     if (read.status !== 'ok') throw new Error(read.status)
-    expect(read.replaced).toBe(true)
-    expect(read.piece.visual.view).toBe('chart')
+    expect(read.piece.visual.view).toBe('cymatics')
     expect(read.piece.visual.viewOptions.scope.mode).toBe('vector')
+
+    // A view this version does not know falls back to the default and is reported.
+    const raw = fixture('forward/additive-from-newer-app.json') as { visual: { view: string } }
+    raw.visual.view = 'view-from-the-future'
+    const unknown = readPiece(raw)
+    if (unknown.status !== 'ok') throw new Error(unknown.status)
+    expect(unknown.replaced).toBe(true)
+    expect(unknown.piece.visual.view).toBe('chart')
   })
 
   test('saving keeps keys this version does not know', () => {
@@ -119,7 +126,8 @@ describe('documents from newer versions of the app', () => {
 describe('share links in the wild', () => {
   test.each(shareLinks.links)('$hash', ({ hash, sound, visual, invalid }) => {
     const expected = visual === null ? null : visualConfigSchema.parse(visual)
-    expect(parseShareHash(hash)).toEqual({ sound, visual: expected, invalid })
+    const expectedSound = sound === null ? null : compositionConfigSchema.parse(sound)
+    expect(parseShareHash(hash)).toEqual({ sound: expectedSound, visual: expected, invalid })
   })
 
   test('hashes round-trip and defaults are left out', () => {

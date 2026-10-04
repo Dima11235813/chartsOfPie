@@ -212,6 +212,7 @@ test('artistic views draw and follow the colour palette', async ({ page }, testI
     ['Harmonograph', /Harmonograph/, / · ratio \d/],
     ['Oscilloscope', /Oscilloscope/, /vectorscope/],
     ['Guitar fretboard', /Guitar fretboard/, /Now: .* · string \d, (open|fret \d+)/],
+    ['Cymatics (Chladni plate)', /Cymatics/, /plate mode/],
   ] as const) {
     await view.selectOption({ label })
     await expect(page.getByRole('img', { name })).toHaveAttribute('aria-label', summary, {
@@ -345,4 +346,22 @@ test('no horizontal scroll at 360 px wide, with every panel open', async ({ page
     )
     expect(overflow, view).toBeLessThanOrEqual(0)
   }
+})
+
+test('swing and full screen', async ({ page }) => {
+  await page.goto('/#p=pentatonic-piano')
+  await expect(page.getByRole('button', { name: 'Play' })).toBeEnabled({ timeout: 15_000 })
+  await page.getByText('Customize').click()
+  const swing = page.getByLabel('Swing')
+  await swing.fill('0.33')
+  await expect(page.getByText('33% (triplet)')).toBeVisible()
+  await expect(page).toHaveURL(/#c=/)
+  await page.reload()
+  await page.getByText('Customize').click()
+  await expect(page.getByLabel('Swing')).toHaveValue('0.33')
+
+  await page.getByRole('button', { name: 'Full screen' }).click()
+  await expect.poll(() => page.evaluate(() => document.fullscreenElement?.className)).toBe('stage')
+  await page.keyboard.press('f')
+  await expect.poll(() => page.evaluate(() => document.fullscreenElement)).toBeNull()
 })

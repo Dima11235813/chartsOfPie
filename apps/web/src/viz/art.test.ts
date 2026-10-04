@@ -18,8 +18,25 @@ import {
   WalkPath,
   walkStep,
 } from './art'
-import { getPalette, PALETTES, paletteRamp, parseColor, SCRIABIN, withAlpha } from './palettes'
+import {
+  getPalette,
+  mixColors,
+  PALETTES,
+  paletteRamp,
+  parseColor,
+  SCRIABIN,
+  withAlpha,
+} from './palettes'
 import { choosePosition, foldIntoRange, getTuning, positionsOf } from './fretboard'
+import {
+  chordDisplacement,
+  displacement,
+  gradient,
+  modeForMidi,
+  MODES,
+  settleGrains,
+} from './chladni'
+import { seededRandom } from '../core/random/seededRandom'
 import { midiToNote, noteToMidi } from '../core/music/notes'
 
 describe('π walk', () => {
@@ -262,4 +279,78 @@ describe('guitar fretboard', () => {
     expect(choosePosition(c4, 4)).toEqual({ string: 3, fret: 5 })
     expect(choosePosition([], 3)).toBeNull()
   })
+})
+
+describe('Chladni plate (cymatics)', () => {
+  test('modes rise with n² + m²: (1,2) is the lowest, then (1,3), (2,3), (1,4)', () => {
+    expect(MODES.slice(0, 4)).toEqual([
+      [1, 2],
+      [1, 3],
+      [2, 3],
+      [1, 4],
+    ])
+    const energy = MODES.map(([n, m]) => n * n + m * m)
+    expect(energy).toEqual([...energy].sort((a, b) => a - b))
+  })
+
+  test('the diagonal is a nodal line of every (n, m) mode', () => {
+    for (const mode of MODES.slice(0, 12)) {
+      for (const t of [0.1, 0.37, 0.8]) {
+        expect(displacement(t, t, mode)).toBeCloseTo(0, 12)
+      }
+    }
+    // The anti-diagonal x + y = 1 is still too when n + m is even, e.g. (1,3), but not (1,2).
+    expect(displacement(0.3, 0.7, [1, 3])).toBeCloseTo(0, 12)
+    expect(Math.abs(displacement(0.3, 0.7, [1, 2]))).toBeGreaterThan(0.1)
+  })
+
+  test('higher notes pick finer modes; a chord averages its modes', () => {
+    expect(modeForMidi(60, 60)).toEqual([1, 2])
+    expect(modeForMidi(67, 60)).toEqual(MODES[7])
+    expect(modeForMidi(10, 60)).toEqual([1, 2])
+    expect(chordDisplacement(0.2, 0.6, [[1, 2]])).toBeCloseTo(displacement(0.2, 0.6, [1, 2]))
+    expect(chordDisplacement(0.2, 0.6, [])).toBe(0)
+  })
+})
+
+describe('Chladni sand', () => {
+  test('the gradient matches finite differences', () => {
+    const mode = [2, 5] as const
+    const h = 1e-6
+    for (const [x, y] of [
+      [0.21, 0.73],
+      [0.5, 0.1],
+    ]) {
+      const [gx, gy] = gradient(x!, y!, mode)
+      expect(gx).toBeCloseTo(
+        (displacement(x! + h, y!, mode) - displacement(x! - h, y!, mode)) / (2 * h),
+        4,
+      )
+      expect(gy).toBeCloseTo(
+        (displacement(x!, y! + h, mode) - displacement(x!, y! - h, mode)) / (2 * h),
+        4,
+      )
+    }
+  })
+
+  test('sand gathers on the nodal lines within about a second of frames', () => {
+    const random = seededRandom(3)
+    const sand = new Float32Array(4000).map(() => random())
+    const mode = MODES[5]!
+    const meanAbs = () => {
+      let sum = 0
+      for (let i = 0; i < sand.length; i += 2)
+        sum += Math.abs(displacement(sand[i]!, sand[i + 1]!, mode))
+      return sum / (sand.length / 2)
+    }
+    const before = meanAbs()
+    for (let frame = 0; frame < 60 * 3; frame++) settleGrains(sand, mode, random)
+    expect(meanAbs()).toBeLessThan(before * 0.25)
+  })
+})
+
+test('mixColors blends towards a second colour', () => {
+  expect(mixColors('rgb(0, 0, 0)', '#ffffff', 0.5)).toBe('rgb(128, 128, 128)')
+  expect(mixColors('#ff0000', '#0000ff', 0)).toBe('rgb(255, 0, 0)')
+  expect(mixColors('nonsense', '#ffffff', 0.5)).toBe('nonsense')
 })

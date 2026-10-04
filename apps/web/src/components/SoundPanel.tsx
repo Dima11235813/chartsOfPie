@@ -199,6 +199,20 @@ export function SoundPanel({ config, onChange }: SoundPanelProps) {
               </select>
             )}
           </Field>
+          <Range
+            label="Swing"
+            value={config.swing}
+            min={0}
+            max={0.5}
+            step={0.01}
+            format={(v) =>
+              v === 0
+                ? 'straight'
+                : `${Math.round(v * 100)}%${Math.abs(v - 1 / 3) < 0.02 ? ' (triplet)' : ''}`
+            }
+            onChange={(v) => set('swing', v)}
+            disabled={!isTempo || config.rhythm === 'legacy' || config.subdivision === 1}
+          />
           <Field label="Rhythm">
             {(id) => (
               <select
