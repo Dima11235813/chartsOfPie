@@ -16,5 +16,7 @@ phase: continuous
 - [ ] F09.4 — Performance budgets in CI (bundle size, Lighthouse), Web Worker for heavy analysis
 - [ ] F09.5 — Light theme & theme toggle
 - [ ] F09.6 — Internationalisation (copy extraction, RTL-safe layouts)
-- [ ] F09.7 — Hosting & domain for the rebrand (static hosting now; API later — E07)
+- [ ] F09.7 — Hosting & domain for the rebrand — **static front end live on GitHub Pages**
+      (`.github/workflows/deploy-pages.yml`, deploys master after CI passes); custom domain and API
+      hosting (E07) later
 - [ ] F09.8 — Privacy-friendly analytics
