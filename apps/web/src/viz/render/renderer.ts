@@ -31,6 +31,8 @@ export interface DigitRenderer {
   draw(from: number, to: number, digitAt: DigitAt): void
   /** Paint the layer plus decorations onto `ctx` (clears it first). */
   compose(ctx: CanvasRenderingContext2D, overlay: ComposeOverlay): void
+  /** Grid renderers report their current column count (shown and used as a starting point). */
+  columns?(): number
 }
 
 export type RendererFactory = (options: RendererOptions) => DigitRenderer

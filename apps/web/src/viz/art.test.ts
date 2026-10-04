@@ -5,6 +5,7 @@ import {
   clockPosition,
   earlierNeighbours,
   fitBounds,
+  mosaicColumnsCell,
   GOLDEN_ANGLE,
   ringAngle,
   ringSegment,
@@ -134,6 +135,19 @@ describe('palettes', () => {
 })
 
 describe('neighbour mosaic', () => {
+  test('a fixed column count picks the largest cell that fits the width and every digit', () => {
+    // 10 columns in 400×300: 36 px fits the width (360) and 8 rows = 80 digits.
+    expect(mosaicColumnsCell(400, 300, 10, 80, 1)).toBe(36)
+    // 200 digits need 20 rows: 15 px gives 20 rows.
+    expect(mosaicColumnsCell(400, 300, 10, 200, 1)).toBe(15)
+    // Too many digits for any step: the smallest step, and the view scrolls.
+    expect(mosaicColumnsCell(400, 300, 10, 1_000_000, 1)).toBe(3.5)
+    // 120 columns in 300 px: even 3.5 px is too wide, so cells shrink to fit exactly.
+    expect(mosaicColumnsCell(300, 300, 120, 10, 1)).toBe(2.5)
+    // Device pixel ratio scales the steps.
+    expect(mosaicColumnsCell(800, 600, 10, 80, 2)).toBe(72)
+  })
+
   it('lists earlier neighbours without wrapping across rows', () => {
     expect(earlierNeighbours(0, 5)).toEqual([])
     expect(earlierNeighbours(3, 5)).toEqual([2])

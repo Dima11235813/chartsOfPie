@@ -151,7 +151,8 @@
             "marimba",
             "harp",
             "warm-pad",
-            "pure-sine"
+            "pure-sine",
+            "electric-guitar"
           ]
         },
         "reverb": {
@@ -285,6 +286,18 @@
                     "vector",
                     "wave"
                   ]
+                }
+              }
+            },
+            "mosaic": {
+              "default": {},
+              "type": "object",
+              "properties": {
+                "columns": {
+                  "default": 0,
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 120
                 }
               }
             }

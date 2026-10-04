@@ -7,6 +7,10 @@ import {
   type Migrations,
 } from '../schema/migrate'
 
+/** Largest column count the mosaic offers. */
+export const MAX_MOSAIC_COLUMNS = 120
+export const MIN_MOSAIC_COLUMNS = 2
+
 /*
  * Ids below are persisted in share links and saved pieces: never rename or remove one (retire it
  * with a migration instead). Adding one is fine. Tests keep them in step with the UI lists
@@ -63,6 +67,13 @@ function build(lenient: boolean) {
         ),
         harmonograph: z.prefault(z.object({ pure: field(z.boolean(), false) }), {}),
         scope: z.prefault(z.object({ mode: field(z.enum(['vector', 'wave']), 'vector') }), {}),
+        /** Neighbour mosaic: column count, 0 = fill the width (added after v1: additive). */
+        mosaic: z.prefault(
+          z.object({
+            columns: field(z.int().check(z.gte(0), z.lte(MAX_MOSAIC_COLUMNS)), 0),
+          }),
+          {},
+        ),
       }),
       {},
     ),

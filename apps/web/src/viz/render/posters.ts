@@ -1,5 +1,5 @@
 import { stringArtMultiplier } from '../art'
-import { ART, type ArtKind } from './registry'
+import { ART, type ArtKind, type ArtSettings } from './registry'
 import type { DigitAt } from './renderer'
 import { drawStringArt } from './stringArtRenderer'
 
@@ -28,6 +28,8 @@ export interface PosterOptions {
   /** Caption under the artwork (off for snapshot tests). */
   caption?: boolean
   background?: string
+  /** Layout choices from the live view (e.g. mosaic columns). */
+  settings?: ArtSettings
 }
 
 /** Digits drawn per slice before yielding to the browser (keeps the page responsive). */
@@ -38,7 +40,16 @@ const SLICE = 4_000
  * drawn at high resolution in slices so the page stays responsive. `onProgress` gets 0–1.
  */
 export async function renderPoster(
-  { kind, size, count, digitAt, colors, caption = true, background = '#0b0b12' }: PosterOptions,
+  {
+    kind,
+    size,
+    count,
+    digitAt,
+    colors,
+    caption = true,
+    background = '#0b0b12',
+    settings,
+  }: PosterOptions,
   onProgress?: (fraction: number) => void,
 ): Promise<HTMLCanvasElement> {
   const canvas = document.createElement('canvas')
@@ -60,9 +71,13 @@ export async function renderPoster(
   } else {
     const definition = ART[kind]
     name = definition.name
+    if (kind === 'mosaic' && settings?.mosaicColumns) {
+      name += ` · ${settings.mosaicColumns} columns`
+    }
     const renderer = definition.poster(
       { width: art.width, height: art.height, scale, colors },
       count,
+      settings,
     )
     for (let from = 0; from < count; from += SLICE) {
       renderer.draw(from, Math.min(count, from + SLICE), digitAt)

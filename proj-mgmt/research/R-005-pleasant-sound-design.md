@@ -49,7 +49,8 @@ Rendered with `npm run audio:render` (see §5) and inspected as spectrograms:
 
 - 8 instruments: classic (legacy), sampled grand piano (Salamander, CC BY 3.0), FM electric piano,
   FM music box, FM marimba (4:1 overtone like a real bar), subtractive plucked strings, warm pad,
-  pure sine.
+  pure sine. Later: an electric guitar (saw string → pickup resonance → soft-clip amp → cabinet
+  filters; S02.4.5).
 - Master chain: reverb & echo sends → optional glue compressor (-24 dB, 2.5:1, +2 dB makeup) →
   limiter → soft-clip ceiling. Original bypasses the compressor and ceiling (2019 signal path).
 - Per-instrument trims calibrated to -20 dB gated loudness on a neutral phrase (`CALIBRATE=1`).

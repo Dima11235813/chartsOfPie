@@ -33,6 +33,7 @@ export const INSTRUMENT_TRIM_DB: Record<InstrumentId, number> = {
   harp: -3.6,
   'warm-pad': -1.6,
   'pure-sine': -15.4,
+  'electric-guitar': -8,
 }
 
 function polyVoice(
@@ -68,6 +69,44 @@ function salamanderUrls(): Record<string, string> {
     }
   }
   return urls
+}
+
+/**
+ * Electric guitar: a picked string into a valve amp and a speaker cabinet. The string is a slightly
+ * detuned saw (rich in harmonics, like a steel string) whose filter closes after the pick attack;
+ * the pickup's resonance adds a mid bump; a soft-clipping amp adds light overdrive; the cabinet
+ * removes rumble and the fizz above ~4.5 kHz that real guitar speakers cannot reproduce.
+ */
+const electricGuitar: InstrumentDefinition = {
+  id: 'electric-guitar',
+  name: 'Electric guitar',
+  description: 'Picked strings through a lightly overdriven amp and speaker cabinet',
+  async create(tone) {
+    const synth = new tone.PolySynth(tone.MonoSynth, {
+      oscillator: { type: 'fatsawtooth', count: 2, spread: 7 },
+      envelope: { attack: 0.002, decay: 2.4, sustain: 0.18, release: 0.5 },
+      filter: { type: 'lowpass', Q: 1.5, rolloff: -24 },
+      filterEnvelope: {
+        attack: 0.001,
+        decay: 0.45,
+        sustain: 0.3,
+        release: 0.5,
+        baseFrequency: 450,
+        octaves: 3.2,
+      },
+    })
+    synth.maxPolyphony = 24
+    const pickup = new tone.Filter({ type: 'peaking', frequency: 1400, Q: 1.1, gain: 5 })
+    const amp = new tone.Distortion({ distortion: 0.3, oversample: '2x' })
+    const cabinetLow = new tone.Filter({ type: 'highpass', frequency: 90, Q: 0.7 })
+    const cabinetHigh = new tone.Filter({ type: 'lowpass', frequency: 4500, rolloff: -24, Q: 0.8 })
+    return polyVoice(tone, synth, INSTRUMENT_TRIM_DB['electric-guitar'], [
+      pickup,
+      amp,
+      cabinetLow,
+      cabinetHigh,
+    ])
+  },
 }
 
 export const INSTRUMENTS: readonly InstrumentDefinition[] = [
@@ -229,6 +268,7 @@ export const INSTRUMENTS: readonly InstrumentDefinition[] = [
       return polyVoice(tone, synth, INSTRUMENT_TRIM_DB['pure-sine'])
     },
   },
+  electricGuitar,
 ]
 
 export function getInstrument(id: InstrumentId): InstrumentDefinition {

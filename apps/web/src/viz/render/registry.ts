@@ -9,6 +9,12 @@ import { hilbertSide } from '../art'
 
 export type ArtKind = 'ring' | 'walk' | 'sunflower' | 'mosaic' | 'hilbert' | 'type'
 
+/** User choices that change how an artwork is laid out (from the view's options). */
+export interface ArtSettings {
+  /** Neighbour mosaic: fixed column count; undefined = fill the frame. */
+  mosaicColumns?: number
+}
+
 export interface ArtDefinition {
   kind: ArtKind
   name: string
@@ -17,9 +23,9 @@ export interface ArtDefinition {
   /** Summary after `count` digits. */
   summary: (count: number) => string
   /** Live renderer. */
-  live: (options: RendererOptions) => DigitRenderer
+  live: (options: RendererOptions, settings?: ArtSettings) => DigitRenderer
   /** Poster renderer for exactly `count` digits (may lay out differently from live). */
-  poster: (options: RendererOptions, count: number) => DigitRenderer
+  poster: (options: RendererOptions, count: number, settings?: ArtSettings) => DigitRenderer
   /** Largest poster digit count that renders in a few seconds. */
   maxPosterDigits: number
 }
@@ -61,8 +67,13 @@ export const ART: Record<ArtKind, ArtDefinition> = {
     describe:
       'Neighbour mosaic: digits as coloured dots in rows; equal neighbours are joined, so runs show as chains.',
     summary: (count) => `${n(count)} digits in rows; equal neighbours linked.`,
-    live: (options) => createMosaicRenderer(options),
-    poster: (options, count) => createMosaicRenderer(options, { fitCount: Math.max(1, count) }),
+    live: (options, settings) =>
+      createMosaicRenderer(options, { columns: settings?.mosaicColumns }),
+    poster: (options, count, settings) =>
+      createMosaicRenderer(options, {
+        fitCount: Math.max(1, count),
+        columns: settings?.mosaicColumns,
+      }),
     maxPosterDigits: 250_000,
   },
   hilbert: {
