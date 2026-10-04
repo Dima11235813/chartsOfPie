@@ -19,9 +19,9 @@ format defined here is what E08 later syncs to the cloud.
 ## Features
 
 - [x] [F10.1 — Versioned piece schema & compatibility contract](../features/F10.1-piece-schema-compat.md)
-- [ ] [F10.2 — VisualConfig: one state for the view](../features/F10.2-visual-config.md) — links done; last-view pref waits on D3
-- [ ] [F10.3 — On-device piece store](../features/F10.3-piece-store.md)
-- [ ] [F10.4 — Save & "My pieces"](../features/F10.4-my-pieces-ui.md)
+- [x] [F10.2 — VisualConfig: one state for the view](../features/F10.2-visual-config.md)
+- [x] [F10.3 — On-device piece store](../features/F10.3-piece-store.md)
+- [x] [F10.4 — Save & "My pieces"](../features/F10.4-my-pieces-ui.md)
 - [ ] [F10.5 — Installable, offline PWA](../features/F10.5-pwa.md)
 
 ## Out of scope

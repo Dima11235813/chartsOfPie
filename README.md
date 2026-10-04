@@ -51,6 +51,11 @@ Switch the **View** in the bottom bar:
 
 **Keyboard:** Space plays/pauses, → plays one digit, M mutes.
 
+**My pieces** saves the sound, the view and where you are in π on your device (IndexedDB) and
+reopens it there; export a backup file to keep pieces safe. A plain visit restores your last
+session. **Play through MIDI** sends the notes to a hardware instrument such as a Nord Electro 4
+over USB (Chrome, Edge, Firefox).
+
 **Colours** offers the original rainbow, a colour-blind friendly palette, Scriabin's note colours
 and a calm "ink" ramp. **Export** downloads MIDI, a PNG of the view, or a video/audio recording; **Poster** renders any
 artwork at print size (up to 4096² px, up to a million digits).
