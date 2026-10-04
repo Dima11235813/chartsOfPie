@@ -4,6 +4,17 @@ import { DEFAULT_PRESET_ID, getPreset, PRESETS } from '../core/composition/prese
 import { buildShareHash, parseShareHash } from '../core/piece/shareLink'
 import type { VisualConfig } from '../core/piece/visualConfig'
 
+/** The last sound + view, as a share-link hash, so a plain visit restores the last session. */
+export const LAST_SESSION_KEY = 'charts-of-pie:last-session'
+
+function readLastSession(): string {
+  try {
+    return localStorage.getItem(LAST_SESSION_KEY) ?? ''
+  } catch {
+    return ''
+  }
+}
+
 const defaultSound = () => (getPreset(DEFAULT_PRESET_ID) ?? PRESETS[0]!).config
 
 export interface LinkedState {
@@ -17,15 +28,18 @@ export interface LinkedState {
 
 /**
  * Sound and view kept in sync with the URL hash, so every moment is a shareable link
- * (format: core/piece/shareLink). `fallbackVisual` is used when the link names no view.
+ * (format: core/piece/shareLink). With no link, the last session is restored (owner decision
+ * D3, R-007). `fallbackVisual` is used when neither names a view.
  */
 export function useLinkedState(fallbackVisual: () => VisualConfig): LinkedState {
   const [initial] = useState(() => {
-    const shared = parseShareHash(typeof window === 'undefined' ? '' : window.location.hash)
+    const hash = typeof window === 'undefined' ? '' : window.location.hash
+    // A link always wins; otherwise pick up where the last visit left off (never an error).
+    const shared = parseShareHash(hash || readLastSession())
     return {
       config: shared.sound ?? defaultSound(),
       visual: shared.visual ?? fallbackVisual(),
-      invalidLink: shared.invalid,
+      invalidLink: Boolean(hash) && shared.invalid,
     }
   })
   const [config, setConfig] = useState(initial.config)
@@ -33,7 +47,13 @@ export function useLinkedState(fallbackVisual: () => VisualConfig): LinkedState 
 
   useEffect(() => {
     const { pathname, search } = window.location
-    window.history.replaceState(null, '', `${pathname}${search}${buildShareHash(config, visual)}`)
+    const hash = buildShareHash(config, visual)
+    window.history.replaceState(null, '', `${pathname}${search}${hash}`)
+    try {
+      localStorage.setItem(LAST_SESSION_KEY, hash)
+    } catch {
+      // not remembered (private mode)
+    }
   }, [config, visual])
 
   return { config, setConfig, visual, setVisual, invalidLink: initial.invalidLink }

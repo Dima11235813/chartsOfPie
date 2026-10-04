@@ -2,6 +2,7 @@ import { act, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import App from './App'
+import { createMemoryStore } from './storage/pieceStore'
 import type { NotePlayer } from './audio/notePlayer'
 import { createDigitSource, parseDigits } from './core/digits/digitSource'
 import { encodeConfig } from './core/composition/config'
@@ -44,6 +45,7 @@ describe('App', () => {
   beforeEach(() => {
     vi.spyOn(Math, 'random').mockReturnValue(0.5) // 5 × 42 ms between digits
     window.history.replaceState(null, '', '/')
+    localStorage.clear()
   })
   afterEach(() => {
     vi.restoreAllMocks()
@@ -217,6 +219,50 @@ describe('App', () => {
     screen.getByLabelText('View').focus()
     await user.keyboard('m')
     expect(screen.getByRole('button', { name: 'Mute' })).toBeInTheDocument()
+  })
+
+  it('saves a piece and reopens it at the saved digit with its sound and view', async () => {
+    const user = userEvent.setup()
+    const store = createMemoryStore()
+    const { unmount } = render(
+      <App createPlayer={fakePlayer} loadSource={source} createStore={() => store} />,
+    )
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Step' })).toBeEnabled())
+    await user.selectOptions(screen.getByLabelText('Preset'), 'Music box')
+    await user.selectOptions(screen.getByLabelText('View'), 'Sheet music')
+    for (let i = 0; i < 3; i++) await user.click(screen.getByRole('button', { name: 'Step' }))
+    await user.type(screen.getByLabelText('Name'), 'Three digits')
+    await user.click(screen.getByRole('button', { name: 'Save' }))
+    expect(await screen.findByText('Three digits')).toBeInTheDocument()
+    unmount()
+
+    // A fresh visit on the default sound: open the piece.
+    window.history.replaceState(null, '', '/#p=original')
+    render(<App createPlayer={fakePlayer} loadSource={source} createStore={() => store} />)
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Step' })).toBeEnabled())
+    expect(screen.getByTestId('total-count')).toHaveTextContent('0')
+    await user.click(await screen.findByRole('button', { name: 'Open Three digits' }))
+    expect(screen.getByLabelText('Preset')).toHaveDisplayValue('Music box')
+    expect(screen.getByLabelText('View')).toHaveValue('staff')
+    expect(screen.getByTestId('total-count')).toHaveTextContent('3')
+  })
+
+  it('restores the last session on a plain visit, but a link wins', async () => {
+    const user = userEvent.setup()
+    const { unmount } = render(<App createPlayer={fakePlayer} loadSource={source} />)
+    await user.selectOptions(screen.getByLabelText('Preset'), 'Music box')
+    await user.selectOptions(screen.getByLabelText('View'), 'Music clock')
+    unmount()
+
+    window.history.replaceState(null, '', '/')
+    const second = render(<App createPlayer={fakePlayer} loadSource={source} />)
+    expect(screen.getByLabelText('Preset')).toHaveDisplayValue('Music box')
+    expect(screen.getByLabelText('View')).toHaveValue('clock')
+    second.unmount()
+
+    window.history.replaceState(null, '', '/#p=lydian-dream')
+    render(<App createPlayer={fakePlayer} loadSource={source} />)
+    expect(screen.getByLabelText('Preset')).toHaveDisplayValue('Lydian dream')
   })
 
   it('switches between chart, sheet music and spectrogram views', async () => {

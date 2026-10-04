@@ -4,6 +4,7 @@ import { getPreset, PRESETS } from '../composition/presets'
 import { migrate, preserveUnknown } from '../schema/migrate'
 import { createPiece, pieceSchema, pieceToDocument, readPiece } from './piece'
 import { buildShareHash, parseShareHash } from './shareLink'
+import { createBackup, piecesInFile } from './backup'
 import shareLinks from './fixtures/share-links.json'
 import {
   DEFAULT_VISUAL_CONFIG,
@@ -215,5 +216,19 @@ describe('persisted schema snapshots', () => {
     ['piece.v1', pieceSchema],
   ] as const)('%s', async (name, schema) => {
     await expect(snapshot(schema)).toMatchFileSnapshot(`./__schemas__/${name}.json`)
+  })
+})
+
+describe('backup files', () => {
+  test('a backup round-trips its pieces verbatim; a single piece file is accepted too', () => {
+    const doc = fixture('pieces/v1/full.json') as Record<string, unknown>
+    const backup = createBackup([doc], new Date('2026-10-05T00:00:00Z'))
+    expect(backup).toMatchObject({ schema: 'charts-of-pie/backup', version: 1 })
+    expect(piecesInFile(JSON.parse(JSON.stringify(backup)))).toEqual([doc])
+    expect(piecesInFile(doc)).toEqual([doc])
+    // A future backup version keeps the `pieces` array, so it still imports.
+    expect(piecesInFile({ ...backup, version: 7, extra: true })).toEqual([doc])
+    expect(piecesInFile({ hello: 'world' })).toBeNull()
+    expect(piecesInFile('nope')).toBeNull()
   })
 })

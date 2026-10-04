@@ -9,6 +9,8 @@ import type { NotePlayer } from '../audio/notePlayer'
 import { soundSettingsFor } from '../audio/settings'
 
 export const RECENT_DIGITS = 32
+/** Resuming replays digits silently to rebuild counts and views; cap it to stay responsive. */
+export const MAX_RESUME_DIGITS = 100_000
 const EMPTY_COUNTS: readonly number[] = new Array<number>(10).fill(0)
 
 export type LoadState =
@@ -36,6 +38,11 @@ export interface PlaybackState {
   toggle: () => Promise<void>
   step: () => Promise<void>
   reset: () => void
+  /**
+   * Jump to digit `index` (resume a saved piece): starts over and replays the first `index` digits
+   * silently with `config`, so counts, the log and every view are exactly as if they had played.
+   */
+  seek: (index: number, config?: CompositionConfig) => void
   setMuted: (muted: boolean) => void
 }
 
@@ -58,6 +65,7 @@ export function usePiPlayback(
   const configRef = useRef(config)
   const [arranger] = useState(() => new Arranger(config))
   const gapRef = useRef(0)
+  const silentRef = useRef(false)
 
   // Config changes apply from the next digit on, without restarting playback.
   useEffect(() => {
@@ -75,7 +83,9 @@ export function usePiPlayback(
           source,
           arrange: (digit) => arranger.arrange(digit),
           onStep: (event) => {
-            player.playStep(event.note, event.durationSec, event.velocity, gapRef.current)
+            if (!silentRef.current) {
+              player.playStep(event.note, event.durationSec, event.velocity, gapRef.current)
+            }
             gapRef.current = event.delayMs
             const chord = log.record(event)
             if (chord) setLastChord(chord)
@@ -151,6 +161,27 @@ export function usePiPlayback(
     setIsFinished(false)
   }, [arranger, player, log])
 
+  const seek = useCallback(
+    (index: number, nextConfig?: CompositionConfig) => {
+      const engine = engineRef.current
+      if (!engine || load.status !== 'ready') return
+      reset()
+      if (nextConfig) {
+        configRef.current = nextConfig
+        arranger.setConfig(nextConfig)
+      }
+      const target = Math.min(Math.max(0, Math.floor(index)), MAX_RESUME_DIGITS, load.source.length)
+      silentRef.current = true
+      try {
+        for (let i = 0; i < target; i++) engine.step()
+      } finally {
+        silentRef.current = false
+        gapRef.current = 0
+      }
+    },
+    [load, reset, arranger],
+  )
+
   const setMuted = useCallback(
     (value: boolean) => {
       player.setMuted(value)
@@ -175,6 +206,7 @@ export function usePiPlayback(
     toggle,
     step,
     reset,
+    seek,
     setMuted,
   }
 }

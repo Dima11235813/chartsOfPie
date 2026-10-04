@@ -1,6 +1,6 @@
 # Board
 
-_Last updated with the guitar fretboard, classic keyboards + acoustic guitar, keyboard shortcuts and the R-008 hardware plan._
+_Last updated with MIDI out (Nord Electro 4), My pieces (IndexedDB, resume, backups) and restore-last-session._
 
 ## Epics
 
@@ -22,34 +22,34 @@ _Last updated with the guitar fretboard, classic keyboards + acoustic guitar, ke
 | Feature | Title                                           | Status |
 | ------- | ----------------------------------------------- | ------ |
 | F10.1   | Versioned piece schema & compatibility contract | done   |
-| F10.2   | VisualConfig: one state for the view            | doing  |
-| F10.3   | On-device piece store                           | ready  |
-| F10.4   | Save & "My pieces"                              | ready  |
+| F10.2   | VisualConfig: one state for the view            | done   |
+| F10.3   | On-device piece store                           | done   |
+| F10.4   | Save & "My pieces"                              | done   |
 | F10.5   | Installable, offline PWA                        | ready  |
 
 ## E02 progress (previous slice: configurable music, presets, pleasant sound)
 
-| Story   | Title                                            | Status      |
-| ------- | ------------------------------------------------ | ----------- |
-| S02.1.1 | Scale & mode catalogue in the core               | done        |
-| S02.1.2 | Choose scale, root and octave in the UI          | done        |
-| S02.2.1 | Selectable digit → pitch mapping strategies      | done        |
-| S02.3.1 | Tempo-locked playback with BPM control           | done        |
-| S02.3.2 | Selectable rhythm encodings                      | done        |
-| S02.4.1 | Instrument selection                             | done        |
-| S02.5.1 | Versioned CompositionConfig with URL sharing     | done        |
-| S02.6.1 | Out-of-the-box presets                           | done        |
-| S02.6.2 | Offline render & loudness harness                | done        |
-| S02.4.2 | Harmony: drones (done), intervals, chords        | in-progress |
-| S02.6.3 | Owner listening review & preset iteration        | ready       |
-| S02.1.3 | Explain the selected scale as math               | ready       |
-| S06.2.1 | Rebrand and relocate to Math Art (owner-driven)  | ready       |
-| S02.3.3 | Euclidean rhythms and swing                      | backlog     |
-| S02.4.3 | Export the performance as MIDI                   | backlog     |
-| S02.4.4 | Reliable audio on iOS and Android                | backlog     |
-| S02.4.5 | Electric guitar + “Pentatonic rock” preset       | done        |
-| S02.4.6 | Classic keyboards, acoustic guitar, analog synth | done        |
-| F02.7   | Play through hardware (Web MIDI, Nord) — next    | ready       |
+| Story   | Title                                               | Status      |
+| ------- | --------------------------------------------------- | ----------- |
+| S02.1.1 | Scale & mode catalogue in the core                  | done        |
+| S02.1.2 | Choose scale, root and octave in the UI             | done        |
+| S02.2.1 | Selectable digit → pitch mapping strategies         | done        |
+| S02.3.1 | Tempo-locked playback with BPM control              | done        |
+| S02.3.2 | Selectable rhythm encodings                         | done        |
+| S02.4.1 | Instrument selection                                | done        |
+| S02.5.1 | Versioned CompositionConfig with URL sharing        | done        |
+| S02.6.1 | Out-of-the-box presets                              | done        |
+| S02.6.2 | Offline render & loudness harness                   | done        |
+| S02.4.2 | Harmony: drones (done), intervals, chords           | in-progress |
+| S02.6.3 | Owner listening review & preset iteration           | ready       |
+| S02.1.3 | Explain the selected scale as math                  | ready       |
+| S06.2.1 | Rebrand and relocate to Math Art (owner-driven)     | ready       |
+| S02.3.3 | Euclidean rhythms and swing                         | backlog     |
+| S02.4.3 | Export the performance as MIDI                      | backlog     |
+| S02.4.4 | Reliable audio on iOS and Android                   | backlog     |
+| S02.4.5 | Electric guitar + “Pentatonic rock” preset          | done        |
+| S02.4.6 | Classic keyboards, acoustic guitar, analog synth    | done        |
+| F02.7   | Web MIDI out (Nord Electro 4) done; owner test next | in-progress |
 
 ## Recent slices (sheet music, spectrogram, export; artistic gallery 2b-1 to 2b-3)
 

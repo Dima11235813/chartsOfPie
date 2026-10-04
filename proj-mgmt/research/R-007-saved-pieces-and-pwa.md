@@ -137,6 +137,11 @@ The storage layer sits behind a `PieceStore` interface (`list`, `get`, `put`, `d
 
 ## 6. Decisions needed from the owner
 
+**Owner decisions (2026-10-05):** D1 — IndexedDB for pieces + `localStorage` for preferences.
+D2 — a saved piece resumes at its digit. D3 — a plain visit restores the last session (a link
+always wins; Original (2019) is one click away). Backend for cloud saving: Cloudflare Workers + D1
+(E07).
+
 - **D1 — Storage:** IndexedDB for pieces + `localStorage` for prefs (recommended), or
   `localStorage` only.
 - **D2 — Position:** should a saved piece remember where in π it was (resume from digit N, with

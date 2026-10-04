@@ -24,6 +24,11 @@ import { StatsPanel } from './components/StatsPanel'
 import { DEFAULT_VISUAL_CONFIG, type VisualConfig } from './core/piece/visualConfig'
 import { useLinkedState } from './hooks/useLinkedState'
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts'
+import { withMidiTap } from './midi/midiTap'
+import { useMidiOutput } from './midi/useMidiOutput'
+import { MidiPanel } from './components/MidiPanel'
+import { PiecesPanel } from './components/PiecesPanel'
+import { createDefaultStore, type PieceStore } from './storage/pieceStore'
 import { usePiPlayback } from './hooks/usePiPlayback'
 
 const PALETTE_KEY = 'charts-of-pie:palette'
@@ -50,13 +55,19 @@ const initialVisual = (): VisualConfig => ({
 interface AppProps {
   createPlayer?: () => NotePlayer
   loadSource?: () => Promise<DigitSource>
+  /** Where saved pieces live (IndexedDB by default; tests pass a memory store). */
+  createStore?: () => PieceStore
 }
 
 export default function App({
   createPlayer = createToneNotePlayer,
   loadSource = loadPiDigits,
+  createStore = createDefaultStore,
 }: AppProps) {
-  const [player] = useState(createPlayer)
+  const [store] = useState(createStore)
+  // Every note can also go to a MIDI instrument (e.g. a Nord) — see midi/midiTap.
+  const [player] = useState(() => withMidiTap(createPlayer()))
+  const midi = useMidiOutput(player)
   const { config, setConfig, visual, setVisual, invalidLink } = useLinkedState(initialVisual)
   const { view, chartStyle, palette: paletteId, viewOptions } = visual
   const updateVisual = useCallback(
@@ -215,6 +226,7 @@ export default function App({
               </p>
             )}
             <SoundPanel config={config} onChange={setConfig} />
+            <MidiPanel midi={midi} />
             <ExportPanel
               config={config}
               label={label}
@@ -224,6 +236,19 @@ export default function App({
               getAudioStream={() => player.getAudioStream()}
               getCanvas={() => canvasRef.current}
               getCaption={() => captionRef.current}
+            />
+            <PiecesPanel
+              store={store}
+              sound={config}
+              visual={visual}
+              position={playback.total}
+              suggestedName={`${label} · ${VIEWS.find((v) => v.id === view)?.label ?? view}`}
+              getCanvas={() => canvasRef.current}
+              onOpen={(piece) => {
+                setConfig(piece.sound)
+                setVisual(piece.visual)
+                playback.seek(piece.position?.digitIndex ?? 0, piece.sound)
+              }}
             />
             {load.status === 'ready' && (
               <PosterPanel
