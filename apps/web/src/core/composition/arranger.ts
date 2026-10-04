@@ -98,7 +98,14 @@ export class Arranger {
     if (config.timing !== 'tempo') delayMs = legacyStepDelayMs(this.random)
     // Original note lengths on a tempo: play them back to back so they neither overlap nor cut off.
     else if (config.rhythm === 'legacy') delayMs = durationSec * 1000
-    else delayMs = steps * stepSec * 1000
+    else if (config.swing > 0 && config.subdivision > 1) {
+      // Swing: within each pair of steps the first is longer, the second shorter.
+      let units = 0
+      for (let k = this.stepInBeat; k < this.stepInBeat + steps; k++) {
+        units += k % 2 === 0 ? 1 + config.swing : 1 - config.swing
+      }
+      delayMs = units * stepSec * 1000
+    } else delayMs = steps * stepSec * 1000
 
     // Leave headroom for humanize to vary both ways; Original (no humanize) stays at full velocity.
     let velocity = config.humanize > 0 ? 0.9 : 1

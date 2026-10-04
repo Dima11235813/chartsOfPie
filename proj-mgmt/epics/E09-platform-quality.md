@@ -16,6 +16,7 @@ phase: continuous
 - [ ] F09.3 — Colour palettes: high-contrast & colour-blind-safe alternatives (see B-013)
 - [ ] F09.4 — Performance budgets in CI (bundle size, Lighthouse), Web Worker for heavy analysis
 - [ ] F09.5 — Light theme & theme toggle
+- [x] F09.9 — Full-screen stage (button + F key) for projection and exhibitions
 - [ ] F09.6 — Internationalisation (copy extraction, RTL-safe layouts)
 - [ ] F09.7 — Hosting & domain for the rebrand — **static front end live on GitHub Pages**
       (`.github/workflows/deploy-pages.yml`, deploys master after CI passes); custom domain and API

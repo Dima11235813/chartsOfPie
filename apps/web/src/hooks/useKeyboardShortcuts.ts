@@ -7,6 +7,8 @@ export interface ShortcutHandlers {
   step(): void
   /** M: mute / unmute. */
   mute(): void
+  /** F: full screen on/off. */
+  fullscreen(): void
 }
 
 /** Elements that already use these keys themselves (Space presses a focused button, etc.). */
@@ -40,7 +42,9 @@ export function useKeyboardShortcuts(enabled: boolean, handlers: ShortcutHandler
             ? latest.current.step
             : event.key === 'm' || event.key === 'M'
               ? latest.current.mute
-              : null
+              : event.key === 'f' || event.key === 'F'
+                ? latest.current.fullscreen
+                : null
       if (!action) return
       event.preventDefault()
       action()

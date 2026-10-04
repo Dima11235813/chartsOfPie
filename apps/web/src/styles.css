@@ -776,3 +776,19 @@ body {
   font: inherit;
   font-size: 0.85rem;
 }
+
+/* Full screen stage (F): the view fills the screen, for projection and exhibitions. */
+.stage {
+  position: relative;
+}
+
+.stage:fullscreen {
+  border-radius: 0;
+  border: 0;
+  padding: 0;
+  background: #0b0b12;
+}
+
+.stage:fullscreen .chart-container {
+  min-height: 100dvh;
+}

@@ -31,6 +31,7 @@ export const VIEW_IDS = [
   'harmonograph',
   'scope',
   'fretboard',
+  'cymatics',
 ] as const
 export const PALETTE_IDS = ['rainbow', 'colour-blind', 'scriabin', 'ink'] as const
 export const CHART_STYLE_IDS = [

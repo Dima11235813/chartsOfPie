@@ -93,6 +93,12 @@
         }
       ]
     },
+    "swing": {
+      "default": 0,
+      "type": "number",
+      "minimum": 0,
+      "maximum": 0.5
+    },
     "legato": {
       "type": "number",
       "minimum": 0.25,

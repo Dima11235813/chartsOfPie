@@ -47,9 +47,10 @@ Switch the **View** in the bottom bar:
 - **Artistic:** digit ring, π walk, sunflower, neighbour mosaic, Hilbert carpet (all million digits),
   typographic π, times-table string art.
 - **Sound shapes:** music clock (with a circle-of-fifths mode), harmonograph (pure vs tempered
-  ratios), oscilloscope, guitar fretboard (scale map, fingering, four tunings).
+  ratios), oscilloscope, guitar fretboard (scale map, fingering, four tunings), cymatics (sand on a
+  Chladni plate drawing each note's figure).
 
-**Keyboard:** Space plays/pauses, → plays one digit, M mutes.
+**Keyboard:** Space plays/pauses, → plays one digit, M mutes, F shows the view full screen.
 
 **My pieces** saves the sound, the view and where you are in π on your device (IndexedDB) and
 reopens it there; export a backup file to keep pieces safe. A plain visit restores your last
