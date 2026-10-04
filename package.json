@@ -1,7 +1,7 @@
 {
   "name": "charts-of-pie",
   "private": true,
-  "description": "Math is Art: explore, visualize and listen to mathematics \u2014 starting with the digits of \u03c0.",
+  "description": "Math is Art: explore, visualize and listen to mathematics — starting with the digits of π.",
   "workspaces": [
     "apps/*"
   ],
@@ -9,14 +9,15 @@
     "dev": "npm run dev -w @charts-of-pie/web",
     "build": "npm run build -w @charts-of-pie/web",
     "preview": "npm run preview -w @charts-of-pie/web",
-    "test": "npm run test -w @charts-of-pie/web",
+    "test": "npm run test -w @charts-of-pie/web && npm run test -w @charts-of-pie/api",
     "test:e2e": "npm run test:e2e -w @charts-of-pie/web",
     "lint": "npm run lint -w @charts-of-pie/web",
-    "typecheck": "npm run typecheck -w @charts-of-pie/web",
+    "typecheck": "npm run typecheck -w @charts-of-pie/web && npm run typecheck -w @charts-of-pie/api",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "check": "npm run format:check && npm run lint && npm run typecheck && npm run test && npm run build",
-    "audio:render": "npm run audio:render -w @charts-of-pie/web"
+    "audio:render": "npm run audio:render -w @charts-of-pie/web",
+    "api:dev": "npm run dev -w @charts-of-pie/api"
   },
   "engines": {
     "node": ">=20.19"

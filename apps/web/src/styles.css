@@ -319,6 +319,8 @@ body {
 
 .field {
   display: grid;
+  /* minmax(0, …): rows like "name + Save" may shrink below their content's natural width. */
+  grid-template-columns: minmax(0, 1fr);
   gap: 0.25rem;
   margin-bottom: 0.6rem;
   min-width: 0;
@@ -738,4 +740,39 @@ body {
   align-items: center;
   gap: 0.5rem;
   font-size: 0.9rem;
+}
+
+/* Account */
+.account-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: auto;
+  font-size: 0.9rem;
+}
+
+.avatar {
+  border-radius: 50%;
+}
+
+.account-pieces h3 {
+  margin: 0.75rem 0 0.4rem;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+.piece-item-remote {
+  grid-template-columns: 1fr;
+}
+
+.piece-actions select {
+  min-height: 40px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.85rem;
 }

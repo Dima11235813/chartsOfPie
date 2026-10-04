@@ -37,6 +37,8 @@ jobs:
       - run: npm run build
         env:
           BASE_PATH: /${{ github.event.repository.name }}/
+          # The account API (apps/api); empty = accounts hidden. Repo → Settings → Variables.
+          VITE_API_URL: ${{ vars.API_URL }}
       # Hash-based links mean every page is index.html; a 404 page that is the app keeps stray
       # paths working too.
       - run: cp apps/web/dist/index.html apps/web/dist/404.html

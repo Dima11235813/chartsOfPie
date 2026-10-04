@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useId, useRef, useState } from 'react'
+import { useCallback, useEffect, useId, useRef, useState, type ReactNode } from 'react'
 import type { CompositionConfig } from '../core/composition/config'
 import { createBackup, piecesInFile } from '../core/piece/backup'
 import { createPiece, pieceToDocument, type Piece } from '../core/piece/piece'
@@ -17,6 +17,8 @@ interface PiecesPanelProps {
   suggestedName: string
   getCanvas: () => HTMLCanvasElement | null
   onOpen: (piece: Piece) => void
+  /** Shown when signed in: the account's pieces (cloud backup and sharing). */
+  accountSection?: ReactNode
 }
 
 const newId = () =>
@@ -82,6 +84,7 @@ export function PiecesPanel({
   suggestedName,
   getCanvas,
   onOpen,
+  accountSection,
 }: PiecesPanelProps) {
   const ids = { name: useId(), file: useId() }
   const [pieces, setPieces] = useState<StoredPiece[]>([])
@@ -313,6 +316,7 @@ export function PiecesPanel({
           })}
         </ul>
       )}
+      {accountSection}
       <div className="inline-row">
         <button
           type="button"

@@ -18,7 +18,7 @@ responsive by default · every item tracked in this folder.
 | 2.5   | **Next:** save on device + installable PWA | E10                    | ready — planned in R-007, prioritised by the owner                                          |
 | 3     | Beyond π: Fibonacci, φ, e, √2, primes      | E05                    | backlog                                                                                     |
 | 4     | Learn: guided lessons                      | E04                    | backlog                                                                                     |
-| 5     | Accounts: backend, authN/authZ             | E07                    | backlog                                                                                     |
+| 5     | Accounts: backend, authN/authZ             | E07                    | **in progress** — Cloudflare API + GitHub sign-in built; owner setup pending                |
 | 6     | Save, gallery & share                      | E08                    | export (MIDI, PNG, video, audio) shipped early; cloud saving needs E07; local saving is E10 |
 | ∞     | Platform quality (PWA, a11y, perf, i18n)   | E09, E06               | continuous                                                                                  |
 
