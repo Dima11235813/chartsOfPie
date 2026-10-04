@@ -1,6 +1,6 @@
 # Board
 
-_Last updated with E10 slice 1: versioned piece schema, compatibility suite, shareable views._
+_Last updated with the electric guitar (S02.4.5) and the adjustable-width neighbour mosaic (F03.4)._
 
 ## Epics
 
@@ -47,6 +47,7 @@ _Last updated with E10 slice 1: versioned piece schema, compatibility suite, sha
 | S02.3.3 | Euclidean rhythms and swing                     | backlog     |
 | S02.4.3 | Export the performance as MIDI                  | backlog     |
 | S02.4.4 | Reliable audio on iOS and Android               | backlog     |
+| S02.4.5 | Electric guitar + “Pentatonic rock” preset      | done        |
 
 ## Recent slices (sheet music, spectrogram, export; artistic gallery 2b-1 to 2b-3)
 

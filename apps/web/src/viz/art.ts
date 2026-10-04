@@ -161,6 +161,28 @@ export function earlierNeighbours(index: number, cols: number): number[] {
   return neighbours
 }
 
+/** Cell sizes (CSS px) offered when the user fixes the column count, largest first. */
+export const MOSAIC_COLUMN_CELLS = [36, 30, 26, 22, 18, 15, 13, 11, 9, 7, 5.5, 4.5, 3.5] as const
+
+/**
+ * Live mosaic cell size for a fixed column count: the largest step that fits the width and still
+ * shows all `count` digits; once even the smallest can't, the smallest (and the view scrolls). If
+ * the columns are too many for even that, cells shrink to fit the width exactly.
+ */
+export function mosaicColumnsCell(
+  width: number,
+  height: number,
+  columns: number,
+  count: number,
+  scale: number,
+): number {
+  const widest = width / columns
+  const sizes = MOSAIC_COLUMN_CELLS.map((size) => size * scale).filter((c) => c <= widest)
+  if (!sizes.length) return widest
+  for (const cell of sizes) if (Math.floor(height / cell) * columns >= count) return cell
+  return sizes.at(-1)!
+}
+
 // ── Times-table string art (modular multiplication on a circle) ────────────────────────────────
 
 /** Multiplier chosen by the two latest digits: 2 + d₁ + d₂/10, i.e. 2.0 … 11.9. */

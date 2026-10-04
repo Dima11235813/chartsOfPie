@@ -120,7 +120,8 @@
         "marimba",
         "harp",
         "warm-pad",
-        "pure-sine"
+        "pure-sine",
+        "electric-guitar"
       ]
     },
     "reverb": {

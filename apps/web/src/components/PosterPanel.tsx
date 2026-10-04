@@ -8,14 +8,17 @@ import {
   renderPoster,
   type PosterKind,
 } from '../viz/render/posters'
+import type { ArtSettings } from '../viz/render/registry'
 import { useDigitColors } from './palette'
 
 interface PosterPanelProps {
   source: DigitSource
+  /** Layout choices from the live views (the mosaic poster uses the chosen column count). */
+  settings?: ArtSettings
 }
 
 /** Print-size PNG of an artistic view for the first N digits of π, in the current palette. */
-export function PosterPanel({ source }: PosterPanelProps) {
+export function PosterPanel({ source, settings }: PosterPanelProps) {
   const colors = useDigitColors()
   const [kind, setKind] = useState<PosterKind>('ring')
   const [count, setCount] = useState<number>(10_000)
@@ -35,11 +38,25 @@ export function PosterPanel({ source }: PosterPanelProps) {
     setProgress(0)
     try {
       const canvas = await renderPoster(
-        { kind, size, count: effectiveCount, digitAt: (i) => source.digitAt(i), colors },
+        {
+          kind,
+          size,
+          count: effectiveCount,
+          digitAt: (i) => source.digitAt(i),
+          colors,
+          settings,
+        },
         setProgress,
       )
       const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/png'))
-      if (blob) downloadBlob(blob, exportFileName(`poster-${kind}-${effectiveCount}`, 'png'))
+      if (blob)
+        downloadBlob(
+          blob,
+          exportFileName(
+            `poster-${kind}-${effectiveCount}${kind === 'mosaic' && settings?.mosaicColumns ? `-${settings.mosaicColumns}col` : ''}`,
+            'png',
+          ),
+        )
     } finally {
       setProgress(null)
     }

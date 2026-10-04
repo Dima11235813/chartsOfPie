@@ -14,6 +14,7 @@ export const GENERAL_MIDI_PROGRAM: Record<InstrumentId, number> = {
   harp: 46, // Orchestral Harp
   'warm-pad': 89, // Pad 2 (warm)
   'pure-sine': 79, // Ocarina — the closest to a pure tone
+  'electric-guitar': 29, // Overdriven Guitar
 }
 
 /**

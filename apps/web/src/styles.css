@@ -578,3 +578,57 @@ body {
   pointer-events: none;
   text-shadow: 0 0 4px #000;
 }
+
+/* Neighbour mosaic: choose the column count and watch the pattern re-flow. */
+.viz-columns {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0 0.5rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface-2) 88%, transparent);
+  border: 1px solid var(--border);
+  font-size: 0.85rem;
+}
+
+.viz-columns input[type='range'] {
+  flex: 1;
+  min-width: 0;
+  min-height: 44px;
+  accent-color: var(--accent);
+}
+
+.viz-columns-fit {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  min-height: 44px;
+}
+
+.viz-columns-fit input {
+  width: 1.1rem;
+  height: 1.1rem;
+  accent-color: var(--accent);
+}
+
+.viz-columns .btn-icon {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  font-size: 1.2rem;
+}
+
+.viz-columns-count {
+  min-width: 5.5em;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Keep the drawing clear of the bottom control bar (newest mosaic rows are at the bottom). */
+.viz-layer-with-bar .viz-canvas {
+  height: calc(100% - 68px);
+}

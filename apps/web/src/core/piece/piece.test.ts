@@ -60,17 +60,21 @@ describe('golden piece fixtures', () => {
     if (read.status !== 'ok') throw new Error(read.status)
     expect(read.piece.name).toBe('Lydian dream · Music clock')
     expect(read.piece.position).toEqual({ digitIndex: 1234 })
-    expect(read.piece.visual).toEqual({
-      version: 1,
-      view: 'clock',
-      palette: 'scriabin',
-      chartStyle: 'radar',
-      viewOptions: {
-        clock: { order: 'fifths' },
-        harmonograph: { pure: true },
-        scope: { mode: 'wave' },
-      },
-    })
+    // Expectations are normalised through the current schema, so later additive fields (with
+    // defaults) need no edit here — while any change to these values still fails.
+    expect(read.piece.visual).toEqual(
+      visualConfigSchema.parse({
+        version: 1,
+        view: 'clock',
+        palette: 'scriabin',
+        chartStyle: 'radar',
+        viewOptions: {
+          clock: { order: 'fifths' },
+          harmonograph: { pure: true },
+          scope: { mode: 'wave' },
+        },
+      }),
+    )
   })
 })
 
@@ -113,7 +117,8 @@ describe('documents from newer versions of the app', () => {
 
 describe('share links in the wild', () => {
   test.each(shareLinks.links)('$hash', ({ hash, sound, visual, invalid }) => {
-    expect(parseShareHash(hash)).toEqual({ sound, visual, invalid })
+    const expected = visual === null ? null : visualConfigSchema.parse(visual)
+    expect(parseShareHash(hash)).toEqual({ sound, visual: expected, invalid })
   })
 
   test('hashes round-trip and defaults are left out', () => {

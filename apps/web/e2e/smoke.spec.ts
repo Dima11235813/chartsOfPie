@@ -204,7 +204,7 @@ test('artistic views draw and follow the colour palette', async ({ page }, testI
     ['Digit ring', /Digit ring/, /\d+ digits woven/],
     ['π walk', /π walk/, /\d+ steps/],
     ['Sunflower', /Sunflower/, /\d+ seeds/],
-    ['Neighbour mosaic', /Neighbour mosaic/, /\d+ digits in rows/],
+    ['Neighbour mosaic', /Neighbour mosaic/, /\d+ digits in \d+ columns/],
     ['Music clock', /Music clock/, /Now: /],
     ['String art', /Times-table string art/, /k = \d/],
     ['Hilbert carpet', /Hilbert carpet/, /\d+ of 1,000,001 digits lit/],
@@ -289,4 +289,44 @@ test('the view and its options travel in the link and survive a reload', async (
   await page.reload()
   await expect(page.getByRole('combobox', { name: 'View' })).toHaveValue('chart')
   await expect(page.getByLabel('Preset')).toHaveValue('music-box')
+})
+
+test('the neighbour mosaic narrows and widens, and the pattern re-flows', async ({
+  page,
+}, testInfo) => {
+  await page.goto('/#p=dorian-marimba')
+  const play = page.getByRole('button', { name: 'Play' })
+  await expect(play).toBeEnabled({ timeout: 15_000 })
+  await page.getByRole('combobox', { name: 'View' }).selectOption({ label: 'Neighbour mosaic' })
+  await play.click()
+  const mosaic = page.getByRole('img', { name: /Neighbour mosaic/ })
+  await expect(mosaic).toHaveAttribute('aria-label', /[1-9][\d,]* digits in \d+ columns/, {
+    timeout: 10_000,
+  })
+  await page.getByRole('button', { name: 'Pause' }).click()
+
+  // Choosing a width re-lays every digit already played.
+  const columns = page.getByRole('slider', { name: 'Columns' })
+  await columns.fill('7')
+  await expect(mosaic).toHaveAttribute(
+    'aria-label',
+    /in 7 columns\. A vertical link joins equal digits 7 places apart/,
+  )
+  await expect(page.getByRole('checkbox', { name: 'Fit' })).not.toBeChecked()
+  await page.getByRole('button', { name: 'More columns' }).click()
+  await expect(mosaic).toHaveAttribute('aria-label', /in 8 columns/)
+  await testInfo.attach('mosaic-8-columns.png', {
+    body: await mosaic.screenshot(),
+    contentType: 'image/png',
+  })
+
+  // The choice travels in the link; Fit goes back to filling the width.
+  await page.reload()
+  await expect(page.getByRole('slider', { name: 'Columns' })).toHaveValue('8')
+  await page.getByRole('checkbox', { name: 'Fit' }).check()
+  await expect(page.getByRole('checkbox', { name: 'Fit' })).toBeChecked()
+  const overflow = await page.evaluate(
+    () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+  )
+  expect(overflow).toBeLessThanOrEqual(0)
 })

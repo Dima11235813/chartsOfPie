@@ -1,4 +1,4 @@
-import { earlierNeighbours } from '../art'
+import { earlierNeighbours, mosaicColumnsCell } from '../art'
 import { createLayer, type DigitAt, type DigitRenderer, type RendererOptions } from './renderer'
 
 /** Live cell sizes (CSS px), largest first. */
@@ -9,6 +9,11 @@ export interface MosaicOptions {
   cell?: number
   /** For posters: size the grid to show exactly this many digits. */
   fitCount?: number
+  /**
+   * Fixed number of columns (the grid narrows or widens instead of filling the frame). Digits
+   * `columns` apart sit on top of each other, so repeats at that distance show as vertical links.
+   */
+  columns?: number
 }
 
 /**
@@ -18,7 +23,7 @@ export interface MosaicOptions {
  */
 export function createMosaicRenderer(
   { width, height, scale, colors }: RendererOptions,
-  { cell: fixedCell, fitCount }: MosaicOptions = {},
+  { cell: fixedCell, fitCount, columns }: MosaicOptions = {},
 ): DigitRenderer {
   const pad = 10 * scale
   const innerW = width - pad * 2
@@ -29,20 +34,26 @@ export function createMosaicRenderer(
     while (Math.floor(innerW / c) * Math.floor(innerH / c) < n) c *= 0.98
     return c
   }
+  /** Poster with fixed columns: the largest cell that fits the width and all the rows. */
+  const fitColumnsCell = (n: number, cols: number) =>
+    Math.min(innerW / cols, innerH / Math.max(1, Math.ceil(n / cols)))
   /** Live: start with big cells and step down as the frame fills, then scroll at the smallest. */
   const liveCell = (n: number) => {
+    if (columns) return mosaicColumnsCell(innerW, innerH, columns, n, scale)
     for (const size of LIVE_CELLS) {
       const c = size * scale
       if (Math.floor(innerW / c) * Math.floor(innerH / c) >= n) return c
     }
     return LIVE_CELLS.at(-1)! * scale
   }
-  let cell = fixedCell ?? (fitCount ? fitCell(fitCount) : liveCell(1))
+  let cell =
+    fixedCell ??
+    (fitCount ? (columns ? fitColumnsCell(fitCount, columns) : fitCell(fitCount)) : liveCell(1))
   let cols = 1
   let visibleRows = 1
   let x0 = pad
   const layout = () => {
-    cols = Math.max(1, Math.floor(innerW / cell))
+    cols = columns ?? Math.max(1, Math.floor(innerW / cell))
     visibleRows = Math.max(1, Math.floor(innerH / cell))
     x0 = pad + (innerW - cols * cell) / 2
   }
@@ -84,6 +95,8 @@ export function createMosaicRenderer(
   }
 
   return {
+    columns: () => cols,
+
     draw(from: number, to: number, digitAt: DigitAt) {
       source = digitAt
       count = to

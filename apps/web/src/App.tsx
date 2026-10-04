@@ -143,6 +143,8 @@ export default function App({
                     source={load.source}
                     log={playback.log}
                     onCanvas={setCanvas}
+                    columns={viewOptions.mosaic.columns}
+                    onColumnsChange={(columns) => updateViewOptions('mosaic', { columns })}
                   />
                 )}
                 {view === 'clock' && (
@@ -203,7 +205,12 @@ export default function App({
               getCanvas={() => canvasRef.current}
               getCaption={() => captionRef.current}
             />
-            {load.status === 'ready' && <PosterPanel source={load.source} />}
+            {load.status === 'ready' && (
+              <PosterPanel
+                source={load.source}
+                settings={{ mosaicColumns: viewOptions.mosaic.columns || undefined }}
+              />
+            )}
             <StatsPanel
               counts={playback.counts}
               total={playback.total}
