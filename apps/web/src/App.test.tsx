@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import App from './App'
 import { createMemoryStore } from './storage/pieceStore'
+import type { AccountApi, RemotePiece, Visibility } from './account/accountApi'
 import type { NotePlayer } from './audio/notePlayer'
 import { createDigitSource, parseDigits } from './core/digits/digitSource'
 import { encodeConfig } from './core/composition/config'
@@ -263,6 +264,81 @@ describe('App', () => {
     window.history.replaceState(null, '', '/#p=lydian-dream')
     render(<App createPlayer={fakePlayer} loadSource={source} />)
     expect(screen.getByLabelText('Preset')).toHaveDisplayValue('Lydian dream')
+  })
+
+  it('signs in with a one-time code, backs pieces up to the account, shares and reopens them', async () => {
+    const user = userEvent.setup()
+    const remote = new Map<string, RemotePiece>()
+    const api: AccountApi = {
+      signInUrl: (back) => `https://api.test/auth/github?return_to=${back}`,
+      exchange: vi.fn(async (code: string) => {
+        expect(code).toBe('one-time')
+        return {
+          token: 'tok',
+          user: { id: 'u1', name: 'Ada', avatarUrl: null, role: 'user' as const },
+        }
+      }),
+      me: vi.fn(async (token: string) =>
+        token === 'tok' ? { id: 'u1', name: 'Ada', avatarUrl: null, role: 'user' as const } : null,
+      ),
+      logout: vi.fn(async () => {}),
+      listPieces: vi.fn(async () => [...remote.values()]),
+      putPiece: vi.fn(async (_t: string, doc: Record<string, unknown>) => {
+        const piece = {
+          id: String(doc.id),
+          ownerId: 'u1',
+          name: String(doc.name),
+          visibility: 'private' as const,
+          createdAt: String(doc.createdAt),
+          updatedAt: String(doc.updatedAt),
+          document: doc,
+        }
+        remote.set(piece.id, piece)
+        return piece
+      }),
+      setVisibility: vi.fn(async (_t: string, id: string, visibility: Visibility) => {
+        remote.set(id, { ...remote.get(id)!, visibility })
+      }),
+      deletePiece: vi.fn(async (_t: string, id: string) => {
+        remote.delete(id)
+      }),
+    }
+    window.history.replaceState(null, '', '/?login=one-time#p=music-box')
+    render(
+      <App
+        createPlayer={fakePlayer}
+        loadSource={source}
+        createStore={createMemoryStore}
+        createAccountApi={() => api}
+      />,
+    )
+    expect(await screen.findByText('Ada')).toBeInTheDocument()
+    // The code is gone from the address bar; the sound in the hash is kept.
+    expect(window.location.search).toBe('')
+    expect(window.location.hash).toBe('#p=music-box')
+    expect(localStorage.getItem('charts-of-pie:session')).toBe('tok')
+
+    await user.type(screen.getByLabelText('Name'), 'Boxed')
+    await user.click(screen.getByRole('button', { name: 'Save' }))
+    await screen.findByRole('button', { name: 'Open Boxed' })
+    await user.click(screen.getByRole('button', { name: 'Back up this device’s pieces' }))
+    expect(await screen.findByText('Backed up 1 piece to your account.')).toBeInTheDocument()
+    const visibility = await screen.findByLabelText('Who can see Boxed')
+    await user.selectOptions(visibility, 'Public gallery')
+    expect(api.setVisibility).toHaveBeenCalledWith('tok', expect.any(String), 'public')
+
+    await user.selectOptions(screen.getByLabelText('Preset'), 'Lydian dream')
+    await user.click(screen.getByRole('button', { name: 'Open Boxed from your account' }))
+    expect(screen.getByLabelText('Preset')).toHaveDisplayValue('Music box')
+
+    await user.click(screen.getByRole('button', { name: 'Sign out' }))
+    expect(await screen.findByRole('button', { name: 'Sign in with GitHub' })).toBeInTheDocument()
+    expect(localStorage.getItem('charts-of-pie:session')).toBeNull()
+  })
+
+  it('hides accounts when no API is configured', () => {
+    render(<App createPlayer={fakePlayer} loadSource={source} createAccountApi={() => null} />)
+    expect(screen.queryByRole('button', { name: 'Sign in with GitHub' })).not.toBeInTheDocument()
   })
 
   it('switches between chart, sheet music and spectrogram views', async () => {

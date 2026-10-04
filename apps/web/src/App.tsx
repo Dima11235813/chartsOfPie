@@ -23,12 +23,17 @@ import { getPalette, PALETTES } from './viz/palettes'
 import { StatsPanel } from './components/StatsPanel'
 import { DEFAULT_VISUAL_CONFIG, type VisualConfig } from './core/piece/visualConfig'
 import { useLinkedState } from './hooks/useLinkedState'
+import type { Piece } from './core/piece/piece'
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts'
 import { withMidiTap } from './midi/midiTap'
 import { useMidiOutput } from './midi/useMidiOutput'
 import { MidiPanel } from './components/MidiPanel'
 import { PiecesPanel } from './components/PiecesPanel'
 import { createDefaultStore, type PieceStore } from './storage/pieceStore'
+import { defaultAccountApi, type AccountApi } from './account/accountApi'
+import { useAccount } from './account/useAccount'
+import { AccountBar } from './components/AccountBar'
+import { AccountPieces } from './components/AccountPieces'
 import { usePiPlayback } from './hooks/usePiPlayback'
 
 const PALETTE_KEY = 'charts-of-pie:palette'
@@ -57,14 +62,19 @@ interface AppProps {
   loadSource?: () => Promise<DigitSource>
   /** Where saved pieces live (IndexedDB by default; tests pass a memory store). */
   createStore?: () => PieceStore
+  /** The account API (null = accounts hidden; default from VITE_API_URL). */
+  createAccountApi?: () => AccountApi | null
 }
 
 export default function App({
   createPlayer = createToneNotePlayer,
   loadSource = loadPiDigits,
   createStore = createDefaultStore,
+  createAccountApi = defaultAccountApi,
 }: AppProps) {
   const [store] = useState(createStore)
+  const [accountApi] = useState(createAccountApi)
+  const account = useAccount(accountApi)
   // Every note can also go to a MIDI instrument (e.g. a Nord) — see midi/midiTap.
   const [player] = useState(() => withMidiTap(createPlayer()))
   const midi = useMidiOutput(player)
@@ -108,6 +118,11 @@ export default function App({
     mute: () => playback.setMuted(!playback.muted),
   })
   const label = findMatchingPreset(config)?.name ?? 'Custom'
+  const openPiece = (piece: Piece) => {
+    setConfig(piece.sound)
+    setVisual(piece.visual)
+    playback.seek(piece.position?.digitIndex ?? 0, piece.sound)
+  }
   const captionRef = useRef('')
   useEffect(() => {
     captionRef.current = `${label} · ${playback.total.toLocaleString()} digits of π${
@@ -126,6 +141,7 @@ export default function App({
             Charts of Pie
           </h1>
           <p className="tagline">Watch and listen to the first million digits of π.</p>
+          <AccountBar account={account} />
         </header>
 
         <main className="layout">
@@ -244,11 +260,18 @@ export default function App({
               position={playback.total}
               suggestedName={`${label} · ${VIEWS.find((v) => v.id === view)?.label ?? view}`}
               getCanvas={() => canvasRef.current}
-              onOpen={(piece) => {
-                setConfig(piece.sound)
-                setVisual(piece.visual)
-                playback.seek(piece.position?.digitIndex ?? 0, piece.sound)
-              }}
+              onOpen={openPiece}
+              accountSection={
+                accountApi &&
+                account.token && (
+                  <AccountPieces
+                    api={accountApi}
+                    token={account.token}
+                    store={store}
+                    onOpen={openPiece}
+                  />
+                )
+              }
             />
             {load.status === 'ready' && (
               <PosterPanel

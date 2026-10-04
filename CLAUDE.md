@@ -14,6 +14,7 @@ The long-term plan lives in [`proj-mgmt/ROADMAP.md`](proj-mgmt/ROADMAP.md).
 | `apps/web/src/audio/`                | Tone.js: instruments, sound chain, `NotePlayer` (analyser + recording taps), offline render & analysis                                                |
 | `apps/web/src/components/`, `hooks/` | UI                                                                                                                                                    |
 | `apps/web/public/data/`              | Verified digit data (`pi-1m.txt`, sha256 pinned in tests)                                                                                             |
+| `apps/api/`                          | Cloudflare Workers + D1 API (Hono): GitHub sign-in, sessions, pieces + `policy.ts` authZ; tests on `node:sqlite`                                      |
 | `apps/web/e2e/`                      | Playwright smoke tests on desktop, tablet and mobile viewports                                                                                        |
 | `apps/web/src/core/composition/`     | `CompositionConfig` (zod), presets, `Arranger`, `PerformanceLog` (what was played, chords)                                                            |
 | `apps/web/src/core/piece/`           | Saved-piece + `VisualConfig` schemas, share links, migrations, golden fixtures, schema snapshots                                                      |

@@ -1,0 +1,19 @@
+# Charts of Pie API — Cloudflare Workers + D1. Setup: apps/api/README.md.
+name = "charts-of-pie-api"
+main = "src/index.ts"
+compatibility_date = "2026-10-01"
+
+[vars]
+# Where the web app runs: CORS, and the only places sign-in may return to.
+ALLOWED_ORIGINS = "https://dima11235813.github.io,http://localhost:5173,http://localhost:4173"
+# GitHub user ids with the admin (moderation) role, comma-separated.
+ADMIN_GITHUB_IDS = "10522147"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "charts-of-pie"
+# Filled in after `npx wrangler d1 create charts-of-pie` (see README).
+database_id = "REPLACE_WITH_D1_DATABASE_ID"
+migrations_dir = "migrations"
+
+# Secrets (never committed): npx wrangler secret put GITHUB_CLIENT_ID / GITHUB_CLIENT_SECRET

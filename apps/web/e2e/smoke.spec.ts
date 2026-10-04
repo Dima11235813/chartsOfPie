@@ -331,3 +331,18 @@ test('the neighbour mosaic narrows and widens, and the pattern re-flows', async 
   )
   expect(overflow).toBeLessThanOrEqual(0)
 })
+
+test('no horizontal scroll at 360 px wide, with every panel open', async ({ page }) => {
+  await page.setViewportSize({ width: 360, height: 740 })
+  await page.goto('/#p=acoustic-folk')
+  await expect(page.getByRole('button', { name: 'Play' })).toBeEnabled({ timeout: 15_000 })
+  await page.getByText('Customize').click()
+  await page.getByText('Play through MIDI').click()
+  for (const view of ['Guitar fretboard', 'Neighbour mosaic', 'Music clock']) {
+    await page.getByRole('combobox', { name: 'View' }).selectOption({ label: view })
+    const overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    )
+    expect(overflow, view).toBeLessThanOrEqual(0)
+  }
+})

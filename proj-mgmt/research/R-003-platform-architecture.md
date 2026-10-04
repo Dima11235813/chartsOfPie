@@ -7,6 +7,10 @@ feeds: [E06, E07, E08, E09]
 
 # R-003 — Full-stack architecture, authN & authZ
 
+> **Update 2026-10-05 — decision:** the owner chose **Cloudflare Workers + D1** (Hono) with
+> GitHub sign-in; implemented in `apps/api` (E07). Sessions are bearer tokens (cross-site
+> front end), the policy module and visibility model below are implemented as recommended.
+
 ## Question
 
 What should the full-stack architecture be once we add accounts, saving and sharing — without
