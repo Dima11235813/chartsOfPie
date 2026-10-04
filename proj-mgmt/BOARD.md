@@ -1,6 +1,6 @@
 # Board
 
-_Last updated with the electric guitar (S02.4.5) and the adjustable-width neighbour mosaic (F03.4)._
+_Last updated with the guitar fretboard, classic keyboards + acoustic guitar, keyboard shortcuts and the R-008 hardware plan._
 
 ## Epics
 
@@ -29,25 +29,27 @@ _Last updated with the electric guitar (S02.4.5) and the adjustable-width neighb
 
 ## E02 progress (previous slice: configurable music, presets, pleasant sound)
 
-| Story   | Title                                           | Status      |
-| ------- | ----------------------------------------------- | ----------- |
-| S02.1.1 | Scale & mode catalogue in the core              | done        |
-| S02.1.2 | Choose scale, root and octave in the UI         | done        |
-| S02.2.1 | Selectable digit → pitch mapping strategies     | done        |
-| S02.3.1 | Tempo-locked playback with BPM control          | done        |
-| S02.3.2 | Selectable rhythm encodings                     | done        |
-| S02.4.1 | Instrument selection                            | done        |
-| S02.5.1 | Versioned CompositionConfig with URL sharing    | done        |
-| S02.6.1 | Out-of-the-box presets                          | done        |
-| S02.6.2 | Offline render & loudness harness               | done        |
-| S02.4.2 | Harmony: drones (done), intervals, chords       | in-progress |
-| S02.6.3 | Owner listening review & preset iteration       | ready       |
-| S02.1.3 | Explain the selected scale as math              | ready       |
-| S06.2.1 | Rebrand and relocate to Math Art (owner-driven) | ready       |
-| S02.3.3 | Euclidean rhythms and swing                     | backlog     |
-| S02.4.3 | Export the performance as MIDI                  | backlog     |
-| S02.4.4 | Reliable audio on iOS and Android               | backlog     |
-| S02.4.5 | Electric guitar + “Pentatonic rock” preset      | done        |
+| Story   | Title                                            | Status      |
+| ------- | ------------------------------------------------ | ----------- |
+| S02.1.1 | Scale & mode catalogue in the core               | done        |
+| S02.1.2 | Choose scale, root and octave in the UI          | done        |
+| S02.2.1 | Selectable digit → pitch mapping strategies      | done        |
+| S02.3.1 | Tempo-locked playback with BPM control           | done        |
+| S02.3.2 | Selectable rhythm encodings                      | done        |
+| S02.4.1 | Instrument selection                             | done        |
+| S02.5.1 | Versioned CompositionConfig with URL sharing     | done        |
+| S02.6.1 | Out-of-the-box presets                           | done        |
+| S02.6.2 | Offline render & loudness harness                | done        |
+| S02.4.2 | Harmony: drones (done), intervals, chords        | in-progress |
+| S02.6.3 | Owner listening review & preset iteration        | ready       |
+| S02.1.3 | Explain the selected scale as math               | ready       |
+| S06.2.1 | Rebrand and relocate to Math Art (owner-driven)  | ready       |
+| S02.3.3 | Euclidean rhythms and swing                      | backlog     |
+| S02.4.3 | Export the performance as MIDI                   | backlog     |
+| S02.4.4 | Reliable audio on iOS and Android                | backlog     |
+| S02.4.5 | Electric guitar + “Pentatonic rock” preset       | done        |
+| S02.4.6 | Classic keyboards, acoustic guitar, analog synth | done        |
+| F02.7   | Play through hardware (Web MIDI, Nord) — next    | ready       |
 
 ## Recent slices (sheet music, spectrogram, export; artistic gallery 2b-1 to 2b-3)
 
@@ -71,6 +73,8 @@ _Last updated with the electric guitar (S02.4.5) and the adjustable-width neighb
 | F03.12  | Harmonograph (pure vs tempered ratios)                                                               | done    |
 | F03.13  | Hilbert carpet (zooming live view)                                                                   | done    |
 | F03.14  | Oscilloscope (vectorscope / waveform)                                                                | done    |
+| F03.20  | Guitar fretboard (tunings, fingering model)                                                          | done    |
+| F09.2   | Keyboard shortcuts (Space, →, M)                                                                     | done    |
 | F03.15  | Typographic π                                                                                        | done    |
 | —       | Later: gallery slice 2b-4 (WebGL particles, cymatics, 3D helix, synaesthetic field) or E05 Fibonacci | ready   |
 

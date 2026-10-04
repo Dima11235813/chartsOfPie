@@ -13,6 +13,7 @@ import { StaffView } from './components/viz/StaffView'
 import { DigitArtView } from './components/viz/DigitArtView'
 import { HarmonographView } from './components/viz/HarmonographView'
 import { MusicClockView } from './components/viz/MusicClockView'
+import { FretboardView } from './components/viz/FretboardView'
 import { OscilloscopeView } from './components/viz/OscilloscopeView'
 import { StringArtView } from './components/viz/StringArtView'
 import { PosterPanel } from './components/PosterPanel'
@@ -22,6 +23,7 @@ import { getPalette, PALETTES } from './viz/palettes'
 import { StatsPanel } from './components/StatsPanel'
 import { DEFAULT_VISUAL_CONFIG, type VisualConfig } from './core/piece/visualConfig'
 import { useLinkedState } from './hooks/useLinkedState'
+import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts'
 import { usePiPlayback } from './hooks/usePiPlayback'
 
 const PALETTE_KEY = 'charts-of-pie:palette'
@@ -85,6 +87,15 @@ export default function App({
   const setCanvas = useCallback((canvas: HTMLCanvasElement | null) => {
     canvasRef.current = canvas
   }, [])
+  useKeyboardShortcuts(load.status === 'ready', {
+    toggle: () => {
+      if (!playback.isFinished) void playback.toggle()
+    },
+    step: () => {
+      if (!playback.isFinished) void playback.step()
+    },
+    mute: () => playback.setMuted(!playback.muted),
+  })
   const label = findMatchingPreset(config)?.name ?? 'Custom'
   const captionRef = useRef('')
   useEffect(() => {
@@ -153,6 +164,15 @@ export default function App({
                     noteTable={noteTable}
                     order={viewOptions.clock.order}
                     onOrderChange={(order) => updateViewOptions('clock', { order })}
+                    onCanvas={setCanvas}
+                  />
+                )}
+                {view === 'fretboard' && (
+                  <FretboardView
+                    log={playback.log}
+                    noteTable={noteTable}
+                    tuning={viewOptions.fretboard.tuning}
+                    onTuningChange={(tuning) => updateViewOptions('fretboard', { tuning })}
                     onCanvas={setCanvas}
                   />
                 )}

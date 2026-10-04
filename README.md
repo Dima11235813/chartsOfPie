@@ -33,7 +33,8 @@ npm run dev        # http://localhost:5173
 
 Pick a preset in the **Sound** panel, or open **Customize** to choose the scale (major, minor,
 the seven modes including Lydian, pentatonics, blues, whole tone…), root, octave, how digits map
-onto notes, tempo, rhythm, instrument (sampled grand piano, electric piano, marimba, music box,
+onto notes, tempo, rhythm, instrument (sampled grand piano, Rhodes-style electric piano, Wurlitzer,
+Clavinet, drawbar organ, analog synth lead, electric and acoustic guitar, marimba, music box,
 plucked strings, pad, sine, or the original synth), reverb, echo and a drone. Every sound is a
 link: the URL updates as you change settings, and **Copy share link** shares it.
 
@@ -46,7 +47,9 @@ Switch the **View** in the bottom bar:
 - **Artistic:** digit ring, π walk, sunflower, neighbour mosaic, Hilbert carpet (all million digits),
   typographic π, times-table string art.
 - **Sound shapes:** music clock (with a circle-of-fifths mode), harmonograph (pure vs tempered
-  ratios), oscilloscope.
+  ratios), oscilloscope, guitar fretboard (scale map, fingering, four tunings).
+
+**Keyboard:** Space plays/pauses, → plays one digit, M mutes.
 
 **Colours** offers the original rainbow, a colour-blind friendly palette, Scriabin's note colours
 and a calm "ink" ramp. **Export** downloads MIDI, a PNG of the view, or a video/audio recording; **Poster** renders any

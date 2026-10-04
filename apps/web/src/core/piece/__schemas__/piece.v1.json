@@ -152,7 +152,12 @@
             "harp",
             "warm-pad",
             "pure-sine",
-            "electric-guitar"
+            "electric-guitar",
+            "acoustic-guitar",
+            "wurlitzer",
+            "clavinet",
+            "organ",
+            "analog-synth"
           ]
         },
         "reverb": {
@@ -221,7 +226,8 @@
             "strings",
             "clock",
             "harmonograph",
-            "scope"
+            "scope",
+            "fretboard"
           ]
         },
         "palette": {
@@ -285,6 +291,22 @@
                   "enum": [
                     "vector",
                     "wave"
+                  ]
+                }
+              }
+            },
+            "fretboard": {
+              "default": {},
+              "type": "object",
+              "properties": {
+                "tuning": {
+                  "default": "standard",
+                  "type": "string",
+                  "enum": [
+                    "standard",
+                    "drop-d",
+                    "dadgad",
+                    "open-g"
                   ]
                 }
               }

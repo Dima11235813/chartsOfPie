@@ -28,6 +28,8 @@ export function Controls(props: ControlsProps) {
         id="action"
         className="btn btn-primary"
         onClick={props.onToggle}
+        aria-keyshortcuts="Space"
+        title="Play / pause (Space)"
         disabled={disabled || isFinished}
         aria-pressed={isPlaying}
       >
@@ -37,6 +39,8 @@ export function Controls(props: ControlsProps) {
         type="button"
         className="btn"
         onClick={props.onStep}
+        aria-keyshortcuts="ArrowRight"
+        title="Play one digit (→)"
         disabled={disabled || isFinished}
       >
         Step
@@ -48,6 +52,8 @@ export function Controls(props: ControlsProps) {
         type="button"
         className="btn"
         onClick={() => props.onMutedChange(!muted)}
+        aria-keyshortcuts="M"
+        title="Mute / unmute (M)"
         aria-pressed={muted}
       >
         {muted ? 'Unmute' : 'Mute'}

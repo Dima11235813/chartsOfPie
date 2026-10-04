@@ -121,7 +121,12 @@
         "harp",
         "warm-pad",
         "pure-sine",
-        "electric-guitar"
+        "electric-guitar",
+        "acoustic-guitar",
+        "wurlitzer",
+        "clavinet",
+        "organ",
+        "analog-synth"
       ]
     },
     "reverb": {

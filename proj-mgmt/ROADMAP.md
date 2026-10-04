@@ -58,3 +58,4 @@ visualization, sequence and lesson plugs into the same `CompositionConfig`.
 - [R-005 — Making π sound pleasant](research/R-005-pleasant-sound-design.md)
 - [R-006 — Artistic visualizations of π](research/R-006-artistic-visualizations.md)
 - [R-007 — Saving on the device & installable PWA](research/R-007-saved-pieces-and-pwa.md)
+- [R-008 — More instruments, classic keyboards & playing through a Nord (Web MIDI)](research/R-008-instruments-and-hardware.md)

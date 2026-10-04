@@ -195,6 +195,30 @@ describe('App', () => {
     expect(screen.getByLabelText('Chart style')).toHaveValue('radar')
   })
 
+  it('keyboard shortcuts: Space plays and pauses, → steps, M mutes; fields keep their keys', async () => {
+    const user = userEvent.setup()
+    const player = fakePlayer()
+    render(<App createPlayer={() => player} loadSource={source} />)
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Play' })).toBeEnabled())
+
+    await user.keyboard('{ArrowRight}')
+    await waitFor(() => expect(player.playStep).toHaveBeenCalledTimes(1))
+    await user.keyboard('m')
+    expect(screen.getByRole('button', { name: 'Unmute' })).toHaveAttribute('aria-pressed', 'true')
+    await user.keyboard('m')
+    expect(screen.getByRole('button', { name: 'Mute' })).toBeInTheDocument()
+
+    await user.keyboard(' ')
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Pause' })).toBeInTheDocument())
+    await user.keyboard(' ')
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Play' })).toBeInTheDocument())
+
+    // Typing in a field never triggers a shortcut.
+    screen.getByLabelText('View').focus()
+    await user.keyboard('m')
+    expect(screen.getByRole('button', { name: 'Mute' })).toBeInTheDocument()
+  })
+
   it('switches between chart, sheet music and spectrogram views', async () => {
     const user = userEvent.setup()
     render(<App createPlayer={fakePlayer} loadSource={source} />)

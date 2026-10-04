@@ -19,6 +19,8 @@ import {
   walkStep,
 } from './art'
 import { getPalette, PALETTES, paletteRamp, parseColor, SCRIABIN, withAlpha } from './palettes'
+import { choosePosition, foldIntoRange, getTuning, positionsOf } from './fretboard'
+import { midiToNote, noteToMidi } from '../core/music/notes'
 
 describe('π walk', () => {
   it('steps in ten directions, 0 up and clockwise', () => {
@@ -190,5 +192,74 @@ describe('palette ramp', () => {
     expect(ramp).toEqual(['rgb(0, 0, 0)', 'rgb(128, 128, 128)', 'rgb(255, 255, 255)'])
     expect(parseColor('rgb(1, 2, 3)')).toEqual([1, 2, 3])
     expect(parseColor('hsl(0, 0%, 0%)')).toBeNull()
+  })
+})
+
+describe('guitar fretboard', () => {
+  const standard = getTuning('standard').strings
+
+  test('standard tuning is E2 A2 D3 G3 B3 E4', () => {
+    expect(standard.map((m) => midiToNote(m))).toEqual(['E2', 'A2', 'D3', 'G3', 'B3', 'E4'])
+    expect(getTuning('drop-d').strings.map((m) => midiToNote(m))).toEqual([
+      'D2',
+      'A2',
+      'D3',
+      'G3',
+      'B3',
+      'E4',
+    ])
+    expect(getTuning('dadgad').strings.map((m) => midiToNote(m))).toEqual([
+      'D2',
+      'A2',
+      'D3',
+      'G3',
+      'A3',
+      'D4',
+    ])
+    expect(getTuning('open-g').strings.map((m) => midiToNote(m))).toEqual([
+      'D2',
+      'G2',
+      'D3',
+      'G3',
+      'B3',
+      'D4',
+    ])
+  })
+
+  test('E4 sits on four strings: open high E, B string 5, G string 9, D string 14', () => {
+    expect(positionsOf(noteToMidi('E4'), standard)).toEqual([
+      { string: 2, fret: 14 },
+      { string: 3, fret: 9 },
+      { string: 4, fret: 5 },
+      { string: 5, fret: 0 },
+    ])
+    // Middle C (C4): A string 15, D string 10, G string 5, B string 1.
+    expect(positionsOf(noteToMidi('C4'), standard).map((p) => p.fret)).toEqual([15, 10, 5, 1])
+  })
+
+  test('notes outside the range fold by octaves', () => {
+    expect(foldIntoRange(noteToMidi('C2'), standard)).toEqual({
+      midi: noteToMidi('C3'),
+      folded: true,
+    })
+    // The top note is G5 (high E, fret 15), so A6 comes down two octaves.
+    expect(foldIntoRange(noteToMidi('A6'), standard)).toEqual({
+      midi: noteToMidi('A4'),
+      folded: true,
+    })
+    expect(foldIntoRange(noteToMidi('G5'), standard)).toEqual({
+      midi: noteToMidi('G5'),
+      folded: false,
+    })
+  })
+
+  test('the hand stays near where it is, preferring low frets and open strings', () => {
+    const e4 = positionsOf(noteToMidi('E4'), standard)
+    expect(choosePosition(e4, null)).toEqual({ string: 5, fret: 0 })
+    expect(choosePosition(e4, 9)).toEqual({ string: 5, fret: 0 }) // open strings need no reach
+    const c4 = positionsOf(noteToMidi('C4'), standard)
+    expect(choosePosition(c4, 9)).toEqual({ string: 2, fret: 10 })
+    expect(choosePosition(c4, 4)).toEqual({ string: 3, fret: 5 })
+    expect(choosePosition([], 3)).toBeNull()
   })
 })

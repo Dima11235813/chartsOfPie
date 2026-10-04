@@ -34,6 +34,11 @@ export const INSTRUMENT_TRIM_DB: Record<InstrumentId, number> = {
   'warm-pad': -1.6,
   'pure-sine': -15.4,
   'electric-guitar': -8,
+  'acoustic-guitar': -2.3,
+  wurlitzer: 5.3,
+  clavinet: -10.6,
+  organ: -13.7,
+  'analog-synth': -11.4,
 }
 
 function polyVoice(
@@ -109,6 +114,131 @@ const electricGuitar: InstrumentDefinition = {
   },
 }
 
+/**
+ * Classic keyboards and more strings (R-008). All synthesised: each recipe names what makes the
+ * real instrument recognisable and the synthesis that imitates it.
+ */
+const classics: InstrumentDefinition[] = [
+  {
+    id: 'acoustic-guitar',
+    name: 'Acoustic guitar',
+    description: 'Steel strings on a wooden body: bright pick, warm body resonances, quick decay',
+    async create(tone) {
+      // Plucked string: saw + triangle with a filter that closes right after the pick.
+      const synth = new tone.PolySynth(tone.MonoSynth, {
+        oscillator: { type: 'fatsawtooth', count: 2, spread: 4 },
+        envelope: { attack: 0.002, decay: 1.6, sustain: 0, release: 0.9 },
+        filter: { type: 'lowpass', Q: 0.8, rolloff: -24 },
+        filterEnvelope: {
+          attack: 0.001,
+          decay: 0.22,
+          sustain: 0.12,
+          release: 0.6,
+          baseFrequency: 600,
+          octaves: 3.6,
+        },
+      })
+      synth.maxPolyphony = 24
+      // Body: the air resonance (~100 Hz) and top-plate resonance (~220 Hz), a little sparkle.
+      const air = new tone.Filter({ type: 'peaking', frequency: 105, Q: 2, gain: 6 })
+      const top = new tone.Filter({ type: 'peaking', frequency: 220, Q: 1.5, gain: 4 })
+      const sparkle = new tone.Filter({ type: 'peaking', frequency: 3200, Q: 0.9, gain: 3 })
+      const lowCut = new tone.Filter({ type: 'highpass', frequency: 70 })
+      return polyVoice(tone, synth, INSTRUMENT_TRIM_DB['acoustic-guitar'], [
+        air,
+        top,
+        sparkle,
+        lowCut,
+      ])
+    },
+  },
+  {
+    id: 'wurlitzer',
+    name: 'Wurlitzer',
+    description:
+      'Reed electric piano: hollow, reedy and a little growly, with its built-in tremolo',
+    async create(tone) {
+      // A struck steel reed: odd harmonics (square-ish modulator), more bite when played hard.
+      const synth = new tone.PolySynth(tone.FMSynth, {
+        harmonicity: 1,
+        modulationIndex: 4,
+        oscillator: { type: 'sine' },
+        modulation: { type: 'square' },
+        envelope: { attack: 0.003, decay: 1.4, sustain: 0.25, release: 0.7 },
+        modulationEnvelope: { attack: 0.002, decay: 0.35, sustain: 0.1, release: 0.5 },
+      })
+      synth.maxPolyphony = 24
+      const drive = new tone.Chebyshev({ order: 3, wet: 0.18 })
+      const tone_ = new tone.Filter({ type: 'lowpass', frequency: 2600, Q: 0.7 })
+      const tremolo = new tone.Tremolo({ frequency: 5.5, depth: 0.35, spread: 0 }).start()
+      return polyVoice(tone, synth, INSTRUMENT_TRIM_DB.wurlitzer, [drive, tone_, tremolo])
+    },
+  },
+  {
+    id: 'clavinet',
+    name: 'Clavinet',
+    description: 'Hohner Clavinet: bright, percussive, funky “quack” from a hammered, muted string',
+    async create(tone) {
+      // Narrow pulse wave (string near the pickup) through a resonant, quickly closing filter.
+      const synth = new tone.PolySynth(tone.MonoSynth, {
+        oscillator: { type: 'pulse', width: 0.72 },
+        envelope: { attack: 0.001, decay: 0.55, sustain: 0.08, release: 0.12 },
+        filter: { type: 'lowpass', Q: 2.5, rolloff: -12 },
+        filterEnvelope: {
+          attack: 0.001,
+          decay: 0.12,
+          sustain: 0.25,
+          release: 0.1,
+          baseFrequency: 700,
+          octaves: 3,
+        },
+      })
+      synth.maxPolyphony = 24
+      const thin = new tone.Filter({ type: 'highpass', frequency: 160 })
+      const presence = new tone.Filter({ type: 'lowpass', frequency: 6000 })
+      return polyVoice(tone, synth, INSTRUMENT_TRIM_DB.clavinet, [thin, presence])
+    },
+  },
+  {
+    id: 'organ',
+    name: 'Organ (drawbars)',
+    description: 'Hammond-style drawbar organ (88 8000 000-ish) through a Leslie-like chorus',
+    async create(tone) {
+      // Drawbars are sine partials: 8′ fundamental, 4′ (2×), 2⅔′ (3×), 2′ (4×), 1⅗′ (5×)…
+      const synth = new tone.PolySynth(tone.Synth, {
+        oscillator: { type: 'custom', partials: [1, 0.8, 0.5, 0.45, 0.15, 0.25] },
+        envelope: { attack: 0.006, decay: 0.05, sustain: 1, release: 0.08 },
+      })
+      synth.maxPolyphony = 24
+      const leslie = new tone.Chorus({ frequency: 5.8, delayTime: 3, depth: 0.5, wet: 0.5 }).start()
+      const warmth = new tone.Filter({ type: 'lowpass', frequency: 5000 })
+      return polyVoice(tone, synth, INSTRUMENT_TRIM_DB.organ, [warmth, leslie])
+    },
+  },
+  {
+    id: 'analog-synth',
+    name: 'Analog synth lead',
+    description: 'Minimoog-style: detuned saws into a resonant 24 dB low-pass with a filter sweep',
+    async create(tone) {
+      const synth = new tone.PolySynth(tone.MonoSynth, {
+        oscillator: { type: 'fatsawtooth', count: 3, spread: 14 },
+        envelope: { attack: 0.01, decay: 0.4, sustain: 0.6, release: 0.35 },
+        filter: { type: 'lowpass', Q: 4, rolloff: -24 },
+        filterEnvelope: {
+          attack: 0.005,
+          decay: 0.45,
+          sustain: 0.35,
+          release: 0.4,
+          baseFrequency: 300,
+          octaves: 3.5,
+        },
+      })
+      synth.maxPolyphony = 24
+      return polyVoice(tone, synth, INSTRUMENT_TRIM_DB['analog-synth'])
+    },
+  },
+]
+
 export const INSTRUMENTS: readonly InstrumentDefinition[] = [
   {
     id: 'classic',
@@ -165,8 +295,8 @@ export const INSTRUMENTS: readonly InstrumentDefinition[] = [
   },
   {
     id: 'electric-piano',
-    name: 'Electric piano',
-    description: 'Soft FM “tine” piano',
+    name: 'Electric piano (Rhodes-style)',
+    description: 'Soft FM “tine” piano in the spirit of a Fender Rhodes',
     async create(tone) {
       const synth = new tone.PolySynth(tone.FMSynth, {
         harmonicity: 2,
@@ -269,6 +399,7 @@ export const INSTRUMENTS: readonly InstrumentDefinition[] = [
     },
   },
   electricGuitar,
+  ...classics,
 ]
 
 export function getInstrument(id: InstrumentId): InstrumentDefinition {

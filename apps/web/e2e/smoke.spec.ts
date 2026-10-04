@@ -211,6 +211,7 @@ test('artistic views draw and follow the colour palette', async ({ page }, testI
     ['Typographic π', /Typographic π/, /\d+ digits set in type/],
     ['Harmonograph', /Harmonograph/, / · ratio \d/],
     ['Oscilloscope', /Oscilloscope/, /vectorscope/],
+    ['Guitar fretboard', /Guitar fretboard/, /Now: .* · string \d, (open|fret \d+)/],
   ] as const) {
     await view.selectOption({ label })
     await expect(page.getByRole('img', { name })).toHaveAttribute('aria-label', summary, {

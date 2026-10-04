@@ -30,6 +30,7 @@ export const VIEW_IDS = [
   'clock',
   'harmonograph',
   'scope',
+  'fretboard',
 ] as const
 export const PALETTE_IDS = ['rainbow', 'colour-blind', 'scriabin', 'ink'] as const
 export const CHART_STYLE_IDS = [
@@ -67,6 +68,13 @@ function build(lenient: boolean) {
         ),
         harmonograph: z.prefault(z.object({ pure: field(z.boolean(), false) }), {}),
         scope: z.prefault(z.object({ mode: field(z.enum(['vector', 'wave']), 'vector') }), {}),
+        /** Guitar fretboard: tuning (additive after v1). */
+        fretboard: z.prefault(
+          z.object({
+            tuning: field(z.enum(['standard', 'drop-d', 'dadgad', 'open-g']), 'standard'),
+          }),
+          {},
+        ),
         /** Neighbour mosaic: column count, 0 = fill the width (added after v1: additive). */
         mosaic: z.prefault(
           z.object({

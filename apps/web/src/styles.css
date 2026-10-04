@@ -632,3 +632,18 @@ body {
 .viz-layer-with-bar .viz-canvas {
   height: calc(100% - 68px);
 }
+
+.viz-toggle-bottom {
+  top: auto;
+  bottom: 8px;
+}
+
+.viz-toggle select {
+  min-height: 36px;
+  max-width: 11rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: inherit;
+  font: inherit;
+}
