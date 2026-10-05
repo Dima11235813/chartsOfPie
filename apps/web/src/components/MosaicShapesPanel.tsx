@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import type { DigitSource } from '../core/digits/digitSource'
 import { mosaicGroups, shapeCensus } from '../viz/mosaicShapes'
 import { cellsOfKey, FREE_POLYPLET_COUNTS, shapeName } from '../viz/polyplets'
+import { useThrottled } from '../hooks/useThrottled'
 
 interface MosaicShapesPanelProps {
   source: DigitSource
@@ -16,6 +17,7 @@ interface MosaicShapesPanelProps {
 /** Census window: the most recent digits (keeps it instant even after a long performance). */
 const WINDOW = 20_000
 const SIZES = [2, 3, 4, 5] as const
+const CENSUS_EVERY_MS = 750
 
 /** A shape drawn the way the mosaic draws groups: dots joined to their 8-way neighbours. */
 function ShapeGlyph({ shape, size = 40 }: { shape: string; size?: number }) {
@@ -62,12 +64,15 @@ export function MosaicShapesPanel({
   selected,
   onSelect,
 }: MosaicShapesPanelProps) {
+  // Recount a few times a second, not on every digit (it scans up to 20,000 digits).
+  const counted = useThrottled(played, CENSUS_EVERY_MS)
   const census = useMemo(() => {
+    const played = counted
     const start = Math.max(0, played - WINDOW)
     const digits = new Uint8Array(played - start)
     for (let k = 0; k < digits.length; k++) digits[k] = source.digitAt(start + k)
     return shapeCensus(mosaicGroups(digits, columns, start, 2, 5))
-  }, [source, played, columns])
+  }, [source, counted, columns])
 
   // Shapes collected across every width shown since the last reset. Updated while rendering when
   // the census changes (React's pattern for state derived from changing props).

@@ -67,3 +67,36 @@ describe('PerformanceLog', () => {
     expect(listener).toHaveBeenCalledTimes(5)
   })
 })
+
+describe('range queries (binary search) agree with a plain scan', () => {
+  test('notesBetween and chordsBetween over random timings', () => {
+    const log = new PerformanceLog()
+    let seed = 7
+    const random = () => (seed = (seed * 16807) % 2147483647) / 2147483647
+    const notes = ['C4', 'E4', 'G4', 'B4', 'D5']
+    for (let i = 0; i < 2000; i++) {
+      log.record({
+        index: i,
+        digit: i % 10,
+        note: random() < 0.15 ? null : notes[i % notes.length]!,
+        durationSec: 0.05 + random() * 2,
+        velocity: 1,
+        delayMs: random() * 300,
+      })
+    }
+    for (const [from, to] of [
+      [0, 1],
+      [10, 12.5],
+      [100, 101],
+      [250, 400],
+      [-5, 0],
+    ] as const) {
+      expect(log.notesBetween(from, to)).toEqual(
+        log.notes.filter((n) => n.startSec + n.durationSec >= from && n.startSec <= to),
+      )
+      expect(log.chordsBetween(from, to)).toEqual(
+        log.chords.filter((c) => c.atSec >= from && c.atSec <= to),
+      )
+    }
+  })
+})

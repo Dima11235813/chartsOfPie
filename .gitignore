@@ -12,3 +12,4 @@ test-results/
 .serena/project.local.yml
 .serena/logs/
 audio-renders/
+perf-report/

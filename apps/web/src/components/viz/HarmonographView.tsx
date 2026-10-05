@@ -30,14 +30,22 @@ function currentPair(log: PerformanceLog): [PerformedNote, PerformedNote] | null
  * intervals are a few cents off those ratios, so their figures never quite close and slowly turn.
  * The toggle swaps in the pure ratio to compare.
  */
+/** Redraw at most every this many ms (24 fps: smooth for a slow turn, half the raster work). */
+const FRAME_MS = 1000 / 24 - 2
+/** Stop turning this long after the last note. */
+const IDLE_MS = 4000
+
 export function HarmonographView({ log, pure, onPureChange, onCanvas }: HarmonographViewProps) {
   const { ref, canvasRef, size } = useCanvas(onCanvas)
   const colors = useDigitColors()
   const [caption, setCaption] = useState('Press Play — each interval draws its own figure.')
   const pair = useRef<[PerformedNote, PerformedNote] | null>(null)
+  /** When the last note arrived: the figure stops turning once playback goes quiet. */
+  const lastNoteAt = useRef(0)
 
   useEffect(() => {
     const update = () => {
+      lastNoteAt.current = performance.now()
       const next = currentPair(log)
       const previous = pair.current
       pair.current = next
@@ -61,7 +69,17 @@ export function HarmonographView({ log, pure, onPureChange, onCanvas }: Harmonog
     const reduced = prefersReducedMotion()
     let phase = 0
     let frame = 0
-    const draw = () => {
+    let lastDraw = -Infinity
+    let lastPair: [PerformedNote, PerformedNote] | null = null
+    const draw = (now: number) => {
+      frame = requestAnimationFrame(draw)
+      // 30 frames/s is plenty for a slow turn; when idle (paused for a while) and nothing changed,
+      // skip the frame entirely — redrawing a ~2,000-point curve 60×/s was ~50 % of a core.
+      const idle = reduced || now - lastNoteAt.current > IDLE_MS
+      if (now - lastDraw < FRAME_MS) return
+      if (idle && pair.current === lastPair && lastDraw > 0) return
+      lastDraw = now
+      lastPair = pair.current
       const w = canvas.width
       const h = canvas.height
       ctx.clearRect(0, 0, w, h)
@@ -72,8 +90,8 @@ export function HarmonographView({ log, pure, onPureChange, onCanvas }: Harmonog
         const ratio = pure ? just[0] / just[1] : tempered
         // A pure p:q figure closes after q periods: draw a few full cycles of it so pure ratios
         // retrace themselves crisply and tempered ones visibly drift.
-        const turns = Math.min(40, Math.max(8, just[1] * 4))
-        const points = harmonographPoints(ratio, phase, { turns, samples: turns * 120 })
+        const turns = Math.min(28, Math.max(8, just[1] * 4))
+        const points = harmonographPoints(ratio, phase, { turns, samples: turns * 64 })
         const radius = Math.min(w, h) * 0.42
         const cx = w / 2
         const cy = h / 2
@@ -91,10 +109,9 @@ export function HarmonographView({ log, pure, onPureChange, onCanvas }: Harmonog
         ctx.lineWidth = 1.2 * scale
         ctx.stroke()
       }
-      if (!reduced) phase += 0.006
-      frame = requestAnimationFrame(draw)
+      if (!idle) phase += 0.015 // per 24 fps frame: the same speed as 0.006 at 60 fps
     }
-    draw()
+    frame = requestAnimationFrame(draw)
     return () => cancelAnimationFrame(frame)
   }, [canvasRef, size, colors, pure])
 

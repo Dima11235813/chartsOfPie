@@ -38,6 +38,12 @@ export interface FrequencySource {
   getFloatFrequencyData(target: Float32Array<ArrayBuffer>): void
 }
 
+/**
+ * Scheduling headroom: notes are scheduled this far ahead, so a busy main thread (a heavy view,
+ * GC) can stall this long without making a note late. Tone's default is 0.1 s.
+ */
+export const LOOK_AHEAD_SEC = 0.15
+
 /** If the ideal grid time drifts further than this from "now", re-anchor to now. */
 const MAX_DRIFT_SEC = 0.08
 
@@ -63,7 +69,12 @@ export function createToneNotePlayer(): NotePlayer {
   return {
     async start(initial) {
       settings = initial
-      tone ??= await import('tone')
+      if (!tone) {
+        tone = await import('tone')
+        // A larger output buffer than "interactive" rides out short CPU spikes without crackles;
+        // the extra ~20–40 ms of latency is inaudible for playback.
+        tone.setContext(new tone.Context({ latencyHint: 'balanced', lookAhead: LOOK_AHEAD_SEC }))
+      }
       await tone.start()
       applyMute()
       chainPromise ??= createSoundChain(tone, initial)

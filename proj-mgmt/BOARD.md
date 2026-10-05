@@ -1,6 +1,6 @@
 # Board
 
-_Last updated with B-018 (mosaic blank after Sweep off) fixed and the view-toggle regression suite._
+_Last updated with the performance pass (R-010): no long tasks, ≤ 27 % main-thread load on every view._
 
 ## Epics
 

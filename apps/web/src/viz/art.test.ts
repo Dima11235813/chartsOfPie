@@ -36,6 +36,8 @@ import {
   gradient,
   modeForMidi,
   MODES,
+  plateField,
+  sampleField,
   settleGrains,
 } from './chladni'
 import { seededRandom } from '../core/random/seededRandom'
@@ -389,4 +391,24 @@ test('mixColors blends towards a second colour', () => {
   expect(mixColors('rgb(0, 0, 0)', '#ffffff', 0.5)).toBe('rgb(128, 128, 128)')
   expect(mixColors('#ff0000', '#0000ff', 0)).toBe('rgb(255, 0, 0)')
   expect(mixColors('nonsense', '#ffffff', 0.5)).toBe('nonsense')
+})
+
+test('the tabulated plate field matches the formula closely', () => {
+  const mode = MODES[9]!
+  const field = plateField(mode)
+  let worst = 0
+  for (const [x, y] of [
+    [0.123, 0.456],
+    [0.5, 0.5],
+    [0.987, 0.01],
+    [0.333, 0.777],
+  ] as const) {
+    const [f, gx, gy] = sampleField(field, x, y)
+    const [ex, ey] = gradient(x, y, mode)
+    worst = Math.max(worst, Math.abs(f - displacement(x, y, mode)))
+    // Gradients are ~10× larger than f; compare relative to their scale.
+    worst = Math.max(worst, Math.abs(gx - ex) / 10, Math.abs(gy - ey) / 10)
+  }
+  expect(worst).toBeLessThan(0.01)
+  expect(plateField(mode)).toBe(field) // cached
 })
