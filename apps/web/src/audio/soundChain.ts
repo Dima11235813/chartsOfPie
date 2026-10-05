@@ -1,5 +1,6 @@
 import type * as ToneNamespace from 'tone'
 import type { InstrumentId } from '../core/composition/config'
+import { CEILING_RANGE, ceilingCurve, ceilingMode, SAFETY, SOFT_CLIP, TRANSPARENT } from './ceiling'
 import { getInstrument, type Voice } from './instruments'
 
 type Tone = typeof ToneNamespace
@@ -26,8 +27,9 @@ export interface SoundSettings {
  *          ├─ reverb send ─ reverb ─┘
  *          └─ echo send ── delay ──┘        drone ─ (master + reverb send)
  *
- * With `compress` off, glue (ratio 1) and ceiling (linear curve) are transparent, which keeps the
- * Original preset's 2019 signal path.
+ * With `compress` off, glue (ratio 1) is transparent and so is the ceiling at the bare level,
+ * which keeps the Original preset's 2019 signal path; once volume, reverb, echo or a drone is added
+ * the ceiling rounds off peaks instead of letting them hard-clip (B-020, see ceiling.ts).
  */
 export interface SoundChain {
   playNote(note: string, durationSec: number, time: number, velocity: number): void
@@ -42,26 +44,22 @@ export interface SoundChain {
 
 const GLUE = { threshold: -24, ratio: 2.5, makeupDb: 2 }
 
-/** Identity transfer curve (transparent). */
-const LINEAR_CURVE = Float32Array.from([-1, 1])
-
-/** Linear up to 0.8 (-1.9 dBFS), then a tanh knee that never exceeds 0.98. */
-const SOFT_CLIP_CURVE = Float32Array.from({ length: 4097 }, (_, i) => {
-  const x = i / 2048 - 1 // WaveShaper maps input -1…1 onto the curve; louder input clamps
-  const magnitude = Math.abs(x)
-  const knee = 0.8
-  const shaped = magnitude <= knee ? magnitude : knee + 0.18 * Math.tanh((magnitude - knee) / 0.18)
-  return Math.sign(x) * shaped
-})
+/** Pre-computed ceiling curves (see ceiling.ts). */
+const CEILING_CURVES = {
+  transparent: ceilingCurve(TRANSPARENT),
+  safety: ceilingCurve(SAFETY),
+  'soft-clip': ceilingCurve(SOFT_CLIP),
+}
 
 const REVERB_SEND_MAX = 0.9
 const ECHO_SEND_MAX = 0.5
 const RAMP_SEC = 0.05
 
 export async function createSoundChain(tone: Tone, initial: SoundSettings): Promise<SoundChain> {
-  const ceiling = new tone.WaveShaper(LINEAR_CURVE).toDestination()
+  const ceiling = new tone.WaveShaper(CEILING_CURVES[ceilingMode(initial)]).toDestination()
   ceiling.oversample = '4x'
-  const limiter = new tone.Limiter(-1).connect(ceiling)
+  const ceilingInput = new tone.Gain(1 / CEILING_RANGE).connect(ceiling)
+  const limiter = new tone.Limiter(-1).connect(ceilingInput)
   const makeup = new tone.Gain(1).connect(limiter)
   const glue = new tone.Compressor({
     threshold: 0,
@@ -118,7 +116,7 @@ export async function createSoundChain(tone: Tone, initial: SoundSettings): Prom
     glue.threshold.value = s.compress ? GLUE.threshold : 0
     glue.ratio.value = s.compress ? GLUE.ratio : 1
     makeup.gain.rampTo(tone.dbToGain(s.compress ? GLUE.makeupDb : 0), RAMP_SEC)
-    ceiling.curve = s.compress ? SOFT_CLIP_CURVE : LINEAR_CURVE
+    ceiling.curve = CEILING_CURVES[ceilingMode(s)]
   }
 
   await setVoice(initial.instrument)
@@ -169,7 +167,11 @@ export async function createSoundChain(tone: Tone, initial: SoundSettings): Prom
         reverbSend,
         reverb,
         master,
+        glue,
+        makeup,
         limiter,
+        ceilingInput,
+        ceiling,
       ]) {
         node.dispose()
       }

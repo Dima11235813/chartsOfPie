@@ -1,6 +1,6 @@
 # Board
 
-_Last updated with B-018 (mosaic blank after Sweep off) fixed and the view-toggle regression suite._
+_Last updated with B-020 (sound distorts when Original is made louder) fixed and the audio headroom test._
 
 ## Epics
 
@@ -86,23 +86,24 @@ E06 story S06.1.1 · E02 stories listed above as done.
 
 ## Bugs
 
-| Bug   | Title                                                        | Severity | Status  |
-| ----- | ------------------------------------------------------------ | -------- | ------- |
-| B-001 | Inline π digits corrupted near the end                       | medium   | done    |
-| B-002 | Playback auto-starts on load and audio is blocked            | high     | done    |
-| B-003 | Chart.js loaded twice from CDN                               | low      | done    |
-| B-004 | Tone.js loaded unpinned from unpkg                           | medium   | done    |
-| B-005 | Functions leak as implicit globals                           | low      | done    |
-| B-006 | Memory logger runs forever and is Chrome-only                | low      | done    |
-| B-007 | Duplicate DOM ids and unused containers                      | low      | done    |
-| B-008 | `Math.random(0, 9)` arguments ignored; 0 ms delays           | low      | done    |
-| B-009 | Layout not usable on phones or tablets                       | medium   | done    |
-| B-010 | Page title is “Document”                                     | low      | done    |
-| B-011 | Pentatonic generator only correct for C                      | medium   | done    |
-| B-012 | Pause then quick resume can double the tempo                 | medium   | done    |
-| B-013 | Indigo digits low contrast; palette repeats colours          | low      | done    |
-| B-014 | Orphaned `charts-of-pie` submodule pointer                   | low      | backlog |
-| B-015 | Tone's first reverb render in a page differs from later ones | low      | done    |
-| B-016 | Canvas views blank when opened while paused                  | medium   | done    |
-| B-017 | My pieces "Name + Save" row overflows at 360 px              | low      | done    |
-| B-018 | Neighbour mosaic blank after turning Sweep off               | high     | done    |
+| Bug   | Title                                                                  | Severity | Status  |
+| ----- | ---------------------------------------------------------------------- | -------- | ------- |
+| B-001 | Inline π digits corrupted near the end                                 | medium   | done    |
+| B-002 | Playback auto-starts on load and audio is blocked                      | high     | done    |
+| B-003 | Chart.js loaded twice from CDN                                         | low      | done    |
+| B-004 | Tone.js loaded unpinned from unpkg                                     | medium   | done    |
+| B-005 | Functions leak as implicit globals                                     | low      | done    |
+| B-006 | Memory logger runs forever and is Chrome-only                          | low      | done    |
+| B-007 | Duplicate DOM ids and unused containers                                | low      | done    |
+| B-008 | `Math.random(0, 9)` arguments ignored; 0 ms delays                     | low      | done    |
+| B-009 | Layout not usable on phones or tablets                                 | medium   | done    |
+| B-010 | Page title is “Document”                                               | low      | done    |
+| B-011 | Pentatonic generator only correct for C                                | medium   | done    |
+| B-012 | Pause then quick resume can double the tempo                           | medium   | done    |
+| B-013 | Indigo digits low contrast; palette repeats colours                    | low      | done    |
+| B-014 | Orphaned `charts-of-pie` submodule pointer                             | low      | backlog |
+| B-015 | Tone's first reverb render in a page differs from later ones           | low      | done    |
+| B-016 | Canvas views blank when opened while paused                            | medium   | done    |
+| B-017 | My pieces "Name + Save" row overflows at 360 px                        | low      | done    |
+| B-018 | Neighbour mosaic blank after turning Sweep off                         | high     | done    |
+| B-020 | Sound distorts when volume, reverb, echo or drone is added to Original | high     | done    |
