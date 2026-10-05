@@ -64,11 +64,19 @@ function Thumbnail({ store, id, stamp }: { store: PieceStore; id: string; stamp:
   )
 }
 
+/** Formatted dates, cached: the list re-renders on every digit while playing. */
+const formatted = new Map<string, string>()
 const when = (iso: string) => {
-  const date = new Date(iso)
-  return Number.isNaN(date.getTime())
-    ? ''
-    : date.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })
+  let text = formatted.get(iso)
+  if (text === undefined) {
+    const date = new Date(iso)
+    text = Number.isNaN(date.getTime())
+      ? ''
+      : date.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })
+    if (formatted.size > 500) formatted.clear()
+    formatted.set(iso, text)
+  }
+  return text
 }
 
 /**
