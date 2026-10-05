@@ -52,11 +52,14 @@ test('neighbour mosaic: every option on and off keeps it drawn', async ({ page }
   await page.getByRole('checkbox', { name: 'Sweep' }).uncheck()
   await expectDrawnLike(page, all, 'after sweep off')
 
-  // Groups only, then back to every digit.
-  const show = page.getByRole('combobox', { name: 'Show' })
-  await show.selectOption({ label: 'Groups of 2+' })
-  await expect.poll(() => inkedPixels(page)).toBeGreaterThan(50)
-  await show.selectOption({ label: 'Every digit' })
+  // Every digit is the default; groups only is opt-in, and turning it off shows everything again.
+  const groups = page.getByRole('checkbox', { name: 'Groups only' })
+  await expect(groups).not.toBeChecked()
+  await groups.check()
+  await page.getByRole('combobox', { name: 'Group size' }).selectOption({ label: '3+' })
+  await expect.poll(() => inkedPixels(page)).toBeGreaterThan(20)
+  await groups.uncheck()
+  await expect(page.getByRole('combobox', { name: 'Group size' })).toHaveCount(0)
   await expectDrawnLike(page, all, 'after groups filter off')
 
   // Isolate a shape from the census, then show all.

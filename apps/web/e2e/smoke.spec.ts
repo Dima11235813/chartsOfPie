@@ -377,7 +377,7 @@ test('mosaic: groups only, and a sweep that re-groups the digits as the width ch
   for (let i = 0; i < 60; i++) await page.keyboard.press('ArrowRight')
 
   const mosaic = page.getByRole('img', { name: /Neighbour mosaic/ })
-  await page.getByRole('combobox', { name: 'Show' }).selectOption({ label: 'Groups of 2+' })
+  await page.getByRole('checkbox', { name: 'Groups only' }).check()
   await expect(mosaic).toHaveAttribute('aria-label', /Showing only groups of 2 or more/)
 
   // Shape census: the groups' shapes, counted; picking one isolates it in the mosaic.
@@ -397,7 +397,7 @@ test('mosaic: groups only, and a sweep that re-groups the digits as the width ch
   await expect(count).not.toHaveText('12 columns', { timeout: 5_000 })
   // The saved width stays 12; the sweep and the filter travel in the link.
   await page.reload()
-  await expect(page.getByRole('combobox', { name: 'Show' })).toHaveValue('2')
+  await expect(page.getByRole('combobox', { name: 'Group size' })).toHaveValue('2')
   await expect(page.getByRole('checkbox', { name: 'Sweep' })).toBeChecked()
   await page.getByRole('checkbox', { name: 'Sweep' }).uncheck()
   await expect(count).toHaveText('12 columns')
