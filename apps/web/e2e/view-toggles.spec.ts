@@ -119,6 +119,32 @@ test('neighbour mosaic fills the stage: dots grow or shrink to the frame', async
   await expect.poll(async () => (await inkedExtent(page)).x).toBeGreaterThan(0.85)
 })
 
+test('shape census: Hide stops counting, Show counts again', async ({ page }) => {
+  await openView(page, 'Neighbour mosaic')
+  const census = page.getByRole('region', { name: 'Shapes in the mosaic' })
+  const hint = census.getByText(/groups of 2–5 equal neighbours/)
+  await expect(hint).toBeVisible()
+  const before = await hint.textContent()
+  await expect(census.getByRole('button', { name: /: \d+ at this width/ }).first()).toBeVisible()
+
+  await census.getByRole('button', { name: 'Hide' }).click()
+  await expect(census.getByRole('button', { name: 'Show' })).toHaveAttribute(
+    'aria-expanded',
+    'false',
+  )
+  await expect(census.getByRole('button', { name: /at this width/ })).toHaveCount(0)
+  // The mosaic itself is unaffected.
+  await expect.poll(() => inkedPixels(page)).toBeGreaterThan(500)
+  await page.locator('body').click({ position: { x: 5, y: 5 } })
+  for (let i = 0; i < 60; i++) await page.keyboard.press('ArrowRight')
+
+  // Back on: the count catches up with the digits played meanwhile (140, not 80).
+  await census.getByRole('button', { name: 'Show' }).click()
+  await expect(hint).not.toHaveText(before!)
+  await expect(census.getByRole('button', { name: /: \d+ at this width/ }).first()).toBeVisible()
+  await expect.poll(() => inkedPixels(page)).toBeGreaterThan(500)
+})
+
 for (const [view, toggle] of [
   ['Music clock', 'Circle of fifths'],
   ['Harmonograph', 'Pure ratios'],

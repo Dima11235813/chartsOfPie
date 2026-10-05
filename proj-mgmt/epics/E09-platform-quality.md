@@ -16,7 +16,9 @@ phase: continuous
 - [ ] F09.3 — Colour palettes: high-contrast & colour-blind-safe alternatives (see B-013)
 - [ ] F09.4 — Performance budgets (bundle size, Lighthouse), Web Worker for heavy analysis —
       **performance pass done** ([R-010](../research/R-010-performance.md)): `npm run perf` harness,
-      mosaic census, cymatics, harmonograph, oscilloscope and log queries optimised; no long tasks
+      mosaic census, cymatics, harmonograph, oscilloscope and log queries optimised; no long tasks.
+      Second pass: off-screen panels stop computing (`useOnScreen`), mosaic drawing batched (wide
+      sweep 54 → 27 %)
 - [ ] F09.5 — Light theme & theme toggle
 - [x] F09.9 — Full-screen stage (button + F key) for projection and exhibitions
 - [ ] F09.6 — Internationalisation (copy extraction, RTL-safe layouts)

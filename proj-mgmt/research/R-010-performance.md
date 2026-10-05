@@ -38,10 +38,35 @@ Audio robustness: the live `AudioContext` now uses `latencyHint: 'balanced'` (la
 buffer, rides out short CPU spikes) and Tone's look-ahead is 0.15 s (was 0.1 s), so a main-thread
 stall of up to 150 ms no longer makes notes late. MIDI out uses the same lead.
 
+## Second pass: the mosaic, and nothing computed off screen
+
+Owner request: don't compute what isn't on screen (the shape census when nobody is looking at that
+card), and optimise the mosaic specifically. Two new worst-case scenarios have thousands of dots on
+screen: `mosaic groups wide` (100 columns, groups of 2+) and `mosaic sweep wide` (sweeping 40–120
+columns).
+
+| Scenario (after 20k digits) | before |   after | fix                                                                                                                                                                    |
+| --------------------------- | -----: | ------: | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| mosaic                      |   16 % |  9–10 % | census counts only while its card is on screen                                                                                                                         |
+| mosaic groups               |   22 % |    13 % | census as above; groups redraw batched                                                                                                                                 |
+| mosaic sweep                |   20 % | 12–13 % | census no longer recounts on every sweep step; sweep batched                                                                                                           |
+| mosaic groups wide          |   36 % |    26 % | groups-only redraw: one path per digit colour instead of a fill/stroke per dot and link                                                                                |
+| mosaic sweep wide           |   54 % |    27 % | sweep: one path per colour for settled dots and links, layout inlined (no per-digit allocations), frames skipped once everything has settled, ~30 fps above 1,500 dots |
+
+- **Off-screen work stops.** `useOnScreen` (IntersectionObserver plus tab visibility plus "another
+  element is full screen") gates the census. It pauses while the card is scrolled away, under the
+  full-screen stage or in a background tab, and catches up when the card is back. The card also
+  has **Hide / Show** (remembered on this device); hidden means not counting at all.
+- **"My pieces"** formatted every date on every digit (`toLocaleString` showed in the profile);
+  the dates are now cached.
+- What's left in the wide sweep is mostly rasterising ~2,000 anti-aliased dots; a WebGL or sprite
+  renderer would be the next step if it matters on low-end devices.
+
 ## Rules of thumb kept for new views
 
 - Never recompute over the whole history per digit; throttle derived panels (`useThrottled`) and
   cache pure results.
+- Don't compute what can't be seen: gate panels and canvases on `useOnScreen`.
 - Animations stop drawing when nothing changes (idle detection), cap at the frame rate they need,
   and avoid `shadowBlur`; batch many small primitives into one `ImageData` or path.
 - Run `npm run perf` before/after touching a view; no long tasks, ≲ 30 % busy at ~13 digits/s.

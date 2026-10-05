@@ -49,6 +49,27 @@ const SCENARIOS: { name: string; visual: Partial<VisualConfig> }[] = [
       },
     },
   },
+  // Thousands of dots on screen: the worst case for the per-frame and per-digit redraws.
+  {
+    name: 'mosaic groups wide',
+    visual: {
+      view: 'mosaic',
+      viewOptions: {
+        ...DEFAULT_VISUAL_CONFIG.viewOptions,
+        mosaic: { columns: 100, minGroup: 2, sweep: false, sweepSpeed: 1 },
+      },
+    },
+  },
+  {
+    name: 'mosaic sweep wide',
+    visual: {
+      view: 'mosaic',
+      viewOptions: {
+        ...DEFAULT_VISUAL_CONFIG.viewOptions,
+        mosaic: { columns: 80, minGroup: 0, sweep: true, sweepSpeed: 1 },
+      },
+    },
+  },
   { name: 'hilbert', visual: { view: 'hilbert' } },
   { name: 'type', visual: { view: 'type' } },
   { name: 'strings', visual: { view: 'strings' } },
