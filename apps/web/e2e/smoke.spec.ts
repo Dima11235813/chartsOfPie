@@ -380,7 +380,19 @@ test('mosaic: groups only, and a sweep that re-groups the digits as the width ch
   await page.getByRole('combobox', { name: 'Show' }).selectOption({ label: 'Groups of 2+' })
   await expect(mosaic).toHaveAttribute('aria-label', /Showing only groups of 2 or more/)
 
+  // Shape census: the groups' shapes, counted; picking one isolates it in the mosaic.
+  const census = page.getByRole('region', { name: 'Shapes in the mosaic' })
+  await expect(census.getByText(/found \d+ of 22 shapes/)).toBeVisible()
+  const pair = census.getByRole('button', { name: /^pair: \d+ at this width/ })
+  await pair.click()
+  await expect(pair).toHaveAttribute('aria-pressed', 'true')
+  await expect(mosaic).toHaveAttribute('aria-label', /Showing only one shape/)
+  await census.getByRole('button', { name: 'Show all' }).click()
+  await expect(mosaic).toHaveAttribute('aria-label', /Showing only groups of 2 or more/)
+
   await page.getByRole('checkbox', { name: 'Sweep' }).check()
+  await expect(page.getByRole('img', { name: /sweeping from 6 to 18 columns/ })).toBeVisible()
+  await page.getByRole('combobox', { name: 'Speed' }).selectOption({ label: 'Fast' })
   const count = page.locator('.viz-columns-count')
   await expect(count).not.toHaveText('12 columns', { timeout: 5_000 })
   // The saved width stays 12; the sweep and the filter travel in the link.

@@ -196,13 +196,13 @@ export function mosaicGroupSizes(digits: ArrayLike<number>, cols: number, first 
 
 /**
  * Column count of a back-and-forth sweep at time `t` seconds: from `low` up to `high` and back,
- * at `speed` columns per second (a triangle wave, so each width is visited at an even pace).
+ * one whole width every 1/`speed` seconds (each width is held, so its shapes can be read).
  */
 export function sweepColumns(t: number, low: number, high: number, speed: number): number {
   if (high <= low) return low
   const span = high - low
-  const phase = (t * speed) % (2 * span)
-  return low + Math.round(phase <= span ? phase : 2 * span - phase)
+  const step = Math.floor(t * speed) % (2 * span)
+  return low + (step <= span ? step : 2 * span - step)
 }
 
 /** Cell sizes (CSS px) offered when the user fixes the column count, largest first. */

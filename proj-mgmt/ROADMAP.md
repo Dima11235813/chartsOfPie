@@ -59,3 +59,4 @@ visualization, sequence and lesson plugs into the same `CompositionConfig`.
 - [R-006 — Artistic visualizations of π](research/R-006-artistic-visualizations.md)
 - [R-007 — Saving on the device & installable PWA](research/R-007-saved-pieces-and-pwa.md)
 - [R-008 — More instruments, classic keyboards & playing through a Nord (Web MIDI)](research/R-008-instruments-and-hardware.md)
+- [R-009 — Shapes in the neighbour mosaic (polyplets) and a seamless sweep](research/R-009-mosaic-shapes.md)

@@ -1,16 +1,16 @@
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import {
   MAX_MOSAIC_COLUMNS,
   MIN_MOSAIC_COLUMNS,
   type ViewOptions,
 } from '../../core/piece/visualConfig'
-import { sweepColumns } from '../../viz/art'
 import type { PerformanceLog } from '../../core/composition/performanceLog'
 import type { DigitSource } from '../../core/digits/digitSource'
 import { ART, type ArtKind } from '../../viz/render/registry'
 import type { DigitRenderer } from '../../viz/render/renderer'
 import { useDigitColors } from '../palette'
-import { prefersReducedMotion, useCanvas } from './useCanvas'
+import { useCanvas } from './useCanvas'
+import { MosaicSweep } from './MosaicSweep'
 import { useDigitFeed } from './useDigitFeed'
 
 interface DigitArtViewProps {
@@ -21,11 +21,19 @@ interface DigitArtViewProps {
   /** Neighbour mosaic only: columns (0 = fill the width), groups-only filter, sweep. */
   mosaic?: ViewOptions['mosaic']
   onMosaicChange?: (change: Partial<ViewOptions['mosaic']>) => void
+  /** Show only groups of this free shape (picked in the shape census), or null. */
+  shapeFilter?: string | null
+  /** The mosaic's current column count (for the shape census). */
+  onLayout?: (columns: number) => void
 }
 
-/** Sweep pace (columns per second); slower when the user prefers reduced motion. */
-const SWEEP_SPEED = 2.5
 const GROUP_CHOICES = [0, 2, 3, 4, 5] as const
+/** Sweep speeds offered, in columns per second. */
+const SWEEP_SPEEDS = [
+  { value: 0.5, label: 'Slow' },
+  { value: 1, label: 'Medium' },
+  { value: 2, label: 'Fast' },
+] as const
 
 /**
  * A growing artwork driven by the digits as they play (digit ring, π walk, sunflower, mosaic).
@@ -39,6 +47,8 @@ export function DigitArtView({
   onCanvas,
   mosaic,
   onMosaicChange,
+  shapeFilter = null,
+  onLayout,
 }: DigitArtViewProps) {
   const { ref, canvasRef, size } = useCanvas(onCanvas)
   const colors = useDigitColors()
@@ -51,35 +61,29 @@ export function DigitArtView({
   const minGroup = mosaic?.minGroup ?? 0
   const sweep = kind === 'mosaic' && Boolean(mosaic?.sweep)
 
-  // Sweep: animate the column count between half and one-and-a-half times the starting width and
-  // back. Only this view changes; the saved setting stays the chosen width.
-  const [swept, setSwept] = useState<number | null>(null)
-  useEffect(() => {
-    if (!sweep) return
-    const base = columns || shownRef.current || 12
-    const low = Math.max(MIN_MOSAIC_COLUMNS, Math.round(base / 2))
-    const high = Math.min(MAX_MOSAIC_COLUMNS, Math.max(low + 2, Math.round(base * 1.5)))
-    const speed = prefersReducedMotion() ? SWEEP_SPEED / 4 : SWEEP_SPEED
-    const start = performance.now()
-    // Start at the chosen width: offset the triangle wave so t = 0 lands on `base`.
-    const offset = (Math.min(high, Math.max(low, base)) - low) / speed
-    const timer = setInterval(() => {
-      const t = (performance.now() - start) / 1000 + offset
-      setSwept(sweepColumns(t, low, high, speed))
-    }, 80)
-    return () => clearInterval(timer)
-  }, [sweep, columns])
-  const layoutColumns = sweep && swept !== null ? swept : columns
+  const speed = mosaic?.sweepSpeed ?? 1
+  // The sweep goes from half to one-and-a-half times the chosen width (or, in Fit mode, the width
+  // it had when the sweep started); the saved width itself never changes.
+  const [fitBase, setFitBase] = useState(12)
+  const base = columns || fitBase
+  const low = Math.max(MIN_MOSAIC_COLUMNS, Math.round(base / 2))
+  const high = Math.min(MAX_MOSAIC_COLUMNS, Math.max(low + 2, Math.round(base * 1.5)))
+  const [swept, setSwept] = useState(base)
+  const layoutColumns = columns
   const describe = (count: number) => {
     const cols = renderer.current?.columns?.()
     if (cols) {
       setShownColumns(cols)
       shownRef.current = cols
+      onLayout?.(cols)
     }
     if (count === 0) return 'No digits yet.'
     if (kind !== 'mosaic' || !cols) return definition.summary(count)
-    const groups =
-      minGroup > 1 ? ` Showing only groups of ${minGroup} or more equal neighbours.` : ''
+    const groups = shapeFilter
+      ? ' Showing only one shape of group.'
+      : minGroup > 1
+        ? ` Showing only groups of ${minGroup} or more equal neighbours.`
+        : ''
     return `${count.toLocaleString()} digits in ${cols} columns. A vertical link joins equal digits ${cols} places apart; a diagonal one, ${cols - 1} or ${cols + 1} apart.${groups}`
   }
 
@@ -96,7 +100,7 @@ export function DigitArtView({
 
   useDigitFeed(
     log,
-    `${kind}:${size.width}x${size.height}:${colors.join()}:${layoutColumns}:${minGroup}`,
+    `${kind}:${size.width}x${size.height}:${colors.join()}:${layoutColumns}:${minGroup}:${shapeFilter}`,
     {
       reset() {
         const canvas = canvasRef.current
@@ -109,7 +113,11 @@ export function DigitArtView({
             colors,
             ghost: { count: source.length, digitAt: (i) => source.digitAt(i) },
           },
-          { mosaicColumns: layoutColumns || undefined, mosaicMinGroup: minGroup },
+          {
+            mosaicColumns: layoutColumns || undefined,
+            mosaicMinGroup: minGroup,
+            mosaicShape: shapeFilter ?? undefined,
+          },
         )
         compose()
         setSummary(describe(0))
@@ -134,14 +142,31 @@ export function DigitArtView({
   if (kind !== 'mosaic' || !onMosaicChange) return canvas
 
   const fit = columns === 0
-  const current = sweep ? shownColumns || columns : fit ? shownColumns || 10 : columns
+  const current = sweep ? swept : fit ? shownColumns || 10 : columns
   const set = (value: number) =>
     onMosaicChange({
       columns: Math.min(MAX_MOSAIC_COLUMNS, Math.max(MIN_MOSAIC_COLUMNS, Math.round(value))),
     })
   return (
     <div className="viz-layer viz-layer-with-bar">
-      {canvas}
+      {sweep ? (
+        <MosaicSweep
+          source={source}
+          log={log}
+          low={low}
+          high={high}
+          speed={speed}
+          minGroup={minGroup}
+          shapeFilter={shapeFilter}
+          onLayout={(cols) => {
+            setSwept(cols)
+            onLayout?.(cols)
+          }}
+          onCanvas={onCanvas}
+        />
+      ) : (
+        canvas
+      )}
       <div className="viz-columns" role="group" aria-label="Mosaic width">
         <label className="viz-columns-fit">
           <input
@@ -197,10 +222,28 @@ export function DigitArtView({
           <input
             type="checkbox"
             checked={sweep}
-            onChange={(e) => onMosaicChange({ sweep: e.target.checked })}
+            onChange={(e) => {
+              if (e.target.checked) setFitBase(shownRef.current || 12)
+              onMosaicChange({ sweep: e.target.checked })
+            }}
           />
           Sweep
         </label>
+        {sweep && (
+          <label className="viz-columns-select">
+            Speed
+            <select
+              value={speed}
+              onChange={(e) => onMosaicChange({ sweepSpeed: Number(e.target.value) })}
+            >
+              {SWEEP_SPEEDS.map((s) => (
+                <option key={s.value} value={s.value}>
+                  {s.label}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
       </div>
     </div>
   )

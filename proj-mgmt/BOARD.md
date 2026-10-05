@@ -1,6 +1,6 @@
 # Board
 
-_Last updated with the neighbour mosaic's groups-only filter and column sweep._
+_Last updated with the mosaic shape census (polyplets, R-009) and the seamless sweep._
 
 ## Epics
 

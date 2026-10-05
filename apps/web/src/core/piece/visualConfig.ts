@@ -84,6 +84,8 @@ function build(lenient: boolean) {
             minGroup: field(z.int().check(z.gte(0), z.lte(9)), 0),
             /** Sweep the column count back and forth (added later: additive). */
             sweep: field(z.boolean(), false),
+            /** Sweep pace in columns per second (added later: additive). */
+            sweepSpeed: field(z.number().check(z.gte(0.1), z.lte(5)), 1),
           }),
           {},
         ),

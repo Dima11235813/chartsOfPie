@@ -48,8 +48,9 @@ Switch the **View** in the bottom bar:
   typographic π, times-table string art.
 - **Sound shapes:** music clock (with a circle-of-fifths mode), harmonograph (pure vs tempered
   ratios), oscilloscope, guitar fretboard (scale map, fingering, four tunings), cymatics (sand on a
-  Chladni plate drawing each note's figure). The neighbour mosaic can show only groups of equal neighbours and
-  sweep its width back and forth so the groups re-form.
+  Chladni plate drawing each note's figure). The neighbour mosaic can show only groups of equal neighbours, sweep
+  its width smoothly so the groups re-form, and lists the shapes it finds (polyplets) — pick one to
+  isolate it.
 
 **Keyboard:** Space plays/pauses, → plays one digit, M mutes, F shows the view full screen.
 
