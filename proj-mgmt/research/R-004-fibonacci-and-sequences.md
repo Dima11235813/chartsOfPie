@@ -37,6 +37,9 @@ Thue–Morse · user-entered sequences.
 
 ## Engine changes required
 
+> Superseded in detail by [R-010](R-010-number-series-architecture.md), which splits a series
+> (terms) from a reading (terms → symbols) instead of a single `valueAt(i)`.
+
 - Generalise `DigitSource` into `NumberSequence { id, name, length | infinite, alphabetSize?,
 valueAt(i) }`. Finite digit files and generated sequences (Fibonacci mod m computed on the fly
   with BigInt or modular arithmetic) both implement it.
