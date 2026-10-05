@@ -30,6 +30,7 @@ import { withMidiTap } from './midi/midiTap'
 import { useMidiOutput } from './midi/useMidiOutput'
 import { MidiPanel } from './components/MidiPanel'
 import { PiecesPanel } from './components/PiecesPanel'
+import { MosaicShapesPanel } from './components/MosaicShapesPanel'
 import { createDefaultStore, type PieceStore } from './storage/pieceStore'
 import { defaultAccountApi, type AccountApi } from './account/accountApi'
 import { useAccount } from './account/useAccount'
@@ -120,6 +121,9 @@ export default function App({
     fullscreen: () => toggleFullscreen(),
   })
   const stageRef = useRef<HTMLElement | null>(null)
+  // Neighbour mosaic: the width it is drawn at now (for the shape census) and an isolated shape.
+  const [mosaicColumns, setMosaicColumns] = useState(12)
+  const [shapeFilter, setShapeFilter] = useState<string | null>(null)
   const toggleFullscreen = () => {
     if (document.fullscreenElement) void document.exitFullscreen()
     else void stageRef.current?.requestFullscreen?.()
@@ -196,6 +200,8 @@ export default function App({
                     onMosaicChange={(change) =>
                       updateViewOptions('mosaic', { ...viewOptions.mosaic, ...change })
                     }
+                    shapeFilter={view === 'mosaic' ? shapeFilter : null}
+                    onLayout={setMosaicColumns}
                   />
                 )}
                 {view === 'clock' && (
@@ -256,6 +262,15 @@ export default function App({
               <p className="notice error" role="status">
                 That share link could not be read, so defaults are used for the parts that failed.
               </p>
+            )}
+            {view === 'mosaic' && load.status === 'ready' && (
+              <MosaicShapesPanel
+                source={load.source}
+                played={playback.total}
+                columns={mosaicColumns}
+                selected={shapeFilter}
+                onSelect={setShapeFilter}
+              />
             )}
             <SoundPanel config={config} onChange={setConfig} />
             <MidiPanel midi={midi} />

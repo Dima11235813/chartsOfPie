@@ -337,6 +337,12 @@
                 "sweep": {
                   "default": false,
                   "type": "boolean"
+                },
+                "sweepSpeed": {
+                  "default": 1,
+                  "type": "number",
+                  "minimum": 0.1,
+                  "maximum": 5
                 }
               }
             }

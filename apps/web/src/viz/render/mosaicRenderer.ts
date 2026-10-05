@@ -1,4 +1,5 @@
 import { earlierNeighbours, mosaicColumnsCell, mosaicGroupSizes } from '../art'
+import { mosaicGroups } from '../mosaicShapes'
 import { createLayer, type DigitAt, type DigitRenderer, type RendererOptions } from './renderer'
 
 /** Live cell sizes (CSS px), largest first. */
@@ -19,6 +20,8 @@ export interface MosaicOptions {
    * neighbours (others become faint dots). 0 or 1 = show everything.
    */
   minGroup?: number
+  /** Show only groups of this free shape (a polyplet key from viz/polyplets). */
+  shape?: string
 }
 
 /**
@@ -28,7 +31,7 @@ export interface MosaicOptions {
  */
 export function createMosaicRenderer(
   { width, height, scale, colors }: RendererOptions,
-  { cell: fixedCell, fitCount, columns, minGroup = 0 }: MosaicOptions = {},
+  { cell: fixedCell, fitCount, columns, minGroup = 0, shape }: MosaicOptions = {},
 ): DigitRenderer {
   const pad = 10 * scale
   const innerW = width - pad * 2
@@ -73,7 +76,7 @@ export function createMosaicRenderer(
     return [x0 + (index % cols) * cell + cell / 2, pad + row * cell + cell / 2]
   }
 
-  const groupsOnly = minGroup > 1
+  const groupsOnly = minGroup > 1 || Boolean(shape)
 
   /** Groups only: re-group everything visible (a group can grow later) and redraw the layer. */
   const drawGroups = (to: number, digitAt: DigitAt) => {
@@ -81,6 +84,14 @@ export function createMosaicRenderer(
     const digits = new Uint8Array(Math.max(0, to - firstIndex))
     for (let i = 0; i < digits.length; i++) digits[i] = digitAt(firstIndex + i)
     const sizes = mosaicGroupSizes(digits, cols, firstIndex)
+    // A shape filter shows exactly the groups of that shape (any size it has).
+    let inShape: Uint8Array | null = null
+    if (shape) {
+      inShape = new Uint8Array(digits.length)
+      for (const group of mosaicGroups(digits, cols, firstIndex, 2, 9)) {
+        if (group.shape === shape) for (const i of group.indices) inShape[i - firstIndex] = 1
+      }
+    }
     layer = createLayer(width, height)
     const ctx = layer.getContext('2d')!
     ctx.lineCap = 'round'
@@ -90,7 +101,7 @@ export function createMosaicRenderer(
     for (let k = 0; k < digits.length; k++) {
       const i = firstIndex + k
       const [x, y] = centre(i)
-      const shown = sizes[k]! >= minGroup
+      const shown = inShape ? inShape[k] === 1 : sizes[k]! >= minGroup
       const color = colors[digits[k]!]!
       if (shown) {
         for (const j of earlierNeighbours(i, cols)) {

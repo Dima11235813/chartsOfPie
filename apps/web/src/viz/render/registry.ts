@@ -15,6 +15,8 @@ export interface ArtSettings {
   mosaicColumns?: number
   /** Neighbour mosaic: only groups of at least this many equal neighbours (0 = everything). */
   mosaicMinGroup?: number
+  /** Neighbour mosaic: only groups of this free shape (a polyplet key), if set. */
+  mosaicShape?: string
 }
 
 export interface ArtDefinition {
@@ -73,12 +75,14 @@ export const ART: Record<ArtKind, ArtDefinition> = {
       createMosaicRenderer(options, {
         columns: settings?.mosaicColumns,
         minGroup: settings?.mosaicMinGroup,
+        shape: settings?.mosaicShape,
       }),
     poster: (options, count, settings) =>
       createMosaicRenderer(options, {
         fitCount: Math.max(1, count),
         columns: settings?.mosaicColumns,
         minGroup: settings?.mosaicMinGroup,
+        shape: settings?.mosaicShape,
       }),
     maxPosterDigits: 250_000,
   },
