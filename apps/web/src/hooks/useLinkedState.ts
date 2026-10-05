@@ -17,6 +17,16 @@ function readLastSession(): string {
 
 const defaultSound = () => (getPreset(DEFAULT_PRESET_ID) ?? PRESETS[0]!).config
 
+/**
+ * A remembered session opens on the whole picture: filters that hide digits (the mosaic's
+ * groups-only view) are opt-in per visit, and only a shared link brings them back (B-019).
+ */
+function showingEverything(visual: VisualConfig): VisualConfig {
+  const { mosaic } = visual.viewOptions
+  if (mosaic.minGroup === 0) return visual
+  return { ...visual, viewOptions: { ...visual.viewOptions, mosaic: { ...mosaic, minGroup: 0 } } }
+}
+
 export interface LinkedState {
   config: CompositionConfig
   setConfig: (config: CompositionConfig) => void
@@ -36,9 +46,10 @@ export function useLinkedState(fallbackVisual: () => VisualConfig): LinkedState 
     const hash = typeof window === 'undefined' ? '' : window.location.hash
     // A link always wins; otherwise pick up where the last visit left off (never an error).
     const shared = parseShareHash(hash || readLastSession())
+    const visual = shared.visual && (hash ? shared.visual : showingEverything(shared.visual))
     return {
       config: shared.sound ?? defaultSound(),
-      visual: shared.visual ?? fallbackVisual(),
+      visual: visual ?? fallbackVisual(),
       invalidLink: Boolean(hash) && shared.invalid,
     }
   })

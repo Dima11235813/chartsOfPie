@@ -27,7 +27,8 @@ interface DigitArtViewProps {
   onLayout?: (columns: number) => void
 }
 
-const GROUP_CHOICES = [0, 2, 3, 4, 5] as const
+/** Smallest group sizes offered once "Groups only" is on (off = every digit, the default). */
+const GROUP_SIZES = [2, 3, 4, 5] as const
 /** Sweep speeds offered, in columns per second. */
 const SWEEP_SPEEDS = [
   { value: 0.5, label: 'Slow' },
@@ -59,6 +60,8 @@ export function DigitArtView({
   const shownRef = useRef(0)
   const columns = mosaic?.columns ?? 0
   const minGroup = mosaic?.minGroup ?? 0
+  // Turning "Groups only" back on returns to the size last picked.
+  const lastGroupSize = useRef(2)
   const sweep = kind === 'mosaic' && Boolean(mosaic?.sweep)
 
   const speed = mosaic?.sweepSpeed ?? 1
@@ -207,19 +210,32 @@ export function DigitArtView({
         <output className="viz-columns-count" aria-live={sweep ? 'off' : 'polite'}>
           {current} columns
         </output>
-        <label className="viz-columns-select">
-          Show
-          <select
-            value={minGroup}
-            onChange={(e) => onMosaicChange({ minGroup: Number(e.target.value) })}
-          >
-            {GROUP_CHOICES.map((n) => (
-              <option key={n} value={n}>
-                {n === 0 ? 'Every digit' : `Groups of ${n}+`}
-              </option>
-            ))}
-          </select>
+        <label className="viz-columns-fit">
+          <input
+            type="checkbox"
+            checked={minGroup > 1}
+            onChange={(e) => {
+              if (!e.target.checked) lastGroupSize.current = minGroup
+              onMosaicChange({ minGroup: e.target.checked ? lastGroupSize.current : 0 })
+            }}
+          />
+          Groups only
         </label>
+        {minGroup > 1 && (
+          <label className="viz-columns-select">
+            Group size
+            <select
+              value={minGroup}
+              onChange={(e) => onMosaicChange({ minGroup: Number(e.target.value) })}
+            >
+              {GROUP_SIZES.map((n) => (
+                <option key={n} value={n}>
+                  {n}+
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
         <label className="viz-columns-fit">
           <input
             type="checkbox"
