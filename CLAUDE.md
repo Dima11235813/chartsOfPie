@@ -68,6 +68,10 @@ In the cloud container, Playwright uses the pre-installed Chromium; never run `p
    Persisted ids (views, palettes, scales, instruments, presets) are never renamed. Never delete or
    edit the golden fixtures in `core/piece/fixtures/`; the schema snapshots in
    `core/piece/__schemas__/` change only together with a default, or a version bump with a migration.
+9. **Every control is regression-tested both ways.** A new view option, toggle or mode needs an e2e
+   case in `e2e/view-toggles.spec.ts` that switches it on **and back off while paused** and asserts
+   the canvas still has drawn pixels (not just a label). Bugs found by the owner get a failing test
+   first, then the fix (B-018).
 
 ## Agents, skills and MCP
 
