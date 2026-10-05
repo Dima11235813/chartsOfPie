@@ -5,7 +5,7 @@ import {
   clockPosition,
   earlierNeighbours,
   fitBounds,
-  mosaicColumnsCell,
+  mosaicFill,
   mosaicGroupSizes,
   sweepColumns,
   GOLDEN_ANGLE,
@@ -158,17 +158,31 @@ describe('palettes', () => {
 })
 
 describe('neighbour mosaic', () => {
-  test('a fixed column count picks the largest cell that fits the width and every digit', () => {
-    // 10 columns in 400×300: 36 px fits the width (360) and 8 rows = 80 digits.
-    expect(mosaicColumnsCell(400, 300, 10, 80, 1)).toBe(36)
-    // 200 digits need 20 rows: 15 px gives 20 rows.
-    expect(mosaicColumnsCell(400, 300, 10, 200, 1)).toBe(15)
-    // Too many digits for any step: the smallest step, and the view scrolls.
-    expect(mosaicColumnsCell(400, 300, 10, 1_000_000, 1)).toBe(3.5)
-    // 120 columns in 300 px: even 3.5 px is too wide, so cells shrink to fit exactly.
-    expect(mosaicColumnsCell(300, 300, 120, 10, 1)).toBe(2.5)
-    // Device pixel ratio scales the steps.
-    expect(mosaicColumnsCell(800, 600, 10, 80, 2)).toBe(72)
+  test('a fixed column count spans the whole width, at most a third of the frame per cell', () => {
+    // 10 columns in 400×300: 40 px cells fill the width, whatever the digit count (then it scrolls).
+    expect(mosaicFill(400, 300, 10, 80, 1)).toEqual({ columns: 10, cell: 40 })
+    expect(mosaicFill(400, 300, 10, 1_000_000, 1)).toEqual({ columns: 10, cell: 40 })
+    // 2 columns would be 200 px: capped at 300 / 3 so three rows still show.
+    expect(mosaicFill(400, 300, 2, 5, 1)).toEqual({ columns: 2, cell: 100 })
+    // 120 columns in 300 px: 2.5 px cells.
+    expect(mosaicFill(300, 300, 120, 10, 1)).toEqual({ columns: 120, cell: 2.5 })
+  })
+
+  test('Fit starts with big dots and shrinks them as digits arrive, always filling the width', () => {
+    // 400×300: the biggest cell is 100 px, i.e. 4 columns × 3 rows = 12 digits.
+    expect(mosaicFill(400, 300, 0, 1, 1)).toEqual({ columns: 4, cell: 100 })
+    expect(mosaicFill(400, 300, 0, 12, 1)).toEqual({ columns: 4, cell: 100 })
+    // 13 digits: the next step, 5 columns of 80 px × 3 rows = 15.
+    expect(mosaicFill(400, 300, 0, 13, 1)).toEqual({ columns: 5, cell: 80 })
+    // 1,000 digits: 37 columns × 27 rows = 999 is one short; the next step, 43 × 32, fits.
+    expect(mosaicFill(400, 300, 0, 999, 1).columns).toBe(37)
+    expect(mosaicFill(400, 300, 0, 1000, 1).columns).toBe(43)
+    // Far more than fit: 8 px cells (50 columns), and the view scrolls.
+    expect(mosaicFill(400, 300, 0, 1_000_000, 1)).toEqual({ columns: 50, cell: 8 })
+    // Never more columns than the slider offers.
+    expect(mosaicFill(4000, 1000, 0, 1_000_000, 1).columns).toBe(120)
+    // Device pixels: the minimum cell scales with the pixel ratio.
+    expect(mosaicFill(800, 600, 0, 1_000_000, 2)).toEqual({ columns: 50, cell: 16 })
   })
 
   it('lists earlier neighbours without wrapping across rows', () => {

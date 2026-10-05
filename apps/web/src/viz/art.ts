@@ -205,26 +205,47 @@ export function sweepColumns(t: number, low: number, high: number, speed: number
   return low + (step <= span ? step : 2 * span - step)
 }
 
-/** Cell sizes (CSS px) offered when the user fixes the column count, largest first. */
-export const MOSAIC_COLUMN_CELLS = [36, 30, 26, 22, 18, 15, 13, 11, 9, 7, 5.5, 4.5, 3.5] as const
+/** The live mosaic always shows at least this many rows, so the first few dots stay in frame. */
+export const MOSAIC_MIN_ROWS = 3
+/** Smallest cell (CSS px) Fit mode shrinks to before it starts scrolling. */
+export const MOSAIC_FIT_MIN_CELL = 8
+
+export interface MosaicFill {
+  columns: number
+  /** Cell size in device pixels. */
+  cell: number
+}
 
 /**
- * Live mosaic cell size for a fixed column count: the largest step that fits the width and still
- * shows all `count` digits; once even the smallest can't, the smallest (and the view scrolls). If
- * the columns are too many for even that, cells shrink to fit the width exactly.
+ * Live mosaic layout that fills the frame: the columns always span the whole width, so dots are
+ * as big as the width allows (at most a third of the frame, so a few rows always show).
+ *
+ * - Fixed `columns`: cell = width / columns; once the rows reach the bottom the view scrolls.
+ * - Fit (`columns` 0): the fewest columns (on a ladder ~15 % apart, so the layout changes about 20
+ *   times over a long performance rather than on every digit) whose rows hold all `count` digits.
+ *   Dots start big and shrink as π grows, down to `MOSAIC_FIT_MIN_CELL` (or `maxColumns`), and
+ *   then the view scrolls.
  */
-export function mosaicColumnsCell(
+export function mosaicFill(
   width: number,
   height: number,
   columns: number,
   count: number,
   scale: number,
-): number {
-  const widest = width / columns
-  const sizes = MOSAIC_COLUMN_CELLS.map((size) => size * scale).filter((c) => c <= widest)
-  if (!sizes.length) return widest
-  for (const cell of sizes) if (Math.floor(height / cell) * columns >= count) return cell
-  return sizes.at(-1)!
+  maxColumns = 120,
+): MosaicFill {
+  const biggest = Math.min(width, height) / MOSAIC_MIN_ROWS
+  if (columns > 0) return { columns, cell: Math.min(width / columns, biggest) }
+  const fewest = Math.max(1, Math.ceil(width / biggest))
+  const most = Math.max(
+    fewest,
+    Math.min(maxColumns, Math.floor(width / (MOSAIC_FIT_MIN_CELL * scale))),
+  )
+  for (let cols = fewest; cols < most; cols = Math.max(cols + 1, Math.round(cols * 1.15))) {
+    const cell = width / cols
+    if (Math.floor(height / cell) * cols >= count) return { columns: cols, cell }
+  }
+  return { columns: most, cell: width / most }
 }
 
 // ── Times-table string art (modular multiplication on a circle) ────────────────────────────────
