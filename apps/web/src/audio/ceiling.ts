@@ -26,7 +26,7 @@ export const SOFT_CLIP = softKnee(0.8, 0.98)
 /**
  * Compression off with anything added to the bare signal (volume up, reverb, echo, drone):
  * linear to 0.85 (-1.4 dBFS), then rounded off below 0.97 instead of hard-clipping at full scale
- * (B-019). The ceiling sits a little under 1 because the 4x-oversampled shaper's filters overshoot
+ * (B-020). The ceiling sits a little under 1 because the 4x-oversampled shaper's filters overshoot
  * slightly on bright, heavily shaped peaks.
  */
 export const SAFETY = softKnee(0.85, 0.97)

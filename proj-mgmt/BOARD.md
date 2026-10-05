@@ -1,6 +1,6 @@
 # Board
 
-_Last updated with B-019 (sound distorts when Original is made louder) fixed and the audio headroom test._
+_Last updated with B-020 (sound distorts when Original is made louder) fixed and the audio headroom test._
 
 ## Epics
 
@@ -106,4 +106,4 @@ E06 story S06.1.1 · E02 stories listed above as done.
 | B-016 | Canvas views blank when opened while paused                            | medium   | done    |
 | B-017 | My pieces "Name + Save" row overflows at 360 px                        | low      | done    |
 | B-018 | Neighbour mosaic blank after turning Sweep off                         | high     | done    |
-| B-019 | Sound distorts when volume, reverb, echo or drone is added to Original | high     | done    |
+| B-020 | Sound distorts when volume, reverb, echo or drone is added to Original | high     | done    |

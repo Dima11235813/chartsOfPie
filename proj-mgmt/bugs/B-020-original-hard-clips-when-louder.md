@@ -1,5 +1,5 @@
 ---
-id: B-019
+id: B-020
 title: Sound distorts when volume, reverb, echo or drone is added to Original
 status: done
 severity: high
@@ -7,7 +7,7 @@ found-in: apps/web/src/audio/soundChain.ts (master ceiling)
 fixed-by: this commit
 ---
 
-# B-019 — Sound distorts when volume, reverb, echo or drone is added to Original
+# B-020 — Sound distorts when volume, reverb, echo or drone is added to Original
 
 ## Observed (owner)
 

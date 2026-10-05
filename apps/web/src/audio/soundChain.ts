@@ -29,7 +29,7 @@ export interface SoundSettings {
  *
  * With `compress` off, glue (ratio 1) is transparent and so is the ceiling at the bare level,
  * which keeps the Original preset's 2019 signal path; once volume, reverb, echo or a drone is added
- * the ceiling rounds off peaks instead of letting them hard-clip (B-019, see ceiling.ts).
+ * the ceiling rounds off peaks instead of letting them hard-clip (B-020, see ceiling.ts).
  */
 export interface SoundChain {
   playNote(note: string, durationSec: number, time: number, velocity: number): void

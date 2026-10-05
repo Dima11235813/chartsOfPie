@@ -1,5 +1,5 @@
 /**
- * Headroom regression test (B-019): turning the volume up or adding reverb, echo or a drone must
+ * Headroom regression test (B-020): turning the volume up or adding reverb, echo or a drone must
  * never hard-clip the output, with or without master compression. Before the fix, Original at
  * +6 dB hard-clipped ~2% of its samples, which sounds like crackly distortion on a phone.
  */
