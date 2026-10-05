@@ -80,6 +80,11 @@ positions, so they stretch as dots glide; groups fade in after each step. Each w
 changing per frame decay smoothly from ~3,400 to 0 over ~0.7 s after each step, instead of one
 jump.
 
+**Update ([B-018](../bugs/B-018-mosaic-sweep-small-on-screen.md)):** one cell size for the whole
+sweep meant every width used only about low / high ≈ ⅓ of the frame. Each width now has its own
+frame that fills the screen; smoothness comes from the glide, an eased dot size, and digits
+fading in and out at the top as the window grows and shrinks.
+
 ## 6. Next ideas
 
 - **Shape trails across the sweep:** keep a group's colour/identity as it travels between widths

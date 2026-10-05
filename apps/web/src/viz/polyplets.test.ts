@@ -6,7 +6,14 @@ import {
   freeKey,
   shapeName,
 } from './polyplets'
-import { approach, mosaicGroups, shapeCensus, sweepFrame, sweepTarget } from './mosaicShapes'
+import {
+  approach,
+  mosaicGroups,
+  shapeCensus,
+  SWEEP_MAX_WINDOW,
+  sweepFrame,
+  sweepTarget,
+} from './mosaicShapes'
 
 describe('polyplets (cells joined by edges or corners)', () => {
   test('fixed counts match OEIS A006770: 1, 4, 20, 110, 638', () => {
@@ -137,15 +144,21 @@ describe('shapes of the mosaic groups', () => {
 })
 
 describe('sweep geometry', () => {
-  test('one cell size fits the widest layout; the window fills the narrowest', () => {
-    const frame = sweepFrame(820, 520, 1, 10, 30, 5000)
-    expect(frame.cell).toBeCloseTo(800 / 30)
-    expect(frame.window).toBe(10 * Math.floor(500 / (800 / 30)))
-    expect(sweepFrame(820, 520, 1, 10, 30, 7).window).toBe(7)
+  test('each width fills the frame: columns span the width, recent digits fill the height', () => {
+    const wide = sweepFrame(820, 520, 1, 30, 5000)
+    expect(wide.cell).toBeCloseTo(800 / 30)
+    expect(wide.window).toBe(30 * Math.floor(500 / (800 / 30)))
+    // Fewer columns: bigger cells (capped at 30 px) and fewer rows.
+    const narrow = sweepFrame(820, 520, 1, 10, 5000)
+    expect(narrow.cell).toBe(30)
+    expect(narrow.window).toBe(10 * Math.floor(500 / 30))
+    // Never more than has been played, nor more than a frame can afford.
+    expect(sweepFrame(820, 520, 1, 30, 7).window).toBe(7)
+    expect(sweepFrame(820, 5200, 1, 120, 1e6).window).toBe(SWEEP_MAX_WINDOW)
   })
 
   test('targets are centred and rows count from the first shown digit', () => {
-    const frame = sweepFrame(820, 520, 1, 10, 30, 5000)
+    const frame = sweepFrame(820, 520, 1, 30, 5000)
     const [x, y] = sweepTarget(frame, 20, 40, 45)
     expect(x).toBeCloseTo(10 + (800 - 20 * frame.cell) / 2 + 5.5 * frame.cell)
     expect(y).toBeCloseTo(10 + 0.5 * frame.cell)

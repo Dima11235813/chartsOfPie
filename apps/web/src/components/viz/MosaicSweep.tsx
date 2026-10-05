@@ -7,6 +7,7 @@ import {
   mosaicGroups,
   sweepFrame,
   sweepTarget,
+  SWEEP_MAX_WINDOW,
   type SweepFrame,
 } from '../../viz/mosaicShapes'
 import { useDigitColors } from '../palette'
@@ -32,9 +33,10 @@ const FAINT = 0.1
 
 /**
  * The neighbour mosaic's sweep, drawn continuously: the width steps from `low` to `high` columns
- * and back, every dot glides to its new place (fixed cell size, so nothing jumps or rescales),
- * links stretch with the dots and groups fade in as they form. The width holds at each step long
- * enough to read the shapes before moving on.
+ * and back, every dot glides to its new place, links stretch with the dots and groups fade in as
+ * they form. Each width fills the frame (wider = smaller cells and more digits), so older digits
+ * fade in at the top as the grid widens and slide out of the top as it narrows. The width holds
+ * at each step long enough to read the shapes before moving on.
  */
 export function MosaicSweep({
   source,
@@ -72,6 +74,10 @@ export function MosaicSweep({
 
     let frame: SweepFrame | null = null
     let cols = low
+    /** Dot size, eased towards the current width's cell so it shrinks and grows smoothly. */
+    let cellShown = 0
+    /** First digit still drawn: digits before `start` are fading out. */
+    let drawStart = -1
     let layoutAt = 0
     let groupsKey = ''
     let shown = new Uint8Array(0)
@@ -83,17 +89,17 @@ export function MosaicSweep({
     let raf = 0
 
     const regroup = (played: number) => {
-      const key = `${cols}:${start}:${played}:${minGroup}:${shapeFilter ?? ''}`
+      const key = `${cols}:${drawStart}:${played}:${minGroup}:${shapeFilter ?? ''}`
       if (key === groupsKey) return
       groupsKey = key
       if (shapeFilter) {
         shown = new Uint8Array(digits.length)
-        for (const group of mosaicGroups(digits, cols, start, 2, 9)) {
+        for (const group of mosaicGroups(digits, cols, drawStart, 2, 9)) {
           if (group.shape !== shapeFilter) continue
-          for (const i of group.indices) shown[i - start] = 1
+          for (const i of group.indices) shown[i - drawStart] = 1
         }
       } else if (minGroup > 1) {
-        const sizes = mosaicGroupSizes(digits, cols, start)
+        const sizes = mosaicGroupSizes(digits, cols, drawStart)
         shown = new Uint8Array(sizes.length)
         for (let k = 0; k < sizes.length; k++) shown[k] = sizes[k]! >= minGroup ? 1 : 0
       } else {
@@ -112,28 +118,35 @@ export function MosaicSweep({
         layoutAt = now
         onLayoutRef.current(cols)
       }
-      frame = sweepFrame(w, h, size.ratio, low, high, played)
+      frame = sweepFrame(w, h, size.ratio, cols, played)
       start = played - frame.window
-      if (loaded !== `${start}:${frame.window}`) {
-        loaded = `${start}:${frame.window}`
-        digits = new Uint8Array(frame.window)
-        for (let k = 0; k < digits.length; k++) digits[k] = source.digitAt(start + k)
+      const tau = reduced ? TAU * 2 : TAU
+      // Digits that left the window (the grid narrowed, or newer ones pushed them out) fade out
+      // first; new ones fade in from wherever they first appear.
+      if (drawStart < 0 || drawStart > start || start - drawStart > SWEEP_MAX_WINDOW) {
+        drawStart = start
+      }
+      while (drawStart < start && alpha[drawStart & (CAP - 1)]! < 0.02) drawStart++
+      if (loaded !== `${drawStart}:${played}`) {
+        loaded = `${drawStart}:${played}`
+        digits = new Uint8Array(played - drawStart)
+        for (let k = 0; k < digits.length; k++) digits[k] = source.digitAt(drawStart + k)
       }
       regroup(played)
 
-      const tau = reduced ? TAU * 2 : TAU
       ctx.clearRect(0, 0, w, h)
-      const dot = Math.max(0.8, frame.cell * 0.3)
+      cellShown = cellShown ? approach(cellShown, frame.cell, dt, tau) : frame.cell
+      const dot = Math.max(0.8, cellShown * 0.3)
       ctx.lineCap = 'round'
-      ctx.lineWidth = Math.max(1, frame.cell * 0.2)
+      ctx.lineWidth = Math.max(1, cellShown * 0.2)
       const linkAlpha = Math.min(1, (now - layoutAt) / 300)
 
       // Move every dot towards its place in the current layout.
       for (let k = 0; k < digits.length; k++) {
-        const i = start + k
+        const i = drawStart + k
         const slot = i & (CAP - 1)
         const [tx, ty] = sweepTarget(frame, cols, start, i)
-        const ta = shown[k] ? 1 : FAINT
+        const ta = i < start ? 0 : shown[k] ? 1 : FAINT
         if (owner[slot] !== i) {
           owner[slot] = i
           posX[slot] = tx
@@ -148,10 +161,10 @@ export function MosaicSweep({
       // Links of the current layout between shown equal neighbours, fading in after each step.
       for (let k = 0; k < digits.length; k++) {
         if (!shown[k]) continue
-        const i = start + k
+        const i = drawStart + k
         const slot = i & (CAP - 1)
         for (const j of earlierNeighbours(i, cols)) {
-          const jk = j - start
+          const jk = j - drawStart
           if (jk < 0 || digits[jk] !== digits[k] || !shown[jk]) continue
           const other = j & (CAP - 1)
           ctx.globalAlpha = linkAlpha * Math.min(alpha[slot]!, alpha[other]!)
@@ -163,7 +176,7 @@ export function MosaicSweep({
         }
       }
       for (let k = 0; k < digits.length; k++) {
-        const slot = (start + k) & (CAP - 1)
+        const slot = (drawStart + k) & (CAP - 1)
         const a = alpha[slot]!
         ctx.globalAlpha = a
         ctx.fillStyle = a > FAINT * 1.5 ? colors[digits[k]!]! : 'rgb(201, 214, 232)'
