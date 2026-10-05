@@ -85,7 +85,10 @@ export function shapeCensus(groups: readonly MosaicGroup[]): ShapeCount[] {
   )
 }
 
-/** Fixed geometry for a whole sweep, so dots glide between widths instead of jumping. */
+/** Most digits a sweep shows at once (keeps every frame cheap on phones). */
+export const SWEEP_MAX_WINDOW = 12_000
+
+/** Geometry of one sweep width: dots glide between the frames of successive widths. */
 export interface SweepFrame {
   cell: number
   /** How many of the most recent digits are on show. */
@@ -96,23 +99,29 @@ export interface SweepFrame {
 }
 
 /**
- * One cell size for every width from `low` to `high` columns: `high` columns fit the width, and
- * as many recent digits are shown as fill the frame at `low` columns.
+ * Layout for `cols` columns that uses the whole frame: the columns fill the width (cells 2.5–30
+ * px) and as many recent digits are shown as fill the height, so a wide, zoomed-out grid shows
+ * more digits instead of shrinking into a strip.
  */
 export function sweepFrame(
   width: number,
   height: number,
   scale: number,
-  low: number,
-  high: number,
+  cols: number,
   played: number,
 ): SweepFrame {
   const pad = 10 * scale
   const innerWidth = width - 2 * pad
   const innerHeight = height - 2 * pad
-  const cell = Math.max(2.5 * scale, Math.min(30 * scale, innerWidth / high))
+  const cell = Math.max(2.5 * scale, Math.min(30 * scale, innerWidth / cols))
   const rows = Math.max(1, Math.floor(innerHeight / cell))
-  return { cell, window: Math.min(played, low * rows), left: pad, top: pad, innerWidth }
+  return {
+    cell,
+    window: Math.min(played, cols * rows, SWEEP_MAX_WINDOW),
+    left: pad,
+    top: pad,
+    innerWidth,
+  }
 }
 
 /** Centre of digit `i` in a `cols`-column layout whose first shown digit is `start`. */

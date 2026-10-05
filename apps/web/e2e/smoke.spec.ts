@@ -395,6 +395,11 @@ test('mosaic: groups only, and a sweep that re-groups the digits as the width ch
   await page.getByRole('combobox', { name: 'Speed' }).selectOption({ label: 'Fast' })
   const count = page.locator('.viz-columns-count')
   await expect(count).not.toHaveText('12 columns', { timeout: 5_000 })
+  // The drawing ends where the control bar begins, however many rows the bar wraps onto.
+  const canvasBox = await page.getByRole('img', { name: /sweeping from/ }).boundingBox()
+  const barBox = await page.getByRole('group', { name: 'Mosaic width' }).boundingBox()
+  expect(canvasBox!.y + canvasBox!.height).toBeLessThanOrEqual(barBox!.y + 1)
+  expect(canvasBox!.height).toBeGreaterThan(100)
   // The saved width stays 12; the sweep and the filter travel in the link.
   await page.reload()
   await expect(page.getByRole('combobox', { name: 'Show' })).toHaveValue('2')
