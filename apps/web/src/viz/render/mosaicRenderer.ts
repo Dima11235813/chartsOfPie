@@ -1,9 +1,6 @@
-import { earlierNeighbours, mosaicColumnsCell, mosaicGroupSizes } from '../art'
+import { earlierNeighbours, mosaicFill, mosaicGroupSizes } from '../art'
 import { mosaicGroups } from '../mosaicShapes'
 import { createLayer, type DigitAt, type DigitRenderer, type RendererOptions } from './renderer'
-
-/** Live cell sizes (CSS px), largest first. */
-const LIVE_CELLS = [36, 26, 18, 13] as const
 
 export interface MosaicOptions {
   /** Cell size in pixels; if omitted, cells are sized to fit `fitCount` digits. */
@@ -45,23 +42,21 @@ export function createMosaicRenderer(
   /** Poster with fixed columns: the largest cell that fits the width and all the rows. */
   const fitColumnsCell = (n: number, cols: number) =>
     Math.min(innerW / cols, innerH / Math.max(1, Math.ceil(n / cols)))
-  /** Live: start with big cells and step down as the frame fills, then scroll at the smallest. */
-  const liveCell = (n: number) => {
-    if (columns) return mosaicColumnsCell(innerW, innerH, columns, n, scale)
-    for (const size of LIVE_CELLS) {
-      const c = size * scale
-      if (Math.floor(innerW / c) * Math.floor(innerH / c) >= n) return c
-    }
-    return LIVE_CELLS.at(-1)! * scale
-  }
+  /** Live: fill the frame (the columns span the width; dots shrink as digits arrive in Fit). */
+  const live = !fixedCell && !fitCount
+  const liveFill = (n: number) => mosaicFill(innerW, innerH, columns ?? 0, n, scale)
   let cell =
     fixedCell ??
-    (fitCount ? (columns ? fitColumnsCell(fitCount, columns) : fitCell(fitCount)) : liveCell(1))
-  let cols = 1
+    (fitCount
+      ? columns
+        ? fitColumnsCell(fitCount, columns)
+        : fitCell(fitCount)
+      : liveFill(1).cell)
+  let cols = live ? liveFill(1).columns : 1
   let visibleRows = 1
   let x0 = pad
   const layout = () => {
-    cols = columns ?? Math.max(1, Math.floor(innerW / cell))
+    if (!live) cols = columns ?? Math.max(1, Math.floor(innerW / cell))
     visibleRows = Math.max(1, Math.floor(innerH / cell))
     x0 = pad + (innerW - cols * cell) / 2
   }
@@ -154,10 +149,11 @@ export function createMosaicRenderer(
     draw(from: number, to: number, digitAt: DigitAt) {
       source = digitAt
       count = to
-      if (!fixedCell && !fitCount) {
-        const next = liveCell(to)
-        if (next !== cell) {
-          cell = next
+      if (live) {
+        const next = liveFill(to)
+        if (next.cell !== cell || next.columns !== cols) {
+          cell = next.cell
+          cols = next.columns
           layout()
           firstRow = 0
           layer = createLayer(width, height)

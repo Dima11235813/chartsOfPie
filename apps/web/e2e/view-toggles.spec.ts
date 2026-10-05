@@ -79,6 +79,46 @@ test('neighbour mosaic: every option on and off keeps it drawn', async ({ page }
   await expect.poll(() => inkedPixels(page)).toBeGreaterThan(all * 0.6)
 })
 
+/** Share of the canvas width and height spanned by drawn (coloured) pixels. */
+const inkedExtent = (page: Page) =>
+  page
+    .locator('.stage .viz-canvas')
+    .first()
+    .evaluate((canvas: HTMLCanvasElement) => {
+      const ctx = canvas.getContext('2d')!
+      const { data, width, height } = ctx.getImageData(0, 0, canvas.width, canvas.height)
+      let [left, right, top, bottom] = [width, -1, height, -1]
+      for (let y = 0; y < height; y++)
+        for (let x = 0; x < width; x++) {
+          const i = (y * width + x) * 4
+          const max = Math.max(data[i]!, data[i + 1]!, data[i + 2]!)
+          const min = Math.min(data[i]!, data[i + 1]!, data[i + 2]!)
+          if (data[i + 3]! <= 200 || max - min <= 60) continue
+          left = Math.min(left, x)
+          right = Math.max(right, x)
+          top = Math.min(top, y)
+          bottom = Math.max(bottom, y)
+        }
+      return right < 0 ? { x: 0, y: 0 } : { x: (right - left) / width, y: (bottom - top) / height }
+    })
+
+test('neighbour mosaic fills the stage: dots grow or shrink to the frame', async ({ page }) => {
+  await openView(page, 'Neighbour mosaic')
+  // Fit: 80 digits spread over the whole stage, not a small block in a corner.
+  await expect.poll(async () => (await inkedExtent(page)).x).toBeGreaterThan(0.85)
+  expect((await inkedExtent(page)).y).toBeGreaterThan(0.5)
+  // A fixed column count spans the width too, narrow or wide…
+  await page.getByRole('checkbox', { name: 'Fit' }).uncheck()
+  const columns = page.getByRole('slider', { name: 'Columns' })
+  for (const value of ['6', '40']) {
+    await columns.fill(value)
+    await expect.poll(async () => (await inkedExtent(page)).x).toBeGreaterThan(0.75)
+  }
+  // …and Fit again, while paused, fills it again.
+  await page.getByRole('checkbox', { name: 'Fit' }).check()
+  await expect.poll(async () => (await inkedExtent(page)).x).toBeGreaterThan(0.85)
+})
+
 for (const [view, toggle] of [
   ['Music clock', 'Circle of fifths'],
   ['Harmonograph', 'Pure ratios'],
