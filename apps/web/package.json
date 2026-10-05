@@ -12,7 +12,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "audio:render": "playwright test -c playwright.audio.config.ts"
+    "audio:render": "playwright test -c playwright.audio.config.ts",
+    "perf": "playwright test -c playwright.perf.config.ts"
   },
   "dependencies": {
     "chart.js": "^4.5.1",

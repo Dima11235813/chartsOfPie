@@ -40,14 +40,26 @@ const SYMMETRIES: readonly ((c: Cell) => Cell)[] = [
   ([x, y]) => [-y, -x],
 ]
 
-/** Same shape up to rotation and reflection: the smallest fixed key over the 8 symmetries. */
-export function freeKey(cells: readonly Cell[]): string {
+/** fixed key → free key; at most 772 shapes of 2–5 cells exist, so this stays small. */
+const freeKeyCache = new Map<string, string>()
+
+/** The free key of a shape given by its fixed key (cached: the census asks thousands of times). */
+export function freeKeyOfFixed(fixed: string): string {
+  const cached = freeKeyCache.get(fixed)
+  if (cached !== undefined) return cached
+  const cells = cellsOfKey(fixed)
   let best: string | null = null
   for (const transform of SYMMETRIES) {
     const key = fixedKey(cells.map(transform))
     if (best === null || key < best) best = key
   }
+  if (freeKeyCache.size < 10_000) freeKeyCache.set(fixed, best!)
   return best!
+}
+
+/** Same shape up to rotation and reflection: the smallest fixed key over the 8 symmetries. */
+export function freeKey(cells: readonly Cell[]): string {
+  return freeKeyOfFixed(fixedKey(cells))
 }
 
 /** Cells of a key (as produced by `fixedKey`/`freeKey`). */

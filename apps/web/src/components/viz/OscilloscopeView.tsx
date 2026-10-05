@@ -65,16 +65,14 @@ export function OscilloscopeView({
       ctx.fillStyle = 'rgba(0, 0, 0, 0.28)'
       ctx.fillRect(0, 0, w, h)
       ctx.globalCompositeOperation = 'source-over'
-      ctx.strokeStyle = colorRef.current
-      ctx.lineWidth = 1.4 * scale
-      ctx.shadowColor = colorRef.current
-      ctx.shadowBlur = 8 * scale
       ctx.beginPath()
       if (mode === 'vector') {
         const cx = w / 2
         const cy = h / 2
         const gain = Math.min(w, h) * 0.9
-        for (let i = 0; i < left.length; i++) {
+        // At most ~512 points per trace: the screen can't show more, and stroking 2,048 was costly.
+        const stride = Math.max(1, Math.floor(left.length / 512))
+        for (let i = 0; i < left.length; i += stride) {
           const side = (left[i]! - right[i]!) * Math.SQRT1_2
           const mid = (left[i]! + right[i]!) * Math.SQRT1_2
           const x = cx + side * gain
@@ -92,8 +90,9 @@ export function OscilloscopeView({
           }
         }
         const span = left.length / 2
+        const stride = Math.max(1, Math.floor(span / 512))
         const trace = (data: Float32Array, centre: number) => {
-          for (let i = 0; i < span; i++) {
+          for (let i = 0; i < span; i += stride) {
             const x = (i / span) * w
             const y = centre - data[start + i]! * h * 0.4
             if (i === 0) ctx.moveTo(x, y)
@@ -103,8 +102,15 @@ export function OscilloscopeView({
         trace(left, h * 0.3)
         trace(right, h * 0.72)
       }
+      // Glow without shadowBlur (which re-blurs the whole path every frame): a wide faint stroke
+      // under a thin bright one.
+      ctx.strokeStyle = colorRef.current
+      ctx.globalAlpha = 0.25
+      ctx.lineWidth = 4 * scale
       ctx.stroke()
-      ctx.shadowBlur = 0
+      ctx.globalAlpha = 1
+      ctx.lineWidth = 1.4 * scale
+      ctx.stroke()
     }
     frame = requestAnimationFrame(draw)
     return () => cancelAnimationFrame(frame)

@@ -38,6 +38,7 @@ npm run dev          # http://localhost:5173
 npm run check        # format:check + lint + typecheck + unit tests + build — run before every push
 npm run test:e2e     # Playwright (builds and serves the app itself)
 npm run audio:render # offline-render every preset → apps/web/audio-renders/*.wav, spectrograms, report.md
+npm run perf         # main-thread load / long tasks per view at ~13 digits/s → apps/web/perf-report/ (R-010)
 npm run test:e2e -- audio-snapshots --update-snapshots   # after an INTENDED sound change only
 npm run test:e2e -- poster-snapshots --update-snapshots  # after an INTENDED artwork change only
 ```
