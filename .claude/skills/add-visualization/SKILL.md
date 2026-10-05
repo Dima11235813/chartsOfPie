@@ -29,5 +29,10 @@ digitAt)` onto a layer, `compose(ctx, overlay)`), and register it in `viz/render
    all three viewports. Poster kinds are snapshot-tested by `e2e/poster-snapshots.spec.ts`. Add
    the new kind to its expected list and create its baseline with `--update-snapshots`, after
    looking at the image.
+   **Every option the view has** (toggles, selects, modes, animations) gets a case in
+   `e2e/view-toggles.spec.ts`: switch it on and back off **while paused** and assert the canvas
+   still has drawn pixels (`inkedPixels`). Never assert only on labels — B-018 shipped because a
+   test checked the column label while the canvas was blank. If a view swaps its canvas element,
+   `useCanvas` must see the new element and the redraw key must change.
 6. Run `npm run check && npm run test:e2e`, look at the screenshots, then update the story in
    `proj-mgmt/`.

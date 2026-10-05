@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type RefCallback } from 'react'
+import { useCallback, useEffect, useRef, useState, type RefCallback } from 'react'
 
 export interface CanvasSize {
   width: number
@@ -13,6 +13,9 @@ export interface CanvasSize {
  */
 export function useCanvas(onCanvas?: (canvas: HTMLCanvasElement | null) => void) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
+  // A view may swap its canvas element (e.g. the mosaic sweep): each new element bumps the
+  // generation so it is measured and observed too (B-018).
+  const [generation, setGeneration] = useState(0)
   const [size, setSize] = useState<CanvasSize>({ width: 0, height: 0, ratio: 1 })
   const onCanvasRef = useRef(onCanvas)
 
@@ -20,10 +23,15 @@ export function useCanvas(onCanvas?: (canvas: HTMLCanvasElement | null) => void)
     onCanvasRef.current = onCanvas
   })
 
-  const ref: RefCallback<HTMLCanvasElement> = (canvas) => {
+  const lastElement = useRef<HTMLCanvasElement | null>(null)
+  const ref: RefCallback<HTMLCanvasElement> = useCallback((canvas: HTMLCanvasElement | null) => {
     canvasRef.current = canvas
+    if (canvas && canvas !== lastElement.current) {
+      lastElement.current = canvas
+      setGeneration((g) => g + 1)
+    }
     onCanvasRef.current?.(canvas)
-  }
+  }, [])
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -48,9 +56,10 @@ export function useCanvas(onCanvas?: (canvas: HTMLCanvasElement | null) => void)
     const observer = new ResizeObserver(update)
     observer.observe(canvas)
     return () => observer.disconnect()
-  }, [])
+  }, [generation])
 
-  useEffect(() => () => onCanvasRef.current?.(null), [])
+  // No extra "unmounted" notice: React detaches the ref (canvas → null) before the next view
+  // attaches its own, while an effect cleanup would run after and wipe the new registration.
 
   return { ref, canvasRef, size }
 }

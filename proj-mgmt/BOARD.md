@@ -1,6 +1,6 @@
 # Board
 
-_Last updated with the mosaic shape census (polyplets, R-009) and the seamless sweep._
+_Last updated with B-018 (mosaic blank after Sweep off) fixed and the view-toggle regression suite._
 
 ## Epics
 
@@ -105,3 +105,4 @@ E06 story S06.1.1 · E02 stories listed above as done.
 | B-015 | Tone's first reverb render in a page differs from later ones | low      | done    |
 | B-016 | Canvas views blank when opened while paused                  | medium   | done    |
 | B-017 | My pieces "Name + Save" row overflows at 360 px              | low      | done    |
+| B-018 | Neighbour mosaic blank after turning Sweep off               | high     | done    |

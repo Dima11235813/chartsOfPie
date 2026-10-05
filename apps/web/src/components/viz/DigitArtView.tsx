@@ -98,9 +98,11 @@ export function DigitArtView({
     renderer.current.compose(canvas.getContext('2d')!, { highlight: true, chordDigits })
   }
 
+  // The sweep replaces this canvas with its own; turning it off mounts a fresh, empty canvas, so
+  // the sweep state is part of the key and the picture is rebuilt (B-018).
   useDigitFeed(
     log,
-    `${kind}:${size.width}x${size.height}:${colors.join()}:${layoutColumns}:${minGroup}:${shapeFilter}`,
+    `${kind}:${size.width}x${size.height}:${colors.join()}:${layoutColumns}:${minGroup}:${shapeFilter}:${sweep}`,
     {
       reset() {
         const canvas = canvasRef.current
