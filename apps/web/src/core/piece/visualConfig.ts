@@ -80,6 +80,10 @@ function build(lenient: boolean) {
         mosaic: z.prefault(
           z.object({
             columns: field(z.int().check(z.gte(0), z.lte(MAX_MOSAIC_COLUMNS)), 0),
+            /** Groups only: minimum group size shown, 0 = everything (added later: additive). */
+            minGroup: field(z.int().check(z.gte(0), z.lte(9)), 0),
+            /** Sweep the column count back and forth (added later: additive). */
+            sweep: field(z.boolean(), false),
           }),
           {},
         ),

@@ -365,3 +365,28 @@ test('swing and full screen', async ({ page }) => {
   await page.keyboard.press('f')
   await expect.poll(() => page.evaluate(() => document.fullscreenElement)).toBeNull()
 })
+
+test('mosaic: groups only, and a sweep that re-groups the digits as the width changes', async ({
+  page,
+}) => {
+  await page.goto('/#p=dorian-marimba')
+  await expect(page.getByRole('button', { name: 'Play' })).toBeEnabled({ timeout: 15_000 })
+  await page.getByRole('combobox', { name: 'View' }).selectOption({ label: 'Neighbour mosaic' })
+  await page.getByRole('slider', { name: 'Columns' }).fill('12')
+  await page.locator('body').click({ position: { x: 5, y: 5 } })
+  for (let i = 0; i < 60; i++) await page.keyboard.press('ArrowRight')
+
+  const mosaic = page.getByRole('img', { name: /Neighbour mosaic/ })
+  await page.getByRole('combobox', { name: 'Show' }).selectOption({ label: 'Groups of 2+' })
+  await expect(mosaic).toHaveAttribute('aria-label', /Showing only groups of 2 or more/)
+
+  await page.getByRole('checkbox', { name: 'Sweep' }).check()
+  const count = page.locator('.viz-columns-count')
+  await expect(count).not.toHaveText('12 columns', { timeout: 5_000 })
+  // The saved width stays 12; the sweep and the filter travel in the link.
+  await page.reload()
+  await expect(page.getByRole('combobox', { name: 'Show' })).toHaveValue('2')
+  await expect(page.getByRole('checkbox', { name: 'Sweep' })).toBeChecked()
+  await page.getByRole('checkbox', { name: 'Sweep' }).uncheck()
+  await expect(count).toHaveText('12 columns')
+})

@@ -1,6 +1,6 @@
 # Board
 
-_Last updated with cymatics (Chladni plate), swing + Organ swing preset, and full-screen stage._
+_Last updated with the neighbour mosaic's groups-only filter and column sweep._
 
 ## Epics
 

@@ -6,6 +6,8 @@ import {
   earlierNeighbours,
   fitBounds,
   mosaicColumnsCell,
+  mosaicGroupSizes,
+  sweepColumns,
   GOLDEN_ANGLE,
   ringAngle,
   ringSegment,
@@ -173,6 +175,40 @@ describe('neighbour mosaic', () => {
     expect(earlierNeighbours(5, 5)).toEqual([0, 1]) // row start: up, up-right
     expect(earlierNeighbours(7, 5)).toEqual([6, 1, 2, 3])
     expect(earlierNeighbours(9, 5)).toEqual([8, 3, 4]) // row end: no up-right
+  })
+
+  it('measures the group each cell belongs to (8-connected equal digits)', () => {
+    // 4 columns:
+    //   1 1 2 3
+    //   4 1 5 3
+    //   6 7 1 9
+    const grid = [1, 1, 2, 3, 4, 1, 5, 3, 6, 7, 1, 9]
+    expect([...mosaicGroupSizes(grid, 4)]).toEqual([4, 4, 1, 2, 1, 4, 1, 2, 1, 1, 4, 1])
+    // The same digits in 3 columns regroup: the 3s and the last 1 lose their neighbours, and
+    // the 1 at row 2 now touches the first row's pair diagonally.
+    //   1 1 2 / 3 4 1 / 5 3 6 / 7 1 9
+    expect([...mosaicGroupSizes(grid, 3)]).toEqual([3, 3, 1, 2, 1, 3, 1, 2, 1, 1, 1, 1])
+  })
+
+  it('does not join across the end of a row', () => {
+    // 3 columns: "1 2 1 / 1 …" — the last 1 of row 1 and the first of row 2 are not neighbours…
+    // …but the first 1 of row 2 sits right under the first of row 1.
+    expect([...mosaicGroupSizes([1, 2, 1, 1], 3)]).toEqual([2, 1, 1, 2])
+  })
+
+  it('keeps rows aligned to absolute positions after scrolling', () => {
+    // "5 5" at cells 0, 1 are neighbours; at cells 3, 4 of a 4-column grid they sit at the end
+    // of one row and the start of the next, so they are not.
+    expect([...mosaicGroupSizes([5, 5], 4, 0)]).toEqual([2, 2])
+    expect([...mosaicGroupSizes([5, 5], 4, 3)]).toEqual([1, 1])
+  })
+
+  it('sweeps the column count up and back down at an even pace', () => {
+    const at = (t: number) => sweepColumns(t, 10, 14, 2)
+    expect([0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4].map(at)).toEqual([
+      10, 11, 12, 13, 14, 13, 12, 11, 10,
+    ])
+    expect(sweepColumns(5, 8, 8, 2)).toBe(8)
   })
 })
 

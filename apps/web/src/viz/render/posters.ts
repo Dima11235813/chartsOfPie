@@ -74,6 +74,9 @@ export async function renderPoster(
     if (kind === 'mosaic' && settings?.mosaicColumns) {
       name += ` · ${settings.mosaicColumns} columns`
     }
+    if (kind === 'mosaic' && settings?.mosaicMinGroup && settings.mosaicMinGroup > 1) {
+      name += ` · groups of ${settings.mosaicMinGroup}+`
+    }
     const renderer = definition.poster(
       { width: art.width, height: art.height, scale, colors },
       count,

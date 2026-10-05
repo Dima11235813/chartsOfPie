@@ -161,6 +161,50 @@ export function earlierNeighbours(index: number, cols: number): number[] {
   return neighbours
 }
 
+/**
+ * Size of the group each cell belongs to: cells are joined when equal neighbours (8-connected —
+ * the same links the mosaic draws), so a run "999999" or a block of equal digits is one group.
+ * `digits[i]` is the digit in cell `first + i`; rows are aligned to absolute indices, so the grid
+ * matches the drawing even when it has scrolled.
+ */
+export function mosaicGroupSizes(digits: ArrayLike<number>, cols: number, first = 0): Uint32Array {
+  const n = digits.length
+  const parent = new Int32Array(n)
+  for (let i = 0; i < n; i++) parent[i] = i
+  const find = (i: number): number => {
+    while (parent[i] !== i) {
+      parent[i] = parent[parent[i]!]!
+      i = parent[i]!
+    }
+    return i
+  }
+  for (let i = 0; i < n; i++) {
+    for (const j of earlierNeighbours(first + i, cols)) {
+      const k = j - first
+      if (k < 0 || digits[k] !== digits[i]) continue
+      const a = find(i)
+      const b = find(k)
+      if (a !== b) parent[a] = b
+    }
+  }
+  const count = new Uint32Array(n)
+  for (let i = 0; i < n; i++) count[find(i)]!++
+  const sizes = new Uint32Array(n)
+  for (let i = 0; i < n; i++) sizes[i] = count[find(i)]!
+  return sizes
+}
+
+/**
+ * Column count of a back-and-forth sweep at time `t` seconds: from `low` up to `high` and back,
+ * at `speed` columns per second (a triangle wave, so each width is visited at an even pace).
+ */
+export function sweepColumns(t: number, low: number, high: number, speed: number): number {
+  if (high <= low) return low
+  const span = high - low
+  const phase = (t * speed) % (2 * span)
+  return low + Math.round(phase <= span ? phase : 2 * span - phase)
+}
+
 /** Cell sizes (CSS px) offered when the user fixes the column count, largest first. */
 export const MOSAIC_COLUMN_CELLS = [36, 30, 26, 22, 18, 15, 13, 11, 9, 7, 5.5, 4.5, 3.5] as const
 
