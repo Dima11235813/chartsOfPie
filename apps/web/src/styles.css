@@ -110,6 +110,7 @@ body {
 
 .chart-container {
   position: relative;
+  container: stage / inline-size;
   width: 100%;
   min-height: 300px;
 }
@@ -588,10 +589,11 @@ body {
   right: 8px;
   bottom: 8px;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 0.35rem;
+  column-gap: 0.35rem;
   padding: 0 0.5rem;
-  border-radius: 999px;
+  border-radius: 22px;
   background: color-mix(in srgb, var(--surface-2) 88%, transparent);
   border: 1px solid var(--border);
   font-size: 0.85rem;
@@ -632,7 +634,30 @@ body {
 
 /* Keep the drawing clear of the bottom control bar (newest mosaic rows are at the bottom). */
 .viz-layer-with-bar .viz-canvas {
-  height: calc(100% - 68px);
+  /* Narrow stages wrap the bar onto two rows (columns, then show/sweep). */
+  height: calc(100% - 116px);
+}
+
+@container stage (min-width: 760px) {
+  .viz-layer-with-bar .viz-canvas {
+    height: calc(100% - 68px);
+  }
+}
+
+.viz-columns-select {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 44px;
+}
+
+.viz-columns-select select {
+  min-height: 36px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: inherit;
+  font: inherit;
 }
 
 .viz-toggle-bottom {

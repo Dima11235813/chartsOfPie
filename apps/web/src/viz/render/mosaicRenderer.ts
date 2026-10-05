@@ -1,4 +1,4 @@
-import { earlierNeighbours, mosaicColumnsCell } from '../art'
+import { earlierNeighbours, mosaicColumnsCell, mosaicGroupSizes } from '../art'
 import { createLayer, type DigitAt, type DigitRenderer, type RendererOptions } from './renderer'
 
 /** Live cell sizes (CSS px), largest first. */
@@ -14,6 +14,11 @@ export interface MosaicOptions {
    * `columns` apart sit on top of each other, so repeats at that distance show as vertical links.
    */
   columns?: number
+  /**
+   * Groups only: show just the digits that belong to a group of at least this many equal
+   * neighbours (others become faint dots). 0 or 1 = show everything.
+   */
+  minGroup?: number
 }
 
 /**
@@ -23,7 +28,7 @@ export interface MosaicOptions {
  */
 export function createMosaicRenderer(
   { width, height, scale, colors }: RendererOptions,
-  { cell: fixedCell, fitCount, columns }: MosaicOptions = {},
+  { cell: fixedCell, fitCount, columns, minGroup = 0 }: MosaicOptions = {},
 ): DigitRenderer {
   const pad = 10 * scale
   const innerW = width - pad * 2
@@ -66,6 +71,44 @@ export function createMosaicRenderer(
   const centre = (index: number): [number, number] => {
     const row = Math.floor(index / cols) - firstRow
     return [x0 + (index % cols) * cell + cell / 2, pad + row * cell + cell / 2]
+  }
+
+  const groupsOnly = minGroup > 1
+
+  /** Groups only: re-group everything visible (a group can grow later) and redraw the layer. */
+  const drawGroups = (to: number, digitAt: DigitAt) => {
+    const firstIndex = firstRow * cols
+    const digits = new Uint8Array(Math.max(0, to - firstIndex))
+    for (let i = 0; i < digits.length; i++) digits[i] = digitAt(firstIndex + i)
+    const sizes = mosaicGroupSizes(digits, cols, firstIndex)
+    layer = createLayer(width, height)
+    const ctx = layer.getContext('2d')!
+    ctx.lineCap = 'round'
+    ctx.lineWidth = Math.max(1, cell * 0.2)
+    const dot = Math.max(0.6, cell * 0.3)
+    const faint = 'rgba(201, 214, 232, 0.08)'
+    for (let k = 0; k < digits.length; k++) {
+      const i = firstIndex + k
+      const [x, y] = centre(i)
+      const shown = sizes[k]! >= minGroup
+      const color = colors[digits[k]!]!
+      if (shown) {
+        for (const j of earlierNeighbours(i, cols)) {
+          const jk = j - firstIndex
+          if (jk < 0 || digits[jk] !== digits[k]) continue
+          const [px, py] = centre(j)
+          ctx.strokeStyle = color
+          ctx.beginPath()
+          ctx.moveTo(px, py)
+          ctx.lineTo(x, y)
+          ctx.stroke()
+        }
+      }
+      ctx.fillStyle = shown ? color : faint
+      ctx.beginPath()
+      ctx.arc(x, y, shown ? dot : dot * 0.6, 0, Math.PI * 2)
+      ctx.fill()
+    }
   }
 
   const drawCells = (from: number, to: number, digitAt: DigitAt) => {
@@ -111,6 +154,14 @@ export function createMosaicRenderer(
         }
       }
       const rows = Math.ceil(to / cols)
+      if (groupsOnly) {
+        if (rows - firstRow > visibleRows) {
+          const headroom = Math.min(4, Math.floor(visibleRows / 4))
+          firstRow = Math.min(rows - 1, rows - visibleRows + headroom)
+        }
+        drawGroups(to, digitAt)
+        return
+      }
       if (rows - firstRow > visibleRows) {
         // Scroll, leaving a few empty rows below so the next redraw is a while away.
         const headroom = Math.min(4, Math.floor(visibleRows / 4))

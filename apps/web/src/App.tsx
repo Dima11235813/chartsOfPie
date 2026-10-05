@@ -192,8 +192,10 @@ export default function App({
                     source={load.source}
                     log={playback.log}
                     onCanvas={setCanvas}
-                    columns={viewOptions.mosaic.columns}
-                    onColumnsChange={(columns) => updateViewOptions('mosaic', { columns })}
+                    mosaic={viewOptions.mosaic}
+                    onMosaicChange={(change) =>
+                      updateViewOptions('mosaic', { ...viewOptions.mosaic, ...change })
+                    }
                   />
                 )}
                 {view === 'clock' && (
@@ -290,7 +292,10 @@ export default function App({
             {load.status === 'ready' && (
               <PosterPanel
                 source={load.source}
-                settings={{ mosaicColumns: viewOptions.mosaic.columns || undefined }}
+                settings={{
+                  mosaicColumns: viewOptions.mosaic.columns || undefined,
+                  mosaicMinGroup: viewOptions.mosaic.minGroup,
+                }}
               />
             )}
             <StatsPanel

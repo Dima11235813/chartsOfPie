@@ -13,6 +13,8 @@ export type ArtKind = 'ring' | 'walk' | 'sunflower' | 'mosaic' | 'hilbert' | 'ty
 export interface ArtSettings {
   /** Neighbour mosaic: fixed column count; undefined = fill the frame. */
   mosaicColumns?: number
+  /** Neighbour mosaic: only groups of at least this many equal neighbours (0 = everything). */
+  mosaicMinGroup?: number
 }
 
 export interface ArtDefinition {
@@ -68,11 +70,15 @@ export const ART: Record<ArtKind, ArtDefinition> = {
       'Neighbour mosaic: digits as coloured dots in rows; equal neighbours are joined, so runs show as chains.',
     summary: (count) => `${n(count)} digits in rows; equal neighbours linked.`,
     live: (options, settings) =>
-      createMosaicRenderer(options, { columns: settings?.mosaicColumns }),
+      createMosaicRenderer(options, {
+        columns: settings?.mosaicColumns,
+        minGroup: settings?.mosaicMinGroup,
+      }),
     poster: (options, count, settings) =>
       createMosaicRenderer(options, {
         fitCount: Math.max(1, count),
         columns: settings?.mosaicColumns,
+        minGroup: settings?.mosaicMinGroup,
       }),
     maxPosterDigits: 250_000,
   },
