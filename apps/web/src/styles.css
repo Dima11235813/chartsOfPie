@@ -819,6 +819,18 @@ body {
 }
 
 /* Shape census (neighbour mosaic) */
+.shapes-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.shapes-toggle {
+  min-height: 44px;
+  min-width: 64px;
+}
+
 .shape-size h3 {
   margin: 0.6rem 0 0.3rem;
   font-size: 0.85rem;
@@ -870,4 +882,14 @@ body {
   font-size: 0.7rem;
   color: var(--text-muted);
   font-variant-numeric: tabular-nums;
+}
+
+/* Where in π: quick picks wrap instead of overflowing a narrow card. */
+.start-picks {
+  flex-wrap: wrap;
+  margin: 0.5rem 0;
+}
+
+.start-picks .btn {
+  white-space: nowrap;
 }

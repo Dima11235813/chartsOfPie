@@ -1,12 +1,12 @@
 # Board
 
-_Last updated with the E05 number-series plan (R-010): features F05.1–F05.7 and M1 stories._
+_Last updated with "Where in π" (F01.7): start anywhere in the digits, search, share._
 
 ## Epics
 
 | Epic | Title                                       | Status      | Phase |
 | ---- | ------------------------------------------- | ----------- | ----- |
-| E01  | Modernise the foundation                    | done        | 0     |
+| E01  | Modernise the foundation                    | in-progress | 0     |
 | E02  | Music theory engine: scales, modes & rhythm | in-progress | 1     |
 | E03  | Visualization gallery & playgrounds         | in-progress | 2     |
 | E04  | Learn: guided lessons                       | backlog     | 4     |
@@ -16,6 +16,13 @@ _Last updated with the E05 number-series plan (R-010): features F05.1–F05.7 an
 | E08  | Save, gallery & share                       | in-progress | 6     |
 | E09  | Platform quality: PWA, accessibility, perf  | backlog     | ∞     |
 | E10  | Local-first saved pieces & installable PWA  | in-progress | 2.5   |
+
+## Now: F01.7 — start anywhere in π
+
+| Story   | Title                                | Status  |
+| ------- | ------------------------------------ | ------- |
+| S01.7.1 | "Where in π": jump, search, share    | done    |
+| S01.7.2 | More than a million digits (chunked) | backlog |
 
 ## Next: E10 — save on device & PWA (R-007)
 
@@ -27,11 +34,11 @@ _Last updated with the E05 number-series plan (R-010): features F05.1–F05.7 an
 | F10.4   | Save & "My pieces"                              | done   |
 | F10.5   | Installable, offline PWA                        | ready  |
 
-## Planned: E05 — more numbers (R-010)
+## Planned: E05 — more numbers (R-011)
 
 | Milestone | Feature / story | Title                                        | Status  |
 | --------- | --------------- | -------------------------------------------- | ------- |
-| M0        | R-010           | Shared architecture and phased plan          | review  |
+| M0        | R-011           | Shared architecture and phased plan          | review  |
 | M1        | S05.1.1         | SymbolSource and series registry (π only)    | ready   |
 | M1        | S05.1.2         | SourceConfig in share links and saved pieces | ready   |
 | M1        | S05.1.3         | Series-aware playback hook and labels        | ready   |
@@ -95,7 +102,8 @@ _Last updated with the E05 number-series plan (R-010): features F05.1–F05.7 an
 
 ## Done
 
-E01 stories S01.1.1, S01.1.2, S01.2.1, S01.3.1, S01.3.2, S01.4.1, S01.5.1, S01.5.2, S01.6.1 ·
+E01 stories S01.1.1, S01.1.2, S01.2.1, S01.3.1, S01.3.2, S01.4.1, S01.5.1, S01.5.2, S01.6.1,
+S01.7.1 ·
 E06 story S06.1.1 · E02 stories listed above as done.
 
 ## Bugs

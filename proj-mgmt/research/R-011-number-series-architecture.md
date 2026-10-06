@@ -1,11 +1,11 @@
 ---
-id: R-010
+id: R-011
 title: 'Number series beyond π: shared architecture and phased plan (φ, Fibonacci, primes)'
 status: review
 feeds: [E05, E03, E04, E10]
 ---
 
-# R-010 — Number series beyond π: one pipeline for very different numbers
+# R-011 — Number series beyond π: one pipeline for very different numbers
 
 ## Question
 
@@ -350,7 +350,7 @@ Every milestone is shippable on its own, keeps "Original (2019)" on π bit-ident
 
 ### M0 — Plan (this PR)
 
-R-010, E05 broken into features, M1 stories ready, owner decisions listed.
+R-011, E05 broken into features, M1 stories ready, owner decisions listed.
 
 ### M1 — Series-ready core, π only (no visible change) · F05.1
 

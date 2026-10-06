@@ -14,7 +14,7 @@ integer sequences, a **reading** (last digit, all digits, mod 12…), and every 
 every view works with it. Links and saved pieces remember the number; every π link made so far
 opens exactly as before.
 
-Architecture and plan: [R-010](../research/R-010-number-series-architecture.md). A series
+Architecture and plan: [R-011](../research/R-011-number-series-architecture.md). A series
 produces terms, a reading turns them into symbols with a declared alphabet size, and the rest of
 the app consumes a `SymbolSource` (today's `DigitSource`, generalised).
 
@@ -22,7 +22,7 @@ the app consumes a `SymbolSource` (today's `DigitSource`, generalised).
 
 | Milestone | What ships                                                     | Features     | Status            |
 | --------- | -------------------------------------------------------------- | ------------ | ----------------- |
-| M0        | Plan: R-010, this breakdown, owner decisions                   | —            | review            |
+| M0        | Plan: R-011, this breakdown, owner decisions                   | —            | review            |
 | M1        | Series-ready core and persistence, π only, no visible change   | F05.1        | ready (after #18) |
 | M2        | Golden ratio (and e, √2) as verified digit files + Number pick | F05.3        | backlog           |
 | M3        | Fibonacci and primes in base 10 (last digit, concatenated)     | F05.2, F05.4 | backlog           |
@@ -45,5 +45,5 @@ symbols); arbitrary-precision arithmetic in the UI; user sequences before E07/E0
 
 ## Research
 
-- [R-010 — Number series beyond π: shared architecture and phased plan](../research/R-010-number-series-architecture.md)
+- [R-011 — Number series beyond π: shared architecture and phased plan](../research/R-011-number-series-architecture.md)
 - [R-004 — Fibonacci and other sequences](../research/R-004-fibonacci-and-sequences.md)

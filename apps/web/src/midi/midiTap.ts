@@ -1,4 +1,4 @@
-import type { NotePlayer } from '../audio/notePlayer'
+import { LOOK_AHEAD_SEC, type NotePlayer } from '../audio/notePlayer'
 import type { SoundSettings } from '../audio/soundChain'
 import { LiveMidiSender } from '../core/midi/liveMidi'
 import { noteToMidi } from '../core/music/notes'
@@ -11,10 +11,10 @@ export interface MidiRoute {
 }
 
 /**
- * Tone schedules each note this far ahead of "now" (its default lookAhead); MIDI notes get the same
- * lead so the external instrument and the built-in sound start together.
+ * Tone schedules each note this far ahead of "now" (its lookAhead); MIDI notes get the same lead
+ * so the external instrument and the built-in sound start together.
  */
-export const AUDIO_LEAD_MS = 100
+export const AUDIO_LEAD_MS = LOOK_AHEAD_SEC * 1000
 const MAX_DRIFT_MS = 80
 
 export interface MidiTappedPlayer extends NotePlayer {

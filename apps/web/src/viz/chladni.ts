@@ -49,20 +49,86 @@ export function gradient(x: number, y: number, [n, m]: Mode): [number, number] {
   return [gx, gy]
 }
 
+/** Plate displacement and gradient tabulated on a grid (no trig per grain per frame). */
+export interface PlateField {
+  /** Samples per side (the grid spans 0…1 inclusive). */
+  readonly size: number
+  readonly f: Float32Array
+  readonly gx: Float32Array
+  readonly gy: Float32Array
+}
+
+const FIELD_SIZE = 257
+const fieldCache = new Map<string, PlateField>()
+
+/** The tabulated field of a mode, computed once and cached (there are only 45 modes). */
+export function plateField([n, m]: Mode): PlateField {
+  const key = `${n}:${m}`
+  const cached = fieldCache.get(key)
+  if (cached) return cached
+  const size = FIELD_SIZE
+  const f = new Float32Array(size * size)
+  const gx = new Float32Array(size * size)
+  const gy = new Float32Array(size * size)
+  for (let row = 0; row < size; row++) {
+    for (let col = 0; col < size; col++) {
+      const x = col / (size - 1)
+      const y = row / (size - 1)
+      const k = row * size + col
+      f[k] = displacement(x, y, [n, m])
+      const [ddx, ddy] = gradient(x, y, [n, m])
+      gx[k] = ddx
+      gy[k] = ddy
+    }
+  }
+  const field = { size, f, gx, gy }
+  fieldCache.set(key, field)
+  return field
+}
+
+/** Bilinear sample of a tabulated array at (x, y) ∈ [0, 1]². */
+function sample(field: PlateField, values: Float32Array, x: number, y: number): number {
+  const last = field.size - 1
+  const fx = x * last
+  const fy = y * last
+  const c = Math.min(last - 1, Math.floor(fx))
+  const r = Math.min(last - 1, Math.floor(fy))
+  const tx = fx - c
+  const ty = fy - r
+  const k = r * field.size + c
+  const top = values[k]! + (values[k + 1]! - values[k]!) * tx
+  const bottom =
+    values[k + field.size]! + (values[k + field.size + 1]! - values[k + field.size]!) * tx
+  return top + (bottom - top) * ty
+}
+
+/** Field value and gradient at (x, y), interpolated from the table. */
+export function sampleField(field: PlateField, x: number, y: number): [number, number, number] {
+  return [
+    sample(field, field.f, x, y),
+    sample(field, field.gx, x, y),
+    sample(field, field.gy, x, y),
+  ]
+}
+
 /**
  * One step of sand on the plate: each grain slides down the vibration energy f² towards the
  * nodal lines and jitters in proportion to how much the plate moves under it (so grains on
- * moving parts keep bouncing). `sand` holds x0, y0, x1, y1… in [0, 1].
+ * moving parts keep bouncing). `sand` holds x0, y0, x1, y1… in [0, 1]. Uses the cached field
+ * table, so a step costs a few array reads per grain instead of eight cos/sin calls.
  */
 export function settleGrains(sand: Float32Array, mode: Mode, random: () => number, rate = 1) {
+  const field = plateField(mode)
   const maxStep = 0.012 * rate
   for (let i = 0; i < sand.length; i += 2) {
     const x = sand[i]!
     const y = sand[i + 1]!
-    const f = displacement(x, y, mode)
-    const [gx, gy] = gradient(x, y, mode)
-    let dx = -0.0025 * rate * f * gx + (random() - 0.5) * 0.01 * rate * Math.abs(f)
-    let dy = -0.0025 * rate * f * gy + (random() - 0.5) * 0.01 * rate * Math.abs(f)
+    const f = sample(field, field.f, x, y)
+    const gx = sample(field, field.gx, x, y)
+    const gy = sample(field, field.gy, x, y)
+    const jitter = 0.01 * rate * Math.abs(f)
+    let dx = -0.0025 * rate * f * gx + (random() - 0.5) * jitter
+    let dy = -0.0025 * rate * f * gy + (random() - 0.5) * jitter
     dx = Math.max(-maxStep, Math.min(maxStep, dx))
     dy = Math.max(-maxStep, Math.min(maxStep, dy))
     sand[i] = Math.min(1, Math.max(0, x + dx))

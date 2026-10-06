@@ -60,7 +60,8 @@ describe('golden piece fixtures', () => {
     const read = readPiece(fixture('pieces/v1/full.json'))
     if (read.status !== 'ok') throw new Error(read.status)
     expect(read.piece.name).toBe('Lydian dream · Music clock')
-    expect(read.piece.position).toEqual({ digitIndex: 1234 })
+    // Saved before starting points existed: it started at the beginning.
+    expect(read.piece.position).toEqual({ digitIndex: 1234, start: 0 })
     // Expectations are normalised through the current schema, so later additive fields (with
     // defaults) need no edit here — while any change to these values still fails.
     expect(read.piece.visual).toEqual(
@@ -127,7 +128,13 @@ describe('share links in the wild', () => {
   test.each(shareLinks.links)('$hash', ({ hash, sound, visual, invalid }) => {
     const expected = visual === null ? null : visualConfigSchema.parse(visual)
     const expectedSound = sound === null ? null : compositionConfigSchema.parse(sound)
-    expect(parseShareHash(hash)).toEqual({ sound: expectedSound, visual: expected, invalid })
+    // Links from before starting points existed start at the beginning.
+    expect(parseShareHash(hash)).toEqual({
+      sound: expectedSound,
+      visual: expected,
+      start: null,
+      invalid,
+    })
   })
 
   test('hashes round-trip and defaults are left out', () => {
@@ -139,11 +146,31 @@ describe('share links in the wild', () => {
       expect(parseShareHash(hash)).toEqual({
         sound: preset.id === 'original' ? null : preset.config,
         visual,
+        start: null,
         invalid: false,
       })
     }
     const custom = { ...original, bpm: 97 }
     expect(buildShareHash(custom, DEFAULT_VISUAL_CONFIG)).toMatch(/^#c=/)
+  })
+
+  test('a starting point travels as &at= and is left out at the beginning', () => {
+    const original = getPreset('original')!.config
+    expect(buildShareHash(original, DEFAULT_VISUAL_CONFIG, 0)).toBe('')
+    expect(buildShareHash(original, DEFAULT_VISUAL_CONFIG, 762)).toBe('#at=762')
+    expect(parseShareHash('#at=762')).toEqual({
+      sound: null,
+      visual: null,
+      start: 762,
+      invalid: false,
+    })
+    const visual = { ...DEFAULT_VISUAL_CONFIG, view: 'mosaic' as const }
+    const shared = parseShareHash(buildShareHash(getPreset('dorian-marimba')!.config, visual, 9))
+    expect(shared.start).toBe(9)
+    expect(shared.visual).toEqual(visual)
+    // Not a decimal place: ignored and reported.
+    for (const bad of ['#at=-1', '#at=1e6', '#at=', '#p=original&at=x'])
+      expect(parseShareHash(bad)).toMatchObject({ start: null, invalid: true })
   })
 
   test('visual configs encode and decode', () => {

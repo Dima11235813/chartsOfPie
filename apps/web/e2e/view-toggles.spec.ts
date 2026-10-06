@@ -61,6 +61,8 @@ test('neighbour mosaic: every option on and off keeps it drawn', async ({ page }
 
   // Isolate a shape from the census, then show all.
   const census = page.getByRole('region', { name: 'Shapes in the mosaic' })
+  // The census only counts while its card is on screen: scroll to it, as a person would.
+  await census.scrollIntoViewIfNeeded()
   await census.getByRole('button', { name: /^pair: / }).click()
   await expect.poll(() => inkedPixels(page)).toBeGreaterThan(20)
   await census.getByRole('button', { name: 'Show all' }).click()
@@ -77,6 +79,100 @@ test('neighbour mosaic: every option on and off keeps it drawn', async ({ page }
   await page.getByRole('combobox', { name: 'View' }).selectOption({ label: 'Digit ring' })
   await page.getByRole('combobox', { name: 'View' }).selectOption({ label: 'Neighbour mosaic' })
   await expect.poll(() => inkedPixels(page)).toBeGreaterThan(all * 0.6)
+})
+
+/** Share of the canvas width and height spanned by drawn (coloured) pixels. */
+const inkedExtent = (page: Page) =>
+  page
+    .locator('.stage .viz-canvas')
+    .first()
+    .evaluate((canvas: HTMLCanvasElement) => {
+      const ctx = canvas.getContext('2d')!
+      const { data, width, height } = ctx.getImageData(0, 0, canvas.width, canvas.height)
+      let [left, right, top, bottom] = [width, -1, height, -1]
+      for (let y = 0; y < height; y++)
+        for (let x = 0; x < width; x++) {
+          const i = (y * width + x) * 4
+          const max = Math.max(data[i]!, data[i + 1]!, data[i + 2]!)
+          const min = Math.min(data[i]!, data[i + 1]!, data[i + 2]!)
+          if (data[i + 3]! <= 200 || max - min <= 60) continue
+          left = Math.min(left, x)
+          right = Math.max(right, x)
+          top = Math.min(top, y)
+          bottom = Math.max(bottom, y)
+        }
+      return right < 0 ? { x: 0, y: 0 } : { x: (right - left) / width, y: (bottom - top) / height }
+    })
+
+test('neighbour mosaic fills the stage: dots grow or shrink to the frame', async ({ page }) => {
+  await openView(page, 'Neighbour mosaic')
+  // Fit: 80 digits spread over the whole stage, not a small block in a corner.
+  await expect.poll(async () => (await inkedExtent(page)).x).toBeGreaterThan(0.85)
+  expect((await inkedExtent(page)).y).toBeGreaterThan(0.5)
+  // A fixed column count spans the width too, narrow or wide…
+  await page.getByRole('checkbox', { name: 'Fit' }).uncheck()
+  const columns = page.getByRole('slider', { name: 'Columns' })
+  for (const value of ['6', '40']) {
+    await columns.fill(value)
+    await expect.poll(async () => (await inkedExtent(page)).x).toBeGreaterThan(0.75)
+  }
+  // …and Fit again, while paused, fills it again.
+  await page.getByRole('checkbox', { name: 'Fit' }).check()
+  await expect.poll(async () => (await inkedExtent(page)).x).toBeGreaterThan(0.85)
+})
+
+test('shape census: Hide stops counting, Show counts again', async ({ page }) => {
+  await openView(page, 'Neighbour mosaic')
+  const census = page.getByRole('region', { name: 'Shapes in the mosaic' })
+  // The census only counts while its card is on screen: scroll to it, as a person would.
+  await census.scrollIntoViewIfNeeded()
+  const hint = census.getByText(/groups of 2–5 equal neighbours/)
+  await expect(hint).toBeVisible()
+  const before = await hint.textContent()
+  await expect(census.getByRole('button', { name: /: \d+ at this width/ }).first()).toBeVisible()
+
+  await census.getByRole('button', { name: 'Hide' }).click()
+  await expect(census.getByRole('button', { name: 'Show' })).toHaveAttribute(
+    'aria-expanded',
+    'false',
+  )
+  await expect(census.getByRole('button', { name: /at this width/ })).toHaveCount(0)
+  // The mosaic itself is unaffected.
+  await expect.poll(() => inkedPixels(page)).toBeGreaterThan(500)
+  await page.locator('body').click({ position: { x: 5, y: 5 } })
+  for (let i = 0; i < 60; i++) await page.keyboard.press('ArrowRight')
+
+  // Back on: the count catches up with the digits played meanwhile (140, not 80).
+  await census.getByRole('button', { name: 'Show' }).click()
+  await expect(hint).not.toHaveText(before!)
+  await expect(census.getByRole('button', { name: /: \d+ at this width/ }).first()).toBeVisible()
+  await expect.poll(() => inkedPixels(page)).toBeGreaterThan(500)
+})
+
+test('starting point: jump into π and back, while paused, keeps the views drawing', async ({
+  page,
+}) => {
+  await openView(page, 'Neighbour mosaic', 30)
+  await expect.poll(() => inkedPixels(page)).toBeGreaterThan(200)
+  const where = page.getByRole('region', { name: 'Where in π' })
+  // Jumping starts a new performance there: the picture starts over with the new digits.
+  await where.getByRole('button', { name: 'Feynman point' }).click()
+  await page.locator('body').click({ position: { x: 5, y: 5 } })
+  for (let i = 0; i < 30; i++) await page.keyboard.press('ArrowRight')
+  await expect(page.locator('.stream')).toContainText('999999')
+  await expect.poll(() => inkedPixels(page)).toBeGreaterThan(200)
+  // …and back to the beginning.
+  await where.getByRole('button', { name: 'Beginning' }).click()
+  await page.locator('body').click({ position: { x: 5, y: 5 } })
+  for (let i = 0; i < 30; i++) await page.keyboard.press('ArrowRight')
+  await expect(page.locator('.stream .digit').first()).toHaveText('3')
+  await expect.poll(() => inkedPixels(page)).toBeGreaterThan(200)
+  // Another view after a jump draws too.
+  await where.getByRole('button', { name: 'Feynman point' }).click()
+  await page.getByRole('combobox', { name: 'View' }).selectOption({ label: 'Digit ring' })
+  await page.locator('body').click({ position: { x: 5, y: 5 } })
+  for (let i = 0; i < 12; i++) await page.keyboard.press('ArrowRight')
+  await expect.poll(() => inkedPixels(page)).toBeGreaterThan(100)
 })
 
 for (const [view, toggle] of [

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import type { DigitSource } from '../core/digits/digitSource'
+import { windowFrom, type DigitSource } from '../core/digits/digitSource'
 import { loadPiDigits } from '../core/digits/pi'
 import { PlaybackEngine, type StepEvent } from '../core/engine/playbackEngine'
 import { Arranger } from '../core/composition/arranger'
@@ -15,7 +15,11 @@ const EMPTY_COUNTS: readonly number[] = new Array<number>(10).fill(0)
 
 export type LoadState =
   | { status: 'loading' }
-  | { status: 'ready'; source: DigitSource }
+  /**
+   * `source` is what plays: π from the current starting point (index 0 = decimal place `start`).
+   * `full` is all the digits loaded, whatever their number.
+   */
+  | { status: 'ready'; source: DigitSource; full: DigitSource; start: number }
   | { status: 'error'; message: string }
 
 export interface PlaybackState {
@@ -41,8 +45,11 @@ export interface PlaybackState {
   /**
    * Jump to digit `index` (resume a saved piece): starts over and replays the first `index` digits
    * silently with `config`, so counts, the log and every view are exactly as if they had played.
+   * `start` (default: keep the current one) moves the starting point first.
    */
-  seek: (index: number, config?: CompositionConfig) => void
+  seek: (index: number, config?: CompositionConfig, start?: number) => void
+  /** Start over from decimal place `start` of π (0 = the beginning). */
+  startAt: (start: number) => void
   setMuted: (muted: boolean) => void
 }
 
@@ -50,6 +57,8 @@ export function usePiPlayback(
   player: NotePlayer,
   config: CompositionConfig,
   loadSource: () => Promise<DigitSource> = loadPiDigits,
+  /** Starting point once the digits have loaded (e.g. from a share link). */
+  initialStart = 0,
 ): PlaybackState {
   const [load, setLoad] = useState<LoadState>({ status: 'loading' })
   const [isPlaying, setIsPlaying] = useState(false)
@@ -66,6 +75,7 @@ export function usePiPlayback(
   const [arranger] = useState(() => new Arranger(config))
   const gapRef = useRef(0)
   const silentRef = useRef(false)
+  const initialStartRef = useRef(initialStart)
 
   // Config changes apply from the next digit on, without restarting playback.
   useEffect(() => {
@@ -77,8 +87,10 @@ export function usePiPlayback(
   useEffect(() => {
     let cancelled = false
     loadSource()
-      .then((source) => {
+      .then((full) => {
         if (cancelled) return
+        const start = clampStart(initialStartRef.current, full)
+        const source = windowFrom(full, start)
         engineRef.current = new PlaybackEngine({
           source,
           arrange: (digit) => arranger.arrange(digit),
@@ -93,14 +105,14 @@ export function usePiPlayback(
             setRecent((prev) =>
               [...prev, [event.index, event.digit] as const].slice(-RECENT_DIGITS),
             )
-            setIsFinished(event.index === source.length - 1)
+            setIsFinished(event.index === engineRef.current!.source.length - 1)
           },
           onStateChange: (playing) => {
             setIsPlaying(playing)
             if (!playing) player.stop()
           },
         })
-        setLoad({ status: 'ready', source })
+        setLoad({ status: 'ready', source, full, start })
       })
       .catch((error: unknown) => {
         if (!cancelled) {
@@ -161,16 +173,39 @@ export function usePiPlayback(
     setIsFinished(false)
   }, [arranger, player, log])
 
-  const seek = useCallback(
-    (index: number, nextConfig?: CompositionConfig) => {
+  const startAt = useCallback(
+    (start: number) => {
       const engine = engineRef.current
       if (!engine || load.status !== 'ready') return
       reset()
+      const at = clampStart(start, load.full)
+      if (at === load.start) return
+      const source = windowFrom(load.full, at)
+      engine.setSource(source)
+      setLoad({ status: 'ready', source, full: load.full, start: at })
+    },
+    [load, reset],
+  )
+
+  const seek = useCallback(
+    (index: number, nextConfig?: CompositionConfig, start?: number) => {
+      const engine = engineRef.current
+      if (!engine || load.status !== 'ready') return
+      reset()
+      if (start !== undefined && clampStart(start, load.full) !== load.start) {
+        const at = clampStart(start, load.full)
+        engine.setSource(windowFrom(load.full, at))
+        setLoad({ status: 'ready', source: engine.source, full: load.full, start: at })
+      }
       if (nextConfig) {
         configRef.current = nextConfig
         arranger.setConfig(nextConfig)
       }
-      const target = Math.min(Math.max(0, Math.floor(index)), MAX_RESUME_DIGITS, load.source.length)
+      const target = Math.min(
+        Math.max(0, Math.floor(index)),
+        MAX_RESUME_DIGITS,
+        engine.source.length,
+      )
       silentRef.current = true
       try {
         for (let i = 0; i < target; i++) engine.step()
@@ -207,6 +242,13 @@ export function usePiPlayback(
     step,
     reset,
     seek,
+    startAt,
     setMuted,
   }
+}
+
+/** A starting point inside the data: a whole decimal place with at least one digit after it. */
+export function clampStart(start: number, full: DigitSource): number {
+  if (!Number.isFinite(start)) return 0
+  return Math.min(Math.max(0, Math.floor(start)), full.length - 1)
 }

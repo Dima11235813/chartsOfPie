@@ -293,6 +293,57 @@ test('the view and its options travel in the link and survive a reload', async (
   await expect(page.getByLabel('Preset')).toHaveValue('music-box')
 })
 
+test('start anywhere in π: jump, search, share and reach the last digit', async ({ page }) => {
+  await page.goto('/#p=dorian-marimba')
+  await expect(page.getByRole('button', { name: 'Play' })).toBeEnabled({ timeout: 15_000 })
+  const where = page.getByRole('region', { name: 'Where in π' })
+  await expect(where).toContainText('1,000,000 decimal places loaded')
+
+  // The Feynman point: six 9s from decimal place 762, and the link remembers it.
+  await where.getByRole('button', { name: 'Feynman point' }).click()
+  await expect(where.getByRole('status')).toContainText('decimal place 762')
+  await expect(page).toHaveURL(/at=762/)
+  await page.locator('body').click({ position: { x: 5, y: 5 } })
+  for (let i = 0; i < 6; i++) await page.keyboard.press('ArrowRight')
+  await expect(page.locator('.stream')).toHaveText('999999')
+  await expect(page.getByTestId('decimal-place')).toHaveText('767')
+  await expect(page.getByTestId('total-count')).toHaveText('6')
+
+  // A reload (or a shared link) starts at the same place.
+  await page.reload()
+  await expect(where).toContainText('Starting at decimal place 762 of 1,000,000')
+  await page.locator('body').click({ position: { x: 5, y: 5 } })
+  await page.keyboard.press('ArrowRight')
+  await expect(page.getByTestId('decimal-place')).toHaveText('762')
+  await expect(page.getByTestId('current-digit')).toHaveText('9')
+
+  // Search for a date, then its next occurrence.
+  await where.getByLabel('Find digits').fill('14/03')
+  await where.getByRole('button', { name: 'Find', exact: true }).click()
+  await expect(where.getByRole('status')).toHaveText(/^Found 1403 at decimal place [\d,]+\.$/)
+  const placeOf = async () =>
+    Number((await where.getByLabel('Decimal place').inputValue()).replace(/,/g, ''))
+  const first = await placeOf()
+  await where.getByRole('button', { name: 'Find next 1403' }).click()
+  await expect.poll(placeOf).toBeGreaterThan(first)
+
+  // The very last decimal place loaded, then back to the beginning (the link drops at=).
+  await where.getByLabel('Decimal place').fill('1,000,000')
+  await where.getByRole('button', { name: 'Go' }).click()
+  await page.locator('body').click({ position: { x: 5, y: 5 } })
+  await page.keyboard.press('ArrowRight')
+  await expect(page.getByTestId('decimal-place')).toHaveText('1,000,000')
+  await expect(page.getByTestId('current-digit')).toHaveText('1')
+  await where.getByLabel('Decimal place').fill('2000000')
+  await where.getByRole('button', { name: 'Go' }).click()
+  await expect(where.getByRole('status')).toContainText('from 0 to 1,000,000')
+  await where.getByRole('button', { name: 'Beginning' }).click()
+  await expect(page).not.toHaveURL(/at=/)
+  await page.locator('body').click({ position: { x: 5, y: 5 } })
+  await page.keyboard.press('ArrowRight')
+  await expect(page.getByTestId('current-digit')).toHaveText('3')
+})
+
 test('the neighbour mosaic narrows and widens, and the pattern re-flows', async ({
   page,
 }, testInfo) => {
@@ -382,6 +433,8 @@ test('mosaic: groups only, and a sweep that re-groups the digits as the width ch
 
   // Shape census: the groups' shapes, counted; picking one isolates it in the mosaic.
   const census = page.getByRole('region', { name: 'Shapes in the mosaic' })
+  // The census only counts while its card is on screen: scroll to it, as a person would.
+  await census.scrollIntoViewIfNeeded()
   await expect(census.getByText(/found \d+ of 22 shapes/)).toBeVisible()
   const pair = census.getByRole('button', { name: /^pair: \d+ at this width/ })
   await pair.click()

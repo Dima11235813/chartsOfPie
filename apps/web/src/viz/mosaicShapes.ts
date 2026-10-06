@@ -1,5 +1,5 @@
 import { earlierNeighbours } from './art'
-import { fixedKey, freeKey, type Cell } from './polyplets'
+import { fixedKey, freeKeyOfFixed, type Cell } from './polyplets'
 
 /** One group of equal neighbours in the mosaic, with its shape. */
 export interface MosaicGroup {
@@ -56,11 +56,12 @@ export function mosaicGroups(
   for (const indices of members.values()) {
     if (indices.length < minSize || indices.length > maxSize) continue
     const cells = indices.map((i) => cellOf(i, cols))
+    const fixed = fixedKey(cells)
     groups.push({
       digit: digits[indices[0]! - first]!,
       indices,
-      shape: freeKey(cells),
-      fixed: fixedKey(cells),
+      shape: freeKeyOfFixed(fixed),
+      fixed,
     })
   }
   return groups
