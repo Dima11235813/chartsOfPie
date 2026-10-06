@@ -156,3 +156,19 @@ describe('PlaybackEngine', () => {
     vi.useRealTimers()
   })
 })
+
+describe('setSource', () => {
+  it('starts the new source from its first digit with fresh counts', () => {
+    const { engine, steps } = makeEngine('31415')
+    engine.step()
+    engine.step()
+    engine.setSource(createDigitSource('u', 'other', parseDigits('999')))
+    expect(engine.nextIndex).toBe(0)
+    expect(engine.counts.reduce((a, b) => a + b, 0)).toBe(0)
+    const event = engine.step()!
+    expect(event.digit).toBe(9)
+    expect(event.index).toBe(0)
+    expect(event.total).toBe(1)
+    expect(steps.length).toBe(3)
+  })
+})

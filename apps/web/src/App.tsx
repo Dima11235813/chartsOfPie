@@ -21,6 +21,7 @@ import { PosterPanel } from './components/PosterPanel'
 import { PaletteContext } from './components/palette'
 import { noteTableFor } from './core/composition/arranger'
 import { getPalette, PALETTES } from './viz/palettes'
+import { StartPanel } from './components/StartPanel'
 import { StatsPanel } from './components/StatsPanel'
 import { DEFAULT_VISUAL_CONFIG, type VisualConfig } from './core/piece/visualConfig'
 import { useLinkedState } from './hooks/useLinkedState'
@@ -80,7 +81,8 @@ export default function App({
   // Every note can also go to a MIDI instrument (e.g. a Nord) — see midi/midiTap.
   const [player] = useState(() => withMidiTap(createPlayer()))
   const midi = useMidiOutput(player)
-  const { config, setConfig, visual, setVisual, invalidLink } = useLinkedState(initialVisual)
+  const { config, setConfig, visual, setVisual, start, setStart, invalidLink } =
+    useLinkedState(initialVisual)
   const { view, chartStyle, palette: paletteId, viewOptions } = visual
   const updateVisual = useCallback(
     (change: Partial<VisualConfig>) => setVisual({ ...visual, ...change }),
@@ -103,8 +105,13 @@ export default function App({
     },
     [updateVisual],
   )
-  const playback = usePiPlayback(player, config, loadSource)
+  const playback = usePiPlayback(player, config, loadSource, start)
   const { load } = playback
+  // The starting point lives in the link (and the last session) once the digits are loaded.
+  const playingFrom = load.status === 'ready' ? load.start : start
+  useEffect(() => {
+    if (playingFrom !== start) setStart(playingFrom)
+  }, [playingFrom, start, setStart])
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   // The old view's cleanup (null) runs before the new view registers its canvas.
   const setCanvas = useCallback((canvas: HTMLCanvasElement | null) => {
@@ -132,14 +139,14 @@ export default function App({
   const openPiece = (piece: Piece) => {
     setConfig(piece.sound)
     setVisual(piece.visual)
-    playback.seek(piece.position?.digitIndex ?? 0, piece.sound)
+    playback.seek(piece.position?.digitIndex ?? 0, piece.sound, piece.position?.start ?? 0)
   }
   const captionRef = useRef('')
   useEffect(() => {
     captionRef.current = `${label} · ${playback.total.toLocaleString()} digits of π${
-      playback.lastChord ? ` · last chord ${playback.lastChord.chord.symbol}` : ''
-    }`
-  }, [label, playback.total, playback.lastChord])
+      playingFrom > 0 ? ` from decimal place ${playingFrom.toLocaleString()}` : ''
+    }${playback.lastChord ? ` · last chord ${playback.lastChord.chord.symbol}` : ''}`
+  }, [label, playback.total, playback.lastChord, playingFrom])
 
   return (
     <PaletteContext.Provider value={colors}>
@@ -151,7 +158,13 @@ export default function App({
             </span>{' '}
             Charts of Pie
           </h1>
-          <p className="tagline">Watch and listen to the first million digits of π.</p>
+          <p className="tagline">
+            Watch and listen to the{' '}
+            {load.status === 'ready'
+              ? `first ${(load.full.length - 1).toLocaleString()}`
+              : 'first million'}{' '}
+            digits of π.
+          </p>
           <AccountBar account={account} />
         </header>
 
@@ -161,7 +174,7 @@ export default function App({
             ref={stageRef}
             aria-label={VIEWS.find((v) => v.id === view)?.label}
           >
-            {load.status === 'loading' && <p className="notice">Loading a million digits of π…</p>}
+            {load.status === 'loading' && <p className="notice">Loading the digits of π…</p>}
             {load.status === 'error' && (
               <p className="notice error" role="alert">
                 {load.message}
@@ -263,6 +276,9 @@ export default function App({
                 That share link could not be read, so defaults are used for the parts that failed.
               </p>
             )}
+            {load.status === 'ready' && (
+              <StartPanel full={load.full} start={load.start} onStart={playback.startAt} />
+            )}
             {view === 'mosaic' && load.status === 'ready' && (
               <MosaicShapesPanel
                 source={load.source}
@@ -289,6 +305,7 @@ export default function App({
               sound={config}
               visual={visual}
               position={playback.total}
+              start={playingFrom}
               suggestedName={`${label} · ${VIEWS.find((v) => v.id === view)?.label ?? view}`}
               getCanvas={() => canvasRef.current}
               onOpen={openPiece}
@@ -306,7 +323,7 @@ export default function App({
             />
             {load.status === 'ready' && (
               <PosterPanel
-                source={load.source}
+                source={load.full}
                 settings={{
                   mosaicColumns: viewOptions.mosaic.columns || undefined,
                   mosaicMinGroup: viewOptions.mosaic.minGroup,
@@ -319,6 +336,7 @@ export default function App({
               lastStep={playback.lastStep}
               recent={playback.recent}
               lastChord={playback.lastChord}
+              offset={playingFrom}
             />
             {playback.audioError && (
               <p className="notice error" role="status">

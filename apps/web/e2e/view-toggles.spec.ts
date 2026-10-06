@@ -61,6 +61,8 @@ test('neighbour mosaic: every option on and off keeps it drawn', async ({ page }
 
   // Isolate a shape from the census, then show all.
   const census = page.getByRole('region', { name: 'Shapes in the mosaic' })
+  // The census only counts while its card is on screen: scroll to it, as a person would.
+  await census.scrollIntoViewIfNeeded()
   await census.getByRole('button', { name: /^pair: / }).click()
   await expect.poll(() => inkedPixels(page)).toBeGreaterThan(20)
   await census.getByRole('button', { name: 'Show all' }).click()
@@ -122,6 +124,8 @@ test('neighbour mosaic fills the stage: dots grow or shrink to the frame', async
 test('shape census: Hide stops counting, Show counts again', async ({ page }) => {
   await openView(page, 'Neighbour mosaic')
   const census = page.getByRole('region', { name: 'Shapes in the mosaic' })
+  // The census only counts while its card is on screen: scroll to it, as a person would.
+  await census.scrollIntoViewIfNeeded()
   const hint = census.getByText(/groups of 2–5 equal neighbours/)
   await expect(hint).toBeVisible()
   const before = await hint.textContent()
@@ -143,6 +147,32 @@ test('shape census: Hide stops counting, Show counts again', async ({ page }) =>
   await expect(hint).not.toHaveText(before!)
   await expect(census.getByRole('button', { name: /: \d+ at this width/ }).first()).toBeVisible()
   await expect.poll(() => inkedPixels(page)).toBeGreaterThan(500)
+})
+
+test('starting point: jump into π and back, while paused, keeps the views drawing', async ({
+  page,
+}) => {
+  await openView(page, 'Neighbour mosaic', 30)
+  await expect.poll(() => inkedPixels(page)).toBeGreaterThan(200)
+  const where = page.getByRole('region', { name: 'Where in π' })
+  // Jumping starts a new performance there: the picture starts over with the new digits.
+  await where.getByRole('button', { name: 'Feynman point' }).click()
+  await page.locator('body').click({ position: { x: 5, y: 5 } })
+  for (let i = 0; i < 30; i++) await page.keyboard.press('ArrowRight')
+  await expect(page.locator('.stream')).toContainText('999999')
+  await expect.poll(() => inkedPixels(page)).toBeGreaterThan(200)
+  // …and back to the beginning.
+  await where.getByRole('button', { name: 'Beginning' }).click()
+  await page.locator('body').click({ position: { x: 5, y: 5 } })
+  for (let i = 0; i < 30; i++) await page.keyboard.press('ArrowRight')
+  await expect(page.locator('.stream .digit').first()).toHaveText('3')
+  await expect.poll(() => inkedPixels(page)).toBeGreaterThan(200)
+  // Another view after a jump draws too.
+  await where.getByRole('button', { name: 'Feynman point' }).click()
+  await page.getByRole('combobox', { name: 'View' }).selectOption({ label: 'Digit ring' })
+  await page.locator('body').click({ position: { x: 5, y: 5 } })
+  for (let i = 0; i < 12; i++) await page.keyboard.press('ArrowRight')
+  await expect.poll(() => inkedPixels(page)).toBeGreaterThan(100)
 })
 
 for (const [view, toggle] of [

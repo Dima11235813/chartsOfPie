@@ -34,8 +34,14 @@ export const pieceSchema = z.object({
   updatedAt: z.iso.datetime(),
   sound: compositionConfigSchema,
   visual: visualConfigSchema,
-  /** Where playback was when saved (digits played). */
-  position: z.optional(z.object({ digitIndex: z.int().check(z.gte(0)) })),
+  /** Where playback was when saved: digits played, counted from `start`. */
+  position: z.optional(
+    z.object({
+      digitIndex: z.int().check(z.gte(0)),
+      /** Decimal place the performance started at (0 = the beginning; added in S01.7.1). */
+      start: z._default(z.int().check(z.gte(0)), 0),
+    }),
+  ),
 })
 
 export type Piece = z.infer<typeof pieceSchema>
@@ -107,7 +113,8 @@ export interface NewPieceInput {
   now: Date
   sound: CompositionConfig
   visual: VisualConfig
-  position?: Piece['position']
+  /** `start` defaults to 0 (the beginning). */
+  position?: { digitIndex: number; start?: number }
 }
 
 export function createPiece({ id, name, now, sound, visual, position }: NewPieceInput): Piece {

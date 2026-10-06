@@ -248,6 +248,34 @@ describe('App', () => {
     expect(screen.getByTestId('total-count')).toHaveTextContent('3')
   })
 
+  it('a saved piece remembers where in π it started', async () => {
+    const user = userEvent.setup()
+    const store = createMemoryStore()
+    const { unmount } = render(
+      <App createPlayer={fakePlayer} loadSource={source} createStore={() => store} />,
+    )
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Step' })).toBeEnabled())
+    // 3.1415926: start at decimal place 4 (the 5), play 5 and 9.
+    await user.clear(screen.getByLabelText('Decimal place'))
+    await user.type(screen.getByLabelText('Decimal place'), '4')
+    await user.click(screen.getByRole('button', { name: 'Go' }))
+    for (let i = 0; i < 2; i++) await user.click(screen.getByRole('button', { name: 'Step' }))
+    expect(screen.getByTestId('current-digit')).toHaveTextContent('9')
+    await user.type(screen.getByLabelText('Name'), 'Mid-π')
+    await user.click(screen.getByRole('button', { name: 'Save' }))
+    expect(await screen.findByText(/digit 2 from decimal place 4/)).toBeInTheDocument()
+    unmount()
+
+    window.history.replaceState(null, '', '/#p=original')
+    render(<App createPlayer={fakePlayer} loadSource={source} createStore={() => store} />)
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Step' })).toBeEnabled())
+    await user.click(await screen.findByRole('button', { name: 'Open Mid-π' }))
+    expect(screen.getByTestId('total-count')).toHaveTextContent('2')
+    expect(screen.getByTestId('decimal-place')).toHaveTextContent('5')
+    expect(screen.getByTestId('current-digit')).toHaveTextContent('9')
+    expect(window.location.hash).toMatch(/at=4/)
+  })
+
   it('restores the last session on a plain visit, but a link wins', async () => {
     const user = userEvent.setup()
     const { unmount } = render(<App createPlayer={fakePlayer} loadSource={source} />)
@@ -374,7 +402,7 @@ describe('App', () => {
     await user.click(stepButton) // 7 → C5
     expect(screen.getByTestId('last-chord')).toHaveTextContent('–')
     await user.click(stepButton) // 9 → E5: A, C and E all sounding
-    expect(screen.getByTestId('last-chord')).toHaveTextContent('Am — minor at digit #2')
+    expect(screen.getByTestId('last-chord')).toHaveTextContent('Am — minor at decimal place 2')
 
     await user.click(download)
     expect(createObjectURL).toHaveBeenCalledWith(expect.any(Blob))

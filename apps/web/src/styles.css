@@ -883,3 +883,13 @@ body {
   color: var(--text-muted);
   font-variant-numeric: tabular-nums;
 }
+
+/* Where in π: quick picks wrap instead of overflowing a narrow card. */
+.start-picks {
+  flex-wrap: wrap;
+  margin: 0.5rem 0;
+}
+
+.start-picks .btn {
+  white-space: nowrap;
+}
