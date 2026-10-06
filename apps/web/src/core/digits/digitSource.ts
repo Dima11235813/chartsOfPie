@@ -6,6 +6,34 @@ export interface DigitSource {
   readonly length: number
   /** Digit (0–9) at a zero-based position. Position 0 of π is the leading `3`. */
   digitAt(index: number): number
+  /**
+   * Where index 0 sits in the full sequence, for a source that starts part-way in (see
+   * `windowFrom`); 0 or absent for a source that starts at the beginning.
+   */
+  readonly offset?: number
+}
+
+/**
+ * The same digits starting at `start` of `source`: index 0 is `source.digitAt(start)`. Playback
+ * uses this to begin anywhere (e.g. at the Feynman point) while every view still sees a
+ * performance that starts at 0; `offset` gives the absolute position back for labels.
+ */
+export function windowFrom(source: DigitSource, start: number): DigitSource {
+  const base = source.offset ?? 0
+  const from = Math.min(Math.max(0, Math.floor(start)), source.length)
+  if (from === 0) return source
+  return {
+    id: `${source.id}@${base + from}`,
+    name: source.name,
+    length: source.length - from,
+    offset: base + from,
+    digitAt: (index) => {
+      if (!Number.isInteger(index) || index < 0 || index >= source.length - from) {
+        throw new RangeError(`Digit index ${index} is outside 0..${source.length - from - 1}`)
+      }
+      return source.digitAt(from + index)
+    },
+  }
 }
 
 /**

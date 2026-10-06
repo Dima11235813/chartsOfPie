@@ -13,6 +13,8 @@ interface PiecesPanelProps {
   visual: VisualConfig
   /** Digits played so far: saved so the piece resumes there. */
   position: number
+  /** Decimal place the performance started at. */
+  start?: number
   /** Suggested name, e.g. "Lydian dream · Music clock". */
   suggestedName: string
   getCanvas: () => HTMLCanvasElement | null
@@ -89,6 +91,7 @@ export function PiecesPanel({
   sound,
   visual,
   position,
+  start = 0,
   suggestedName,
   getCanvas,
   onOpen,
@@ -118,7 +121,7 @@ export function PiecesPanel({
       now: new Date(),
       sound,
       visual,
-      position: { digitIndex: position },
+      position: { digitIndex: position, start },
     })
     try {
       await store.put(pieceToDocument(piece), await thumbnailOf(getCanvas()))
@@ -207,8 +210,8 @@ export function PiecesPanel({
         </span>
       </div>
       <p className="hint">
-        Saves the sound, the view and where you are in π ({position.toLocaleString()} digits) on
-        this device.
+        Saves the sound, the view and where you are in π ({position.toLocaleString()} digits
+        {start ? ` from decimal place ${start.toLocaleString()}` : ''}) on this device.
       </p>
       {status && (
         <p className="hint" role="status">
@@ -267,7 +270,11 @@ export function PiecesPanel({
                   <span className="piece-sub">
                     {when(stored.updatedAt)}
                     {ok?.piece.position
-                      ? ` · digit ${ok.piece.position.digitIndex.toLocaleString()}`
+                      ? ` · digit ${ok.piece.position.digitIndex.toLocaleString()}${
+                          ok.piece.position.start
+                            ? ` from decimal place ${ok.piece.position.start.toLocaleString()}`
+                            : ''
+                        }`
                       : ''}
                   </span>
                   {stored.read.status === 'too-new' && (

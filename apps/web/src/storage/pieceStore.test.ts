@@ -28,7 +28,7 @@ describe.each([
     expect(listed.map((p) => p.id)).toEqual(['b', 'a'])
     expect(listed[0]!.read.status).toBe('ok')
     const b = await store.get('b')
-    expect(b?.read.status === 'ok' && b.read.piece.position).toEqual({ digitIndex: 42 })
+    expect(b?.read.status === 'ok' && b.read.piece.position).toEqual({ digitIndex: 42, start: 0 })
     expect(await store.thumbnail('b')).not.toBeNull()
     await store.delete('b')
     expect((await store.list()).map((p) => p.id)).toEqual(['a'])

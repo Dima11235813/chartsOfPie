@@ -64,7 +64,7 @@ export class PlaybackEngine {
   private lastDelayMs = 0
   private nextTargetMs: number | null = null
 
-  constructor(private readonly options: PlaybackEngineOptions) {
+  constructor(private options: PlaybackEngineOptions) {
     this.scheduler = options.scheduler ?? timeoutScheduler
   }
 
@@ -101,6 +101,20 @@ export class PlaybackEngine {
   toggle(): void {
     if (this.playing) this.pause()
     else this.play()
+  }
+
+  /** The digits being played. */
+  get source(): DigitSource {
+    return this.options.source
+  }
+
+  /**
+   * Play a different source from its first digit (e.g. π from another starting point): stops,
+   * and clears the position and counts.
+   */
+  setSource(source: DigitSource): void {
+    this.reset()
+    this.options = { ...this.options, source }
   }
 
   /** Stop and return to the first digit with empty counts. */

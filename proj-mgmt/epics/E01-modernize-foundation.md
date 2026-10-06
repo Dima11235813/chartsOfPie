@@ -1,7 +1,7 @@
 ---
 id: E01
 title: Modernise the foundation
-status: done
+status: in-progress
 phase: 0
 ---
 
@@ -21,6 +21,8 @@ behaviour**, plus the quality gates needed to grow it safely.
 - [x] [F01.4 — Chart parity on Chart.js 4](../features/F01.4-chart-parity.md)
 - [x] [F01.5 — Responsive, accessible UI shell](../features/F01.5-responsive-ui-shell.md)
 - [x] [F01.6 — Quality gates: tests & CI](../features/F01.6-quality-gates.md)
+- [ ] [F01.7 — Start anywhere in π](../features/F01.7-start-anywhere.md) — jump, search and share
+      done (S01.7.1); more than a million digits next (S01.7.2)
 
 ## Legacy behaviour that is preserved (see `verify-parity` skill)
 

@@ -22,6 +22,9 @@ export interface LinkedState {
   setConfig: (config: CompositionConfig) => void
   visual: VisualConfig
   setVisual: (visual: VisualConfig) => void
+  /** Decimal place of π the performance starts at (0 = the beginning). */
+  start: number
+  setStart: (start: number) => void
   /** True when the URL held something that could not be read. */
   invalidLink: boolean
 }
@@ -39,22 +42,32 @@ export function useLinkedState(fallbackVisual: () => VisualConfig): LinkedState 
     return {
       config: shared.sound ?? defaultSound(),
       visual: shared.visual ?? fallbackVisual(),
+      start: shared.start ?? 0,
       invalidLink: Boolean(hash) && shared.invalid,
     }
   })
   const [config, setConfig] = useState(initial.config)
   const [visual, setVisual] = useState(initial.visual)
+  const [start, setStart] = useState(initial.start)
 
   useEffect(() => {
     const { pathname, search } = window.location
-    const hash = buildShareHash(config, visual)
+    const hash = buildShareHash(config, visual, start)
     window.history.replaceState(null, '', `${pathname}${search}${hash}`)
     try {
       localStorage.setItem(LAST_SESSION_KEY, hash)
     } catch {
       // not remembered (private mode)
     }
-  }, [config, visual])
+  }, [config, visual, start])
 
-  return { config, setConfig, visual, setVisual, invalidLink: initial.invalidLink }
+  return {
+    config,
+    setConfig,
+    visual,
+    setVisual,
+    start,
+    setStart,
+    invalidLink: initial.invalidLink,
+  }
 }

@@ -8,11 +8,20 @@ interface StatsPanelProps {
   lastStep: StepEvent | null
   recent: readonly (readonly [number, number])[]
   lastChord?: CoincidentChord | null
+  /** Decimal place the performance started at: step i is decimal place offset + i. */
+  offset?: number
 }
 
 const formatPercent = (value: number) => `${(value * 100).toFixed(2)}%`
 
-export function StatsPanel({ counts, total, lastStep, recent, lastChord }: StatsPanelProps) {
+export function StatsPanel({
+  counts,
+  total,
+  lastStep,
+  recent,
+  lastChord,
+  offset = 0,
+}: StatsPanelProps) {
   const colors = useDigitColors()
   return (
     <div className="stats">
@@ -20,14 +29,18 @@ export function StatsPanel({ counts, total, lastStep, recent, lastChord }: Stats
         <h2 id="stream-heading">Digit stream</h2>
         <p className="stream" aria-live="off">
           {recent.length === 0 ? (
-            <span className="muted">Press Play to start at 3.14159…</span>
+            <span className="muted">
+              {offset === 0
+                ? 'Press Play to start at 3.14159…'
+                : `Press Play to start at decimal place ${offset.toLocaleString()}.`}
+            </span>
           ) : (
             recent.map(([index, digit], i) => (
               <span
                 key={index}
                 className={i === recent.length - 1 ? 'digit current' : 'digit'}
                 style={{ color: colors[digit] }}
-                title={`Digit #${index}`}
+                title={`Decimal place ${(offset + index).toLocaleString()}`}
               >
                 {digit}
               </span>
@@ -40,6 +53,12 @@ export function StatsPanel({ counts, total, lastStep, recent, lastChord }: Stats
         <div>
           <dt>Iteration</dt>
           <dd data-testid="total-count">{total.toLocaleString()}</dd>
+        </div>
+        <div>
+          <dt>Decimal place</dt>
+          <dd data-testid="decimal-place">
+            {lastStep ? (offset + lastStep.index).toLocaleString() : '–'}
+          </dd>
         </div>
         <div>
           <dt>Current digit</dt>
@@ -62,7 +81,7 @@ export function StatsPanel({ counts, total, lastStep, recent, lastChord }: Stats
           <dt>Last chord (by coincidence)</dt>
           <dd data-testid="last-chord">
             {lastChord
-              ? `${lastChord.chord.symbol} — ${lastChord.chord.quality.name} at digit #${lastChord.index.toLocaleString()}`
+              ? `${lastChord.chord.symbol} — ${lastChord.chord.quality.name} at decimal place ${(offset + lastChord.index).toLocaleString()}`
               : '–'}
           </dd>
         </div>

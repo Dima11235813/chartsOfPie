@@ -4,7 +4,8 @@ import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { createHash } from 'node:crypto'
 import { describe, expect, it } from 'vitest'
-import { createDigitSource, parseDigits } from './digitSource'
+import { createDigitSource, parseDigits, windowFrom } from './digitSource'
+import { findDigits, searchPattern } from './findDigits'
 import { DigitCounter } from './digitCounter'
 import { loadPiDigits, PI_DIGIT_COUNT, PI_FIRST_100, piSourceFromText } from './pi'
 
@@ -91,5 +92,42 @@ describe('bundled π data', () => {
     await expect(loadPiDigits('/x', async () => new Response('', { status: 404 }))).rejects.toThrow(
       /404/,
     )
+  })
+})
+
+describe('starting part-way in', () => {
+  const source = createDigitSource('t', 'test', parseDigits('3141592653'))
+
+  it('windowFrom starts at a position and remembers where', () => {
+    const from5 = windowFrom(source, 5)
+    expect(from5.length).toBe(5)
+    expect([0, 1, 2, 3, 4].map((i) => from5.digitAt(i)).join('')).toBe('92653')
+    expect(from5.offset).toBe(5)
+    expect(() => from5.digitAt(5)).toThrow(RangeError)
+    // Windows of windows keep absolute offsets; 0 is the source itself.
+    expect(windowFrom(from5, 2).offset).toBe(7)
+    expect(windowFrom(from5, 2).digitAt(0)).toBe(6)
+    expect(windowFrom(source, 0)).toBe(source)
+  })
+
+  it('searchPattern keeps the digits of what was typed (dates, spaces)', () => {
+    expect(searchPattern('14/03/1879')).toBe('14031879')
+    expect(searchPattern(' 999 999 ')).toBe('999999')
+    expect(searchPattern('abc')).toBeNull()
+    expect(searchPattern('1'.repeat(21))).toBeNull()
+  })
+
+  it('finds digit sequences in π at their decimal place', () => {
+    const pi = piSourceFromText(bundledPi)
+    // The Feynman point: six 9s starting at the 762nd decimal place.
+    expect(findDigits(pi, '999999')).toBe(762)
+    // The first 0 is the 32nd decimal place (3.14159265358979323846264338327950…).
+    expect(findDigits(pi, '0')).toBe(32)
+    // The next occurrence after a hit, and not found at all.
+    const second = findDigits(pi, '999999', 763)
+    expect(second).toBe(bundledPi.indexOf('999999', 763))
+    expect(second).toBeGreaterThan(762)
+    expect(findDigits(pi, '31415926535', 1)).toBe(bundledPi.indexOf('31415926535', 1))
+    expect(findDigits(pi, 'x')).toBe(-1)
   })
 })
