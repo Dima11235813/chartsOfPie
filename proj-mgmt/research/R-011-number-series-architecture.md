@@ -264,9 +264,12 @@ export interface ReadingDefinition {
 }
 ```
 
-Compatibility shims keep the change mechanical: `DigitSource` becomes a type alias of
-`SymbolSource` with `alphabetSize: 10` and `digitAt` as an alias of `symbolAt` during the
-transition, so the dozens of `digitAt` call sites move in a separate, boring commit.
+As built in M1 the change stayed mechanical: `DigitSource` gained an optional `alphabetSize`
+(absent = 10) and `SymbolSource` is an alias of it. The method keeps its name `digitAt` rather
+than moving dozens of call sites (several threads edit those files); renaming it to `symbolAt` is
+cosmetic and can happen any time. The series metadata (`series.ts`, `sourceConfig.ts`) is kept
+apart from the loaders (`load.ts`) because the API validates pieces with it and must not pull in
+browser-only code.
 
 ### Data and generation per series
 
@@ -314,24 +317,33 @@ The headline: φ is a **data-only** addition after M1, and Fibonacci and primes 
 
 ## 6. Persistence: `SourceConfig`
 
+As built in M1 (`core/series/sourceConfig.ts`):
+
 ```ts
 export const sourceConfigSchema = z.object({
   version: z.literal(1),
-  series: z.enum(SERIES_IDS), // 'pi' | 'phi' | 'e' | 'sqrt2' | 'fibonacci' | 'primes' (forever)
-  reading: z.enum(READING_IDS), // 'digits' | 'last-digit' | 'concat' | 'mod' | 'gap' | 'indicator'
-  /** Reading parameters, each with a default (additive later). */
-  params: z.prefault(z.object({ modulus: z._default(z.int().check(z.gte(2), z.lte(64)), 10) }), {}),
+  series: z.enum(SERIES_IDS), // 'pi' today; later 'phi' | 'e' | 'sqrt2' | 'fibonacci' | 'primes'
+  reading: z.enum(READING_IDS), // 'digits' today; later 'last-digit' | 'concat' | 'mod' | …
 })
-// DEFAULT_SOURCE_CONFIG = { version: 1, series: 'pi', reading: 'digits', params: { modulus: 10 } }
+// DEFAULT_SOURCE_CONFIG = { version: 1, series: 'pi', reading: 'digits' }
 ```
 
-- **Share links:** `&s=<encoded SourceConfig>`, left out when it is π (so every link made so far,
-  and every new π link, is byte-identical). Fixtures in `core/piece/fixtures/share-links.json`
-  gain cases; none change.
+Reading parameters (a modulus for `mod`) are left out until M4 needs them: they will be an
+additive field with a default, and an app that does not know the `mod` reading already treats the
+whole source as too-new, so nothing can be misread in between.
+
+- **Share links:** `&s=<series>[.<reading>]`, readable like `p=` and `at=` (`s=fibonacci`,
+  `s=primes.concat`), with the reading left out when it is the series' default and the whole
+  parameter left out for π, so every link made so far, and every new π link, is byte-identical.
+  The link names ids, not an encoded config: a new series or reading is a new id, and parameters
+  will get their own readable suffix.
 - **Saved pieces:** a `source` field with the π default. This is additive (rule 1 of R-007): no
   piece version bump, the schema snapshot `piece.v1.json` changes together with the default, a
   new golden fixture `fixtures/pieces/v1/with-source.json` is added and none is edited.
-- **Unknown series or reading** (written by a newer app): `too-new`, never "π instead".
+- **Unknown series or reading** (written by a newer app): `too-new`, never "π instead". A piece
+  opens read-only like any too-new piece. A link plays π with a visible notice ("a number this
+  version does not know") and keeps its `s=` value in the address and the last session, so
+  reloading an updated app opens it.
 - **`position.digitIndex`** keeps its persisted name and now means "symbol index in the
   piece's source", which is what it already means for π.
 - **API:** `apps/api` validates uploads with the web app's `readPiece` but stores the raw
@@ -352,17 +364,21 @@ Every milestone is shippable on its own, keeps "Original (2019)" on π bit-ident
 
 R-011, E05 broken into features, M1 stories ready, owner decisions listed.
 
-### M1 — Series-ready core, π only (no visible change) · F05.1
+### M1 — Series-ready core, π only (no visible change) · F05.1 — built
 
-- `core/series/`: `SymbolSource`, `NumberSeries`, `ReadingDefinition`, registry with π only.
-- `DigitSource` → `SymbolSource` alias; `alphabetSize` threaded through the counter and hook
-  (still 10).
+- `core/series/`: series and reading registry (π read as digits), `SourceConfig`, loaders.
+- `DigitSource` gains `alphabetSize` (`SymbolSource` alias); the counter and engine count with
+  the source's alphabet, and `windowFrom` (the "Where in π" starting point) keeps it.
 - `SourceConfig` schema, `s=` link parameter, piece `source` field with default, too-new
-  handling, fixtures and schema snapshot; API redeployed.
-- `usePiPlayback` → `useSeriesPlayback(source)` with the existing injectable loader; labels
-  that say π come from the series name (`'π walk'` stays the label while π plays).
-- **Exit:** `npm run check`, all e2e and both snapshot suites pass unchanged; a link with an
-  unknown `s=` shows the "newer version" message. Ideally lands **before F10.5** (PWA).
+  handling, fixtures and schema snapshots.
+- The app loads playback through the registry (`loadSource(source)`); opening a piece restores
+  its number; the Hilbert summary counts the source's length instead of a fixed 1,000,001.
+- **Moved to M2:** labels that say π ("π walk", "Typographic π", "Where in π", captions). With π
+  as the only number there is nothing to show or test them against; they change with the picker.
+  Also for M2: opening a piece whose number differs from the one loaded must wait for the new
+  symbols before seeking (today `seek` runs on the loaded source).
+- **Exit (met):** `npm run check`, all e2e and both snapshot suites pass unchanged; a link with an
+  unknown `s=` shows the "newer version" notice and keeps the value. Lands **before F10.5** (PWA).
 
 ### M2 — The golden ratio (and the other constants) · F05.3
 

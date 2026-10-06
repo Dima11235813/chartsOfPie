@@ -2,7 +2,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { createToneNotePlayer, type NotePlayer } from './audio/notePlayer'
 import { findMatchingPreset } from './core/composition/presets'
 import type { DigitSource } from './core/digits/digitSource'
-import { loadPiDigits } from './core/digits/pi'
+import { loadSource as loadSeriesSource } from './core/series/load'
+import type { SourceConfig } from './core/series/sourceConfig'
 import { Controls } from './components/Controls'
 import { VIEWS } from './components/views'
 import { DigitChart } from './components/DigitChart'
@@ -62,7 +63,8 @@ const initialVisual = (): VisualConfig => ({
 
 interface AppProps {
   createPlayer?: () => NotePlayer
-  loadSource?: () => Promise<DigitSource>
+  /** Fetch or generate the symbols of a number (tests pass fixed digits). */
+  loadSource?: (source: SourceConfig) => Promise<DigitSource>
   /** Where saved pieces live (IndexedDB by default; tests pass a memory store). */
   createStore?: () => PieceStore
   /** The account API (null = accounts hidden; default from VITE_API_URL). */
@@ -71,7 +73,7 @@ interface AppProps {
 
 export default function App({
   createPlayer = createToneNotePlayer,
-  loadSource = loadPiDigits,
+  loadSource = loadSeriesSource,
   createStore = createDefaultStore,
   createAccountApi = defaultAccountApi,
 }: AppProps) {
@@ -81,8 +83,18 @@ export default function App({
   // Every note can also go to a MIDI instrument (e.g. a Nord) — see midi/midiTap.
   const [player] = useState(() => withMidiTap(createPlayer()))
   const midi = useMidiOutput(player)
-  const { config, setConfig, visual, setVisual, start, setStart, invalidLink } =
-    useLinkedState(initialVisual)
+  const {
+    config,
+    setConfig,
+    visual,
+    setVisual,
+    start,
+    setStart,
+    source,
+    setSource,
+    newerSource,
+    invalidLink,
+  } = useLinkedState(initialVisual)
   const { view, chartStyle, palette: paletteId, viewOptions } = visual
   const updateVisual = useCallback(
     (change: Partial<VisualConfig>) => setVisual({ ...visual, ...change }),
@@ -105,7 +117,9 @@ export default function App({
     },
     [updateVisual],
   )
-  const playback = usePiPlayback(player, config, loadSource, start)
+  // A new number reloads playback (from its first symbol); the same number keeps playing.
+  const loadCurrentSource = useCallback(() => loadSource(source), [loadSource, source])
+  const playback = usePiPlayback(player, config, loadCurrentSource, start)
   const { load } = playback
   // The starting point lives in the link (and the last session) once the digits are loaded.
   const playingFrom = load.status === 'ready' ? load.start : start
@@ -139,6 +153,7 @@ export default function App({
   const openPiece = (piece: Piece) => {
     setConfig(piece.sound)
     setVisual(piece.visual)
+    setSource(piece.source)
     playback.seek(piece.position?.digitIndex ?? 0, piece.sound, piece.position?.start ?? 0)
   }
   const captionRef = useRef('')
@@ -271,6 +286,12 @@ export default function App({
           </section>
 
           <aside className="panel">
+            {newerSource !== null && (
+              <p className="notice error" role="status">
+                That share link plays a number this version of the app does not know yet, so π plays
+                instead. Reload or update the app to open it.
+              </p>
+            )}
             {invalidLink && (
               <p className="notice error" role="status">
                 That share link could not be read, so defaults are used for the parts that failed.
@@ -306,6 +327,7 @@ export default function App({
               visual={visual}
               position={playback.total}
               start={playingFrom}
+              source={source}
               suggestedName={`${label} · ${VIEWS.find((v) => v.id === view)?.label ?? view}`}
               getCanvas={() => canvasRef.current}
               onOpen={openPiece}

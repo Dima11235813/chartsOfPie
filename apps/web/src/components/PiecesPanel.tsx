@@ -2,6 +2,7 @@ import { useCallback, useEffect, useId, useRef, useState, type ReactNode } from 
 import type { CompositionConfig } from '../core/composition/config'
 import { createBackup, piecesInFile } from '../core/piece/backup'
 import { createPiece, pieceToDocument, type Piece } from '../core/piece/piece'
+import type { SourceConfig } from '../core/series/sourceConfig'
 import type { VisualConfig } from '../core/piece/visualConfig'
 import type { Doc } from '../core/schema/migrate'
 import { downloadBlob, exportFileName } from '../media/sessionRecorder'
@@ -15,6 +16,8 @@ interface PiecesPanelProps {
   position: number
   /** Decimal place the performance started at. */
   start?: number
+  /** Which number is playing (π by default). */
+  source?: SourceConfig
   /** Suggested name, e.g. "Lydian dream · Music clock". */
   suggestedName: string
   getCanvas: () => HTMLCanvasElement | null
@@ -92,6 +95,7 @@ export function PiecesPanel({
   visual,
   position,
   start = 0,
+  source,
   suggestedName,
   getCanvas,
   onOpen,
@@ -121,6 +125,7 @@ export function PiecesPanel({
       now: new Date(),
       sound,
       visual,
+      source,
       position: { digitIndex: position, start },
     })
     try {

@@ -78,7 +78,7 @@ export function DigitArtView({
       onLayout?.(cols)
     }
     if (count === 0) return 'No digits yet.'
-    if (kind !== 'mosaic' || !cols) return definition.summary(count)
+    if (kind !== 'mosaic' || !cols) return definition.summary(count, source.length)
     const groups = shapeFilter
       ? ' Showing only one shape of group.'
       : minGroup > 1

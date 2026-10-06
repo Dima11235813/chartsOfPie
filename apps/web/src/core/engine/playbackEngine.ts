@@ -1,5 +1,5 @@
 import { DigitCounter } from '../digits/digitCounter'
-import type { DigitSource } from '../digits/digitSource'
+import { alphabetOf, type DigitSource } from '../digits/digitSource'
 
 /** How one digit should sound; produced by an arranger (see `composition/arranger.ts`). */
 export interface ArrangedStep {
@@ -56,7 +56,7 @@ export interface PlaybackEngineOptions {
  * pure and deterministic under a fake scheduler.
  */
 export class PlaybackEngine {
-  private readonly counter = new DigitCounter()
+  private counter: DigitCounter
   private readonly scheduler: Scheduler
   private position = 0
   private playing = false
@@ -66,6 +66,7 @@ export class PlaybackEngine {
 
   constructor(private options: PlaybackEngineOptions) {
     this.scheduler = options.scheduler ?? timeoutScheduler
+    this.counter = new DigitCounter(alphabetOf(options.source))
   }
 
   get isPlaying(): boolean {
@@ -115,6 +116,9 @@ export class PlaybackEngine {
   setSource(source: DigitSource): void {
     this.reset()
     this.options = { ...this.options, source }
+    if (alphabetOf(source) !== this.counter.alphabetSize) {
+      this.counter = new DigitCounter(alphabetOf(source))
+    }
   }
 
   /** Stop and return to the first digit with empty counts. */

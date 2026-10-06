@@ -1,17 +1,34 @@
-/** A finite, indexable stream of base-10 digits (e.g. the first million digits of π). */
+/**
+ * A finite, indexable stream of small symbols — the digits of π today, any series reading later
+ * (proj-mgmt R-011). Everything downstream (engine, counts, sound, views) reads only this.
+ */
 export interface DigitSource {
   readonly id: string
   readonly name: string
-  /** Number of digits available. */
+  /** Number of symbols available. */
   readonly length: number
-  /** Digit (0–9) at a zero-based position. Position 0 of π is the leading `3`. */
+  /**
+   * Symbol at a zero-based position, in 0..alphabetSize-1 (a decimal digit for every source so
+   * far). Position 0 of π is the leading `3`.
+   */
   digitAt(index: number): number
+  /** How many distinct symbols the source can produce; absent means 10 (decimal digits). */
+  readonly alphabetSize?: number
   /**
    * Where index 0 sits in the full sequence, for a source that starts part-way in (see
    * `windowFrom`); 0 or absent for a source that starts at the beginning.
    */
   readonly offset?: number
 }
+
+/** Every source a series reading produces is a `SymbolSource`; digits are the alphabet-10 case. */
+export type SymbolSource = DigitSource
+
+export const DECIMAL_ALPHABET = 10
+
+/** The number of distinct symbols a source can produce. */
+export const alphabetOf = (source: Pick<DigitSource, 'alphabetSize'>) =>
+  source.alphabetSize ?? DECIMAL_ALPHABET
 
 /**
  * The same digits starting at `start` of `source`: index 0 is `source.digitAt(start)`. Playback
@@ -27,6 +44,7 @@ export function windowFrom(source: DigitSource, start: number): DigitSource {
     name: source.name,
     length: source.length - from,
     offset: base + from,
+    ...(source.alphabetSize === undefined ? {} : { alphabetSize: source.alphabetSize }),
     digitAt: (index) => {
       if (!Number.isInteger(index) || index < 0 || index >= source.length - from) {
         throw new RangeError(`Digit index ${index} is outside 0..${source.length - from - 1}`)

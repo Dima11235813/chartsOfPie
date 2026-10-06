@@ -14,6 +14,13 @@ import {
   type Migrations,
 } from '../schema/migrate'
 import { readVisualConfig, visualConfigSchema, type VisualConfig } from './visualConfig'
+import {
+  DEFAULT_SOURCE_CONFIG,
+  readSourceConfig,
+  sourceConfigSchema,
+  type SourceConfig,
+  type SourceRead,
+} from '../series/sourceConfig'
 
 export const PIECE_SCHEMA = 'charts-of-pie/piece'
 export const PIECE_VERSION = 1
@@ -34,6 +41,8 @@ export const pieceSchema = z.object({
   updatedAt: z.iso.datetime(),
   sound: compositionConfigSchema,
   visual: visualConfigSchema,
+  /** Which number plays (added in S05.1.2; pieces from before it are π). */
+  source: z._default(sourceConfigSchema, DEFAULT_SOURCE_CONFIG),
   /** Where playback was when saved: digits played, counted from `start`. */
   position: z.optional(
     z.object({
@@ -91,10 +100,19 @@ export function readPiece(input: unknown): PieceRead {
   if (visual.status === 'invalid') {
     return { status: 'invalid', reason: `view settings: ${visual.reason}`, raw: input }
   }
+  // A series or reading this version does not know: never open it as π.
+  const source: SourceRead =
+    input.source === undefined
+      ? { status: 'ok', config: DEFAULT_SOURCE_CONFIG }
+      : readSourceConfig(input.source)
+  if (source.status === 'too-new') return { status: 'too-new', raw: input }
+  if (source.status === 'invalid') {
+    return { status: 'invalid', reason: `number: ${source.reason}`, raw: input }
+  }
   const head = envelopeSchema.safeParse(envelope.doc)
   if (!head.success) return { status: 'invalid', reason: head.error.message, raw: input }
 
-  const piece: Piece = { ...head.data, sound, visual: visual.config }
+  const piece: Piece = { ...head.data, sound, visual: visual.config, source: source.config }
   return { status: 'ok', piece, replaced: visual.replaced, raw: input }
 }
 
@@ -113,11 +131,21 @@ export interface NewPieceInput {
   now: Date
   sound: CompositionConfig
   visual: VisualConfig
+  /** Defaults to π. */
+  source?: SourceConfig
   /** `start` defaults to 0 (the beginning). */
   position?: { digitIndex: number; start?: number }
 }
 
-export function createPiece({ id, name, now, sound, visual, position }: NewPieceInput): Piece {
+export function createPiece({
+  id,
+  name,
+  now,
+  sound,
+  visual,
+  source = DEFAULT_SOURCE_CONFIG,
+  position,
+}: NewPieceInput): Piece {
   const stamp = now.toISOString()
   return pieceSchema.parse({
     schema: PIECE_SCHEMA,
@@ -128,6 +156,7 @@ export function createPiece({ id, name, now, sound, visual, position }: NewPiece
     updatedAt: stamp,
     sound,
     visual,
+    source,
     ...(position ? { position } : {}),
   })
 }

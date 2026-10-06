@@ -1,0 +1,36 @@
+{
+  "schema": "charts-of-pie/piece",
+  "version": 1,
+  "id": "00000000-0000-4000-8000-000000000011",
+  "name": "A number from a newer app",
+  "createdAt": "2026-10-04T10:00:00.000Z",
+  "updatedAt": "2026-10-04T10:00:00.000Z",
+  "sound": {
+    "version": 1,
+    "scale": "major-pentatonic",
+    "root": "C",
+    "octave": 4,
+    "mapping": "ascending",
+    "rhythm": "legacy",
+    "timing": "legacy-random",
+    "bpm": 120,
+    "subdivision": 2,
+    "legato": 1,
+    "dynamics": "flat",
+    "humanize": 0,
+    "instrument": "classic",
+    "reverb": 0,
+    "echo": 0,
+    "drone": false,
+    "compress": false,
+    "volume": 0
+  },
+  "visual": {
+    "version": 1
+  },
+  "source": {
+    "version": 1,
+    "series": "golden-ratio-from-the-future",
+    "reading": "digits"
+  }
+}

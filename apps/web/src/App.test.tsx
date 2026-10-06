@@ -276,6 +276,28 @@ describe('App', () => {
     expect(window.location.hash).toMatch(/at=4/)
   })
 
+  it('a link to a number this version does not know says so and keeps it in the link', async () => {
+    window.history.replaceState(null, '', '/#p=music-box&s=golden-ratio')
+    const loads: unknown[] = []
+    render(
+      <App
+        createPlayer={fakePlayer}
+        loadSource={(config) => {
+          loads.push(config)
+          return source()
+        }}
+      />,
+    )
+    expect(
+      await screen.findByText(/plays a number this version of the app does not know/),
+    ).toBeInTheDocument()
+    expect(screen.queryByText(/share link could not be read/)).not.toBeInTheDocument()
+    expect(screen.getByLabelText('Preset')).toHaveDisplayValue('Music box')
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Step' })).toBeEnabled())
+    expect(loads).toEqual([{ version: 1, series: 'pi', reading: 'digits' }])
+    expect(window.location.hash).toBe('#p=music-box&s=golden-ratio')
+  })
+
   it('restores the last session on a plain visit, but a link wins', async () => {
     const user = userEvent.setup()
     const { unmount } = render(<App createPlayer={fakePlayer} loadSource={source} />)
