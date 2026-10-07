@@ -5,6 +5,7 @@ import { createPiece, pieceToDocument, type Piece } from '../core/piece/piece'
 import type { SourceConfig } from '../core/series/sourceConfig'
 import type { VisualConfig } from '../core/piece/visualConfig'
 import type { Doc } from '../core/schema/migrate'
+import { useNumber } from './numberContext'
 import { downloadBlob, exportFileName } from '../media/sessionRecorder'
 import { requestPersistence, type PieceStore, type StoredPiece } from '../storage/pieceStore'
 
@@ -102,6 +103,7 @@ export function PiecesPanel({
   accountSection,
 }: PiecesPanelProps) {
   const ids = { name: useId(), file: useId() }
+  const number = useNumber()
   const [pieces, setPieces] = useState<StoredPiece[]>([])
   const [name, setName] = useState('')
   const [status, setStatus] = useState('')
@@ -215,7 +217,8 @@ export function PiecesPanel({
         </span>
       </div>
       <p className="hint">
-        Saves the sound, the view and where you are in π ({position.toLocaleString()} digits
+        Saves the sound, the view and where you are in {number.symbol} ({position.toLocaleString()}{' '}
+        digits
         {start ? ` from decimal place ${start.toLocaleString()}` : ''}) on this device.
       </p>
       {status && (

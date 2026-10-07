@@ -105,6 +105,13 @@ export function sourceName(config: SourceConfig): string {
     : `${series.name} · ${getReading(config.reading).name.toLowerCase()}`
 }
 
+/** Id of the symbol source a config loads ("pi", later "fibonacci:last-digit"). */
+export function sourceKey(config: SourceConfig): string {
+  return config.reading === getSeries(config.series).readings[0]
+    ? config.series
+    : `${config.series}:${config.reading}`
+}
+
 /** The short symbol of a source's series, for labels such as "π walk". */
 export const sourceSymbol = (config: SourceConfig) => getSeries(config.series).symbol
 

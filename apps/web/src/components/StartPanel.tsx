@@ -1,6 +1,7 @@
 import { useId, useState } from 'react'
 import type { DigitSource } from '../core/digits/digitSource'
 import { findDigits, MAX_SEARCH_DIGITS, searchPattern } from '../core/digits/findDigits'
+import { useNumber } from './numberContext'
 
 interface StartPanelProps {
   /** All the digits loaded (position 0 is the leading 3, position n the n-th decimal place). */
@@ -21,6 +22,9 @@ const FEYNMAN = '999999'
 export function StartPanel({ full, start, onStart }: StartPanelProps) {
   const ids = { place: useId(), find: useId() }
   const last = full.length - 1
+  const number = useNumber()
+  /** The first digits as a decimal, e.g. 3.14159 for π. */
+  const opening = `${full.digitAt(0)}.${Array.from({ length: Math.min(5, last) }, (_, i) => full.digitAt(i + 1)).join('')}`
   const [place, setPlace] = useState(String(start))
   const [query, setQuery] = useState('')
   const [found, setFound] = useState<{ digits: string; at: number } | null>(null)
@@ -63,10 +67,10 @@ export function StartPanel({ full, start, onStart }: StartPanelProps) {
 
   return (
     <section className="export-panel start-panel" aria-labelledby="start-heading">
-      <h2 id="start-heading">Where in π</h2>
+      <h2 id="start-heading">Where in {number.symbol}</h2>
       <p className="hint">
         {start === 0
-          ? `Starting at the beginning, 3.14159… — ${last.toLocaleString()} decimal places loaded.`
+          ? `Starting at the beginning, ${opening}… — ${last.toLocaleString()} decimal places loaded.`
           : `Starting at decimal place ${start.toLocaleString()} of ${last.toLocaleString()}.`}
       </p>
       <form
@@ -99,16 +103,19 @@ export function StartPanel({ full, start, onStart }: StartPanelProps) {
         >
           Beginning
         </button>
-        <button
-          type="button"
-          className="btn btn-small"
-          onClick={() => {
-            const at = findDigits(full, FEYNMAN)
-            if (at >= 0) go(at, `The Feynman point: six 9s in a row at decimal place ${at}.`)
-          }}
-        >
-          Feynman point
-        </button>
+        {number.id === 'pi' && (
+          // The Feynman point is a fact about π; other numbers keep Beginning and Random.
+          <button
+            type="button"
+            className="btn btn-small"
+            onClick={() => {
+              const at = findDigits(full, FEYNMAN)
+              if (at >= 0) go(at, `The Feynman point: six 9s in a row at decimal place ${at}.`)
+            }}
+          >
+            Feynman point
+          </button>
+        )}
         <button
           type="button"
           className="btn btn-small"

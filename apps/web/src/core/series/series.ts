@@ -14,7 +14,7 @@ import { DECIMAL_ALPHABET } from '../digits/digitSource'
  * and generating the symbols lives in load.ts.
  */
 
-export const SERIES_IDS = ['pi'] as const
+export const SERIES_IDS = ['pi', 'phi', 'e', 'sqrt2'] as const
 export type SeriesId = (typeof SERIES_IDS)[number]
 
 export const READING_IDS = ['digits'] as const
@@ -60,6 +60,30 @@ export const SERIES: readonly SeriesDefinition[] = [
     oeis: 'A000796',
     readings: ['digits'],
   },
+  {
+    id: 'phi',
+    name: 'φ (golden ratio)',
+    symbol: 'φ',
+    kind: 'constant',
+    oeis: 'A001622',
+    readings: ['digits'],
+  },
+  {
+    id: 'e',
+    name: 'e (Euler’s number)',
+    symbol: 'e',
+    kind: 'constant',
+    oeis: 'A001113',
+    readings: ['digits'],
+  },
+  {
+    id: 'sqrt2',
+    name: '√2 (square root of 2)',
+    symbol: '√2',
+    kind: 'constant',
+    oeis: 'A002193',
+    readings: ['digits'],
+  },
 ]
 
 export const isSeriesId = (value: unknown): value is SeriesId =>
@@ -79,3 +103,7 @@ export function getReading(id: ReadingId): ReadingDefinition {
   if (!reading) throw new Error(`Unknown reading: ${id}`)
   return reading
 }
+
+/** Put a series' symbol into label text written for π ("π walk" → "φ walk"). */
+export const withSymbol = (text: string, symbol: string) =>
+  symbol === 'π' ? text : text.replaceAll('π', symbol)

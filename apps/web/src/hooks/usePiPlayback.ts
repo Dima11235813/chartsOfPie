@@ -77,6 +77,11 @@ export function usePiPlayback(
   const silentRef = useRef(false)
   const initialStartRef = useRef(initialStart)
 
+  // A new source (another number) starts from the latest requested starting point.
+  useEffect(() => {
+    initialStartRef.current = initialStart
+  }, [initialStart])
+
   // Config changes apply from the next digit on, without restarting playback.
   useEffect(() => {
     configRef.current = config
@@ -89,6 +94,13 @@ export function usePiPlayback(
     loadSource()
       .then((full) => {
         if (cancelled) return
+        // Another number replaces the one playing: start over with empty counts and views.
+        arranger.reset()
+        log.reset()
+        setLastChord(null)
+        setLastStep(null)
+        setRecent([])
+        setIsFinished(false)
         const start = clampStart(initialStartRef.current, full)
         const source = windowFrom(full, start)
         engineRef.current = new PlaybackEngine({
@@ -124,8 +136,10 @@ export function usePiPlayback(
       })
     return () => {
       cancelled = true
+      engineRef.current?.pause()
       engineRef.current?.dispose()
       engineRef.current = null
+      setLoad({ status: 'loading' })
     }
   }, [player, loadSource, arranger, log])
 

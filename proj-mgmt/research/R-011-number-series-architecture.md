@@ -380,14 +380,29 @@ R-011, E05 broken into features, M1 stories ready, owner decisions listed.
 - **Exit (met):** `npm run check`, all e2e and both snapshot suites pass unchanged; a link with an
   unknown `s=` shows the "newer version" notice and keeps the value. Lands **before F10.5** (PWA).
 
-### M2 — The golden ratio (and the other constants) · F05.3
+### M2 — The golden ratio (and the other constants) · F05.3 — built
 
-- `scripts/generate-constants.ts` → `phi-1m.txt` (+ `e-1m.txt`, `sqrt2-1m.txt` if D3 says yes),
-  verified twice and sha256-pinned; lazy-loaded.
-- A **Number** selector (π, φ, …) in the controls, 44 px targets, works at 360 px; e2e switches
-  to φ and back while paused and asserts pixels (rule 9).
-- Info popover per series (definition, OEIS link, one surprising fact).
-- **Exit:** every view plays φ; one poster snapshot for φ.
+Built on the recommended D2 (ship files), D3 (e and √2 too) and D6 (labels follow the series).
+
+- `core/digits/constantDigits.ts`: exact BigInt digits, two independent methods per constant
+  (φ: integer √5 and Fibonacci ratios by fast doubling; √2: integer √2 and Pell numbers; e: Σ1/k!
+  and the continued fraction [2; 1, 2, 1, 1, 4, …], both by binary splitting).
+  `scripts/generate-constants.ts` writes `phi-1m.txt`, `e-1m.txt`, `sqrt2-1m.txt` only when both
+  agree on all 1,000,001 digits. Tests pin each sha256, check the first 100 digits by both methods
+  and recompute every file. A published reference file couldn't be fetched (the build network
+  blocks it), so the second algorithm replaces that check.
+- Each file loads only when its number is picked (`core/series/load.ts`).
+- The **Number** picker sits in the header tagline ("… the first 1,000,000 digits of [φ ▾]")
+  rather than the controls: in the controls footer it wrapped the toolbar and shrank the stage.
+  44 px target; on desktop it overlaps the header padding so the stage keeps its height.
+- Labels follow the number (D6): "φ walk", "Typographic φ", "Where in φ" with 1.61803…, captions,
+  poster names, the saved piece's name. The Feynman point button shows for π only.
+- Switching number starts over at the beginning; opening a piece of another number waits for its
+  digits, then seeks.
+- **Not built:** the info popover (moved to M5 with the lessons); PWA precaching stays π-only
+  (F10.5).
+- **Exit (met):** every view plays φ (e2e: φ and back while paused, pixels drawn); poster
+  snapshots for the φ walk and mosaic; π snapshots unchanged.
 
 ### M3 — Fibonacci and primes in base 10 · F05.2, F05.4
 

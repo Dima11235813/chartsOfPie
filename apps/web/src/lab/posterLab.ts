@@ -1,25 +1,35 @@
 /**
  * Poster lab: deterministic poster renders for the image regression tests
- * (e2e/poster-snapshots.spec.ts). Always the first digits of π in the original rainbow palette.
+ * (e2e/poster-snapshots.spec.ts). The first digits of a number (π unless another series is named)
+ * in the original rainbow palette.
  */
-import { loadPiDigits } from '../core/digits/pi'
 import type { DigitSource } from '../core/digits/digitSource'
+import { loadSource } from '../core/series/load'
+import { getSeries, isSeriesId } from '../core/series/series'
 import { getPalette } from '../viz/palettes'
 import { POSTER_KINDS, renderPoster, type PosterKind } from '../viz/render/posters'
 
-let source: Promise<DigitSource> | null = null
-const digits = () => (source ??= loadPiDigits())
+const sources = new Map<string, Promise<DigitSource>>()
+function digits(series: string) {
+  if (!isSeriesId(series)) throw new Error(`Unknown series: ${series}`)
+  let source = sources.get(series)
+  if (!source) {
+    source = loadSource({ version: 1, series, reading: getSeries(series).readings[0] })
+    sources.set(series, source)
+  }
+  return source
+}
 
 export async function renderPosterDataUrl(
   kind: PosterKind,
-  { count = 2_000, size = 512, palette = 'rainbow' } = {},
+  { count = 2_000, size = 512, palette = 'rainbow', series = 'pi' } = {},
 ): Promise<string> {
-  const pi = await digits()
+  const number = await digits(series)
   const canvas = await renderPoster({
     kind,
     size,
     count,
-    digitAt: (i) => pi.digitAt(i),
+    digitAt: (i) => number.digitAt(i),
     colors: getPalette(palette).digitColors([]),
     caption: false,
   })

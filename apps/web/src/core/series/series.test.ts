@@ -2,12 +2,21 @@ import { describe, expect, test } from 'vitest'
 import { createDigitSource, windowFrom } from '../digits/digitSource'
 import { DigitCounter } from '../digits/digitCounter'
 import { PlaybackEngine } from '../engine/playbackEngine'
-import { getReading, getSeries, READING_IDS, READINGS, SERIES, SERIES_IDS } from './series'
+import {
+  getReading,
+  getSeries,
+  READING_IDS,
+  READINGS,
+  SERIES,
+  SERIES_IDS,
+  withSymbol,
+} from './series'
 import {
   DEFAULT_SOURCE_CONFIG,
   parseSourceLinkParam,
   readSourceConfig,
   sourceLinkParam,
+  sourceKey,
   sourceName,
   sourceSymbol,
 } from './sourceConfig'
@@ -17,7 +26,7 @@ describe('series registry', () => {
     // Adding an id is fine; renaming or removing one breaks links and saved pieces (R-011 §6).
     expect(SERIES.map((s) => s.id)).toEqual([...SERIES_IDS])
     expect(READINGS.map((r) => r.id)).toEqual([...READING_IDS])
-    for (const id of ['pi'] as const) expect(SERIES_IDS).toContain(id)
+    for (const id of ['pi', 'phi', 'e', 'sqrt2'] as const) expect(SERIES_IDS).toContain(id)
     for (const id of ['digits'] as const) expect(READING_IDS).toContain(id)
   })
 
@@ -65,6 +74,18 @@ describe('SourceConfig', () => {
       expect(readSourceConfig(input).status).toBe('invalid')
     for (const value of ['', 'Pi', 'pi.', '.digits', 'pi digits', 'pi.digits.more'])
       expect(parseSourceLinkParam(value).status).toBe('invalid')
+  })
+
+  test('the constants: φ, e and √2 read as digits, linked by id', () => {
+    const phi = { version: 1, series: 'phi', reading: 'digits' } as const
+    expect(sourceLinkParam(phi)).toBe('phi')
+    expect(parseSourceLinkParam('phi')).toEqual({ status: 'ok', config: phi })
+    expect(sourceKey(phi)).toBe('phi')
+    expect(sourceName(phi)).toBe('φ (golden ratio)')
+    expect(SERIES.map((s) => s.symbol)).toEqual(['π', 'φ', 'e', '√2'])
+    expect(SERIES.map((s) => s.oeis)).toEqual(['A000796', 'A001622', 'A001113', 'A002193'])
+    expect(withSymbol('π walk', 'φ')).toBe('φ walk')
+    expect(withSymbol('Typographic π', '√2')).toBe('Typographic √2')
   })
 
   test('link values round-trip', () => {

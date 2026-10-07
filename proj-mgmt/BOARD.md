@@ -1,6 +1,6 @@
 # Board
 
-_Last updated with E05 M1 (series-ready core, π only) in review on PR #19._
+_Last updated with E05 M2 (φ, e, √2 and the Number picker) in review on PR #19._
 
 ## Epics
 
@@ -42,7 +42,7 @@ _Last updated with E05 M1 (series-ready core, π only) in review on PR #19._
 | M1        | S05.1.1         | SymbolSource and series registry (π only)    | review  |
 | M1        | S05.1.2         | SourceConfig in share links and saved pieces | review  |
 | M1        | S05.1.3         | Series-aware playback hook and labels        | review  |
-| M2        | F05.3           | Constants: φ, e, √2                          | backlog |
+| M2        | F05.3           | Constants: φ, e, √2                          | review  |
 | M3        | F05.2, F05.4    | Fibonacci and primes in base 10              | backlog |
 | M4        | F05.5           | Any alphabet: residues, bases, binary        | backlog |
 | M5        | F05.7           | Series-native views and rhythms              | backlog |

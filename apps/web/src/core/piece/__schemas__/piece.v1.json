@@ -368,7 +368,10 @@
         "series": {
           "type": "string",
           "enum": [
-            "pi"
+            "pi",
+            "phi",
+            "e",
+            "sqrt2"
           ]
         },
         "reading": {
