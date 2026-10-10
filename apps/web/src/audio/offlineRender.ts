@@ -28,7 +28,7 @@ export async function renderConfig(
     let time = 0.05
     chain.startDrone(time)
     for (let index = startIndex; time < seconds - tail && index < source.length; index++) {
-      const step = arranger.arrange(source.digitAt(index))
+      const step = arranger.arrange(source.digitAt(index), index)
       if (step.note !== null) {
         chain.playNote(step.note, step.durationSec, time, step.velocity)
         notes++

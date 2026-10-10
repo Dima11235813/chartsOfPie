@@ -399,6 +399,44 @@ test('no horizontal scroll at 360 px wide, with every panel open', async ({ page
   }
 })
 
+test('golden-ratio rhythms: Fibonacci word long–short, and back to steady', async ({ page }) => {
+  await page.goto('/#p=golden-word')
+  await expect(page.getByRole('button', { name: 'Play' })).toBeEnabled({ timeout: 15_000 })
+  await expect(page.getByLabel('Preset')).toHaveValue('golden-word')
+  const playing = page.getByTestId('sound-data')
+  let played = 0
+  const step = async () => {
+    await page.getByRole('button', { name: 'Step' }).click()
+    await expect(page.getByTestId('total-count')).toHaveText(String(++played))
+    return (await playing.textContent())?.replace(/^.* for /, '')
+  }
+  // 100 BPM eighths: 0.3 s steps; long = 0.3 × 1.171 × legato 1.1, short = 0.3 × 0.724 × 1.1.
+  expect([await step(), await step(), await step(), await step(), await step()]).toEqual([
+    '0.39 s',
+    '0.24 s',
+    '0.39 s',
+    '0.39 s',
+    '0.24 s',
+  ])
+  // Switch the rhythm off and on again (rule 9): steady gives equal steps.
+  await page.getByText('Customize').click()
+  const rhythm = page.getByLabel('Rhythm')
+  await rhythm.selectOption({ label: 'Steady' })
+  expect([await step(), await step()]).toEqual(['0.33 s', '0.33 s'])
+  await rhythm.selectOption({ label: 'Zeckendorf ruler' })
+  await expect(page).toHaveURL(/#c=/)
+  await page.getByRole('button', { name: 'Reset' }).click()
+  played = 0
+  // 1 2 3 1 5 steps of 0.3 s, × legato 1.1.
+  expect([await step(), await step(), await step(), await step(), await step()]).toEqual([
+    '0.33 s',
+    '0.66 s',
+    '0.99 s',
+    '0.33 s',
+    '1.65 s',
+  ])
+})
+
 test('swing and full screen', async ({ page }) => {
   await page.goto('/#p=pentatonic-piano')
   await expect(page.getByRole('button', { name: 'Play' })).toBeEnabled({ timeout: 15_000 })

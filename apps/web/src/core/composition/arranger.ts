@@ -1,5 +1,11 @@
 import { digitNoteTable } from '../music/mapping'
 import { getScale } from '../music/scaleCatalogue'
+import {
+  FIBONACCI_WORD_LONG,
+  FIBONACCI_WORD_SHORT,
+  fibonacciWordLetter,
+  zeckendorfSteps,
+} from '../music/fibonacciRhythm'
 import { LEGACY_DIGIT_DURATIONS, legacyStepDelayMs } from '../music/legacyMapping'
 import { noteToMidi, midiToNote } from '../music/notes'
 import type { ArrangedStep } from '../engine/playbackEngine'
@@ -54,6 +60,8 @@ const clamp01 = (value: number) => Math.min(1, Math.max(0, value))
  */
 export class Arranger {
   private stepInBeat = 0
+  /** Position of the next digit when the caller does not pass one. */
+  private position = 0
   private notes: string[]
 
   constructor(
@@ -74,14 +82,32 @@ export class Arranger {
 
   reset(): void {
     this.stepInBeat = 0
+    this.position = 0
   }
 
-  arrange(digit: number): ArrangedStep {
+  /**
+   * `index` is the digit's position in the performance (the engine passes it); the golden-ratio
+   * rhythms depend on it, so they are the same after seeking or resuming.
+   */
+  arrange(digit: number, index: number = this.position): ArrangedStep {
     const { config } = this
+    this.position = index + 1
     const stepSec = 60 / config.bpm / config.subdivision
     const isRest =
       (config.rhythm === 'steady-rests' || config.rhythm === 'digit-length') && digit === 0
-    const steps = config.rhythm === 'digit-length' ? Math.max(1, digit) : 1
+    const steps =
+      config.rhythm === 'digit-length'
+        ? Math.max(1, digit)
+        : config.rhythm === 'zeckendorf'
+          ? zeckendorfSteps(index)
+          : 1
+    // Fibonacci word: long (letter 0) and short (letter 1) steps in the ratio φ : 1, off the grid.
+    const golden =
+      config.rhythm === 'fibonacci-word'
+        ? fibonacciWordLetter(index) === 0
+          ? FIBONACCI_WORD_LONG
+          : FIBONACCI_WORD_SHORT
+        : null
 
     let durationSec: number
     let durationLabel: string
@@ -90,7 +116,7 @@ export class Arranger {
       const bpm = config.timing === 'tempo' ? config.bpm : LEGACY_BPM
       durationSec = notationToSeconds(durationLabel, bpm)
     } else {
-      durationSec = steps * stepSec * config.legato
+      durationSec = (golden ?? steps) * stepSec * config.legato
       durationLabel = `${durationSec.toFixed(2)} s`
     }
 
@@ -98,6 +124,8 @@ export class Arranger {
     if (config.timing !== 'tempo') delayMs = legacyStepDelayMs(this.random)
     // Original note lengths on a tempo: play them back to back so they neither overlap nor cut off.
     else if (config.rhythm === 'legacy') delayMs = durationSec * 1000
+    // The Fibonacci word is its own long–short swing; grid swing would blur it.
+    else if (golden !== null) delayMs = golden * stepSec * 1000
     else if (config.swing > 0 && config.subdivision > 1) {
       // Swing: within each pair of steps the first is longer, the second shorter.
       let units = 0
@@ -110,7 +138,8 @@ export class Arranger {
     // Leave headroom for humanize to vary both ways; Original (no humanize) stays at full velocity.
     let velocity = config.humanize > 0 ? 0.9 : 1
     if (config.dynamics === 'accented') {
-      const onBeat = this.stepInBeat === 0
+      // Fibonacci word: accent the long notes; otherwise the first step of each beat.
+      const onBeat = golden !== null ? golden === FIBONACCI_WORD_LONG : this.stepInBeat === 0
       velocity = onBeat ? 0.85 : 0.68
     }
     if (config.humanize > 0) {
