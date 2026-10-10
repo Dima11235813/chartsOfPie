@@ -1,6 +1,6 @@
 # Board
 
-_Last updated with the golden slice (F05.8): golden swing, string art, harmonograph and sunflower spirals; φ, e, √2 merged (PR #19)._
+_Last updated with E05 M3 (Fibonacci and primes, written out and last digits) in review._
 
 ## Epics
 
@@ -45,7 +45,7 @@ _Last updated with the golden slice (F05.8): golden swing, string art, harmonogr
 | M2        | F05.3           | Constants: φ, e, √2                                     | done    |
 | G         | S05.8.1         | Golden slice (swing, string art, harmonograph, spirals) | done    |
 | G         | S05.8.2         | Fibonacci-word and Zeckendorf rhythms                   | ready   |
-| M3        | F05.2, F05.4    | Fibonacci and primes in base 10                         | backlog |
+| M3        | F05.2, F05.4    | Fibonacci and primes in base 10                         | review  |
 | M4        | F05.5           | Any alphabet: residues, bases, binary                   | backlog |
 | M5        | F05.7           | Series-native views and rhythms                         | backlog |
 | Later     | F05.6           | User sequences                                          | backlog |

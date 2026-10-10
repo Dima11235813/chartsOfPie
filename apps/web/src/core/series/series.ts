@@ -14,10 +14,10 @@ import { DECIMAL_ALPHABET } from '../digits/digitSource'
  * and generating the symbols lives in load.ts.
  */
 
-export const SERIES_IDS = ['pi', 'phi', 'e', 'sqrt2'] as const
+export const SERIES_IDS = ['pi', 'phi', 'e', 'sqrt2', 'fibonacci', 'primes'] as const
 export type SeriesId = (typeof SERIES_IDS)[number]
 
-export const READING_IDS = ['digits'] as const
+export const READING_IDS = ['digits', 'concat', 'last-digit'] as const
 export type ReadingId = (typeof READING_IDS)[number]
 
 export interface ReadingDefinition {
@@ -35,6 +35,18 @@ export const READINGS: readonly ReadingDefinition[] = [
     description: 'The decimal digits, one after another',
     alphabetSize: DECIMAL_ALPHABET,
   },
+  {
+    id: 'concat',
+    name: 'Written out',
+    description: 'Every term written out in full, one after another (13, 21, 34 → 1 3 2 1 3 4)',
+    alphabetSize: DECIMAL_ALPHABET,
+  },
+  {
+    id: 'last-digit',
+    name: 'Last digits',
+    description: 'The last digit of each term only',
+    alphabetSize: DECIMAL_ALPHABET,
+  },
 ]
 
 export interface SeriesDefinition {
@@ -43,10 +55,15 @@ export interface SeriesDefinition {
   readonly name: string
   /** Short symbol used in labels, e.g. "π" in "π walk". */
   readonly symbol: string
-  /** `constant`: digits of a number; `integers`: a sequence of whole numbers (later). */
+  /**
+   * `constant`: digits of a number, position 0 is its whole-number digit and position n its n-th
+   * decimal place. `integers`: a sequence of whole numbers, position n is its n-th symbol.
+   */
   readonly kind: 'constant' | 'integers'
   /** OEIS entry for the symbols as played (citation shown to listeners). */
   readonly oeis: string
+  /** A constant's value to a few places ("3.14159"), shown before the digits play. */
+  readonly opening?: string
   /** Readings that make sense for this series; the first is the default. */
   readonly readings: readonly [ReadingId, ...ReadingId[]]
 }
@@ -57,6 +74,7 @@ export const SERIES: readonly SeriesDefinition[] = [
     name: 'π (pi)',
     symbol: 'π',
     kind: 'constant',
+    opening: '3.14159',
     oeis: 'A000796',
     readings: ['digits'],
   },
@@ -65,6 +83,7 @@ export const SERIES: readonly SeriesDefinition[] = [
     name: 'φ (golden ratio)',
     symbol: 'φ',
     kind: 'constant',
+    opening: '1.61803',
     oeis: 'A001622',
     readings: ['digits'],
   },
@@ -73,6 +92,7 @@ export const SERIES: readonly SeriesDefinition[] = [
     name: 'e (Euler’s number)',
     symbol: 'e',
     kind: 'constant',
+    opening: '2.71828',
     oeis: 'A001113',
     readings: ['digits'],
   },
@@ -81,8 +101,27 @@ export const SERIES: readonly SeriesDefinition[] = [
     name: '√2 (square root of 2)',
     symbol: '√2',
     kind: 'constant',
+    opening: '1.41421',
     oeis: 'A002193',
     readings: ['digits'],
+  },
+  {
+    // Written out from F₀ = 0 (R-011 D9); written out is the default (R-012 G-3).
+    id: 'fibonacci',
+    name: 'Fibonacci numbers',
+    symbol: 'Fibonacci',
+    kind: 'integers',
+    oeis: 'A000045',
+    readings: ['concat', 'last-digit'],
+  },
+  {
+    // Written out, the primes are the Copeland–Erdős constant (A033308).
+    id: 'primes',
+    name: 'Prime numbers',
+    symbol: 'Primes',
+    kind: 'integers',
+    oeis: 'A000040',
+    readings: ['concat', 'last-digit'],
   },
 ]
 
@@ -103,6 +142,17 @@ export function getReading(id: ReadingId): ReadingDefinition {
   if (!reading) throw new Error(`Unknown reading: ${id}`)
   return reading
 }
+
+/** What a position is called: "decimal place" for a constant, "digit" for a sequence. */
+export const placeName = (series: Pick<SeriesDefinition, 'kind'>) =>
+  series.kind === 'constant' ? 'decimal place' : 'digit'
+
+/**
+ * How many digits a loaded source counts as: a constant's leading whole-number digit isn't a
+ * decimal place ("the first 1,000,000 digits of π" has 1,000,001 symbols); a sequence's are all.
+ */
+export const digitCount = (series: Pick<SeriesDefinition, 'kind'>, length: number) =>
+  series.kind === 'constant' ? length - 1 : length
 
 /** Put a series' symbol into label text written for π ("π walk" → "φ walk"). */
 export const withSymbol = (text: string, symbol: string) =>

@@ -404,7 +404,19 @@ Built on the recommended D2 (ship files), D3 (e and √2 too) and D6 (labels fol
 - **Exit (met):** every view plays φ (e2e: φ and back while paused, pixels drawn); poster
   snapshots for the φ walk and mosaic; π snapshots unchanged.
 
-### M3 — Fibonacci and primes in base 10 · F05.2, F05.4
+### M3 — Fibonacci and primes in base 10 · F05.2, F05.4 — built
+
+As built: `core/digits/integerSequences.ts` generates both readings of both series in the
+browser, once per session (`load.ts` caches every source): about 30 ms for a million Fibonacci
+digits and 0.25 s for the first million primes on a desktop, so no worker yet. Written out is the
+default reading (R-012 G-3); a Reading picker appears next to the Number picker only for series
+with more than one. Sequences have 1,000,000 symbols and say "digit n" where constants say
+"decimal place n". Term starts, the term-start accent and the typographic marks moved to R-012
+F2 with Jump to Fₙ and the Benford chart, which are their first users. Poster snapshots: the
+Fibonacci walk written out and as last digits (a closed, mirror-symmetric figure), and the
+last-digit mosaic.
+
+Planned:
 
 - Pure generators (modular and BigInt Fibonacci, segmented sieve), worker wrapper, session cache.
 - Readings `last-digit` and `concat` (Fibonacci concat; primes concat = Copeland–Erdős), with

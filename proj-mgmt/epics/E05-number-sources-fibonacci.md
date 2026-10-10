@@ -26,7 +26,7 @@ the app consumes a `SymbolSource` (today's `DigitSource`, generalised).
 | M1        | Series-ready core and persistence, π only, no visible change   | F05.1        | done (PR #19) |
 | M2        | Golden ratio (and e, √2) as verified digit files + Number pick | F05.3        | done (PR #19) |
 | G         | Golden structure for every number (R-012)                      | F05.8        | in-progress   |
-| M3        | Fibonacci and primes in base 10 (last digit, concatenated)     | F05.2, F05.4 | backlog       |
+| M3        | Fibonacci and primes in base 10 (last digit, concatenated)     | F05.2, F05.4 | review        |
 | M4        | Any alphabet: mod 12, binary, gaps, other bases                | F05.5        | backlog       |
 | M5        | Series-native art and rhythm (ratio → φ, Ulam, Fibonacci word) | F05.7        | backlog       |
 | Later     | User-entered sequences                                         | F05.6        | backlog       |

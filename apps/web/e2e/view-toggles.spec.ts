@@ -250,3 +250,38 @@ test('digit chart: every chart style draws', async ({ page }) => {
     await expect.poll(() => inkedPixels(page), { message: label }).toBeGreaterThan(50)
   }
 })
+
+test('reading: Fibonacci written out, last digits and back, while paused, keeps drawing', async ({
+  page,
+}) => {
+  await openView(page, 'Digit ring', 30)
+  const number = page.getByRole('combobox', { name: 'Number' })
+  // π has one reading, so there is nothing to choose.
+  await expect(page.getByRole('combobox', { name: 'Reading' })).toHaveCount(0)
+  await number.selectOption({ label: 'Fibonacci numbers' })
+  await expect(page).toHaveURL(/s=fibonacci(&|$)/)
+  const reading = page.getByRole('combobox', { name: 'Reading' })
+  await expect(reading).toHaveValue('concat')
+  await page.locator('body').click({ position: { x: 5, y: 5 } })
+  for (let i = 0; i < 30; i++) await page.keyboard.press('ArrowRight')
+  // F₀ F₁ F₂ … = 0 1 1 2 3 5 8 13 21: the digits 0 1 1 2 3 5 8 1 3 2 1.
+  await expect(page.locator('.stream .digit').first()).toHaveText('0')
+  await expect.poll(() => inkedPixels(page)).toBeGreaterThan(100)
+  // Last digits: 13 → 3, 21 → 1, so the eighth digit is 3 instead of 1.
+  await reading.selectOption('last-digit')
+  await expect(page).toHaveURL(/s=fibonacci\.last-digit/)
+  await page.locator('body').click({ position: { x: 5, y: 5 } })
+  for (let i = 0; i < 30; i++) await page.keyboard.press('ArrowRight')
+  await expect(page.locator('.stream .digit').nth(7)).toHaveText('3')
+  await expect.poll(() => inkedPixels(page)).toBeGreaterThan(100)
+  // …back to written out, then to π.
+  await reading.selectOption('concat')
+  await expect(page).toHaveURL(/s=fibonacci(&|$)/)
+  await number.selectOption({ label: 'π (pi)' })
+  await expect(page).not.toHaveURL(/s=/)
+  await expect(page.getByRole('combobox', { name: 'Reading' })).toHaveCount(0)
+  await page.locator('body').click({ position: { x: 5, y: 5 } })
+  for (let i = 0; i < 30; i++) await page.keyboard.press('ArrowRight')
+  await expect(page.locator('.stream .digit').first()).toHaveText('3')
+  await expect.poll(() => inkedPixels(page)).toBeGreaterThan(100)
+})

@@ -5,26 +5,28 @@
  */
 import type { DigitSource } from '../core/digits/digitSource'
 import { loadSource } from '../core/series/load'
-import { getSeries, isSeriesId } from '../core/series/series'
+import { getSeries, isReadingId, isSeriesId } from '../core/series/series'
 import { getPalette } from '../viz/palettes'
 import { POSTER_KINDS, renderPoster, type PosterKind } from '../viz/render/posters'
 
-const sources = new Map<string, Promise<DigitSource>>()
-function digits(series: string) {
+function digits(series: string, reading?: string): Promise<DigitSource> {
   if (!isSeriesId(series)) throw new Error(`Unknown series: ${series}`)
-  let source = sources.get(series)
-  if (!source) {
-    source = loadSource({ version: 1, series, reading: getSeries(series).readings[0] })
-    sources.set(series, source)
-  }
-  return source
+  if (reading !== undefined && !isReadingId(reading)) throw new Error(`Unknown reading: ${reading}`)
+  // loadSource keeps each number for the session.
+  return loadSource({ version: 1, series, reading: reading ?? getSeries(series).readings[0] })
 }
 
 export async function renderPosterDataUrl(
   kind: PosterKind,
-  { count = 2_000, size = 512, palette = 'rainbow', series = 'pi' } = {},
+  {
+    count = 2_000,
+    size = 512,
+    palette = 'rainbow',
+    series = 'pi',
+    reading,
+  }: { count?: number; size?: number; palette?: string; series?: string; reading?: string } = {},
 ): Promise<string> {
-  const number = await digits(series)
+  const number = await digits(series, reading)
   const canvas = await renderPoster({
     kind,
     size,

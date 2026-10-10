@@ -1,6 +1,7 @@
 import { useId, useState } from 'react'
 import type { DigitSource } from '../core/digits/digitSource'
 import { findDigits, MAX_SEARCH_DIGITS, searchPattern } from '../core/digits/findDigits'
+import { placeName } from '../core/series/series'
 import { useNumber } from './numberContext'
 
 interface StartPanelProps {
@@ -23,26 +24,30 @@ export function StartPanel({ full, start, onStart }: StartPanelProps) {
   const ids = { place: useId(), find: useId() }
   const last = full.length - 1
   const number = useNumber()
-  /** The first digits as a decimal, e.g. 3.14159 for π. */
-  const opening = `${full.digitAt(0)}.${Array.from({ length: Math.min(5, last) }, (_, i) => full.digitAt(i + 1)).join('')}`
-  const [place, setPlace] = useState(String(start))
+  const place = placeName(number)
+  const places = `${place}s`
+  /** The first digits: as a decimal for a constant (3.14159 for π), as written for a sequence. */
+  const head = Array.from({ length: Math.min(8, full.length) }, (_, i) => full.digitAt(i))
+  const opening =
+    number.kind === 'constant' ? `${head[0]}.${head.slice(1, 6).join('')}` : head.join('')
+  const [at, setAt] = useState(String(start))
   const [query, setQuery] = useState('')
   const [found, setFound] = useState<{ digits: string; at: number } | null>(null)
   const [status, setStatus] = useState('')
 
   const go = (at: number, message: string) => {
     onStart(at)
-    setPlace(String(at))
+    setAt(String(at))
     setStatus(message)
   }
 
   const goToPlace = () => {
-    const at = Number(place.replace(/[,\s_]/g, ''))
-    if (!Number.isInteger(at) || at < 0 || at > last) {
-      setStatus(`Pick a decimal place from 0 to ${last.toLocaleString()}.`)
+    const to = Number(at.replace(/[,\s_]/g, ''))
+    if (!Number.isInteger(to) || to < 0 || to > last) {
+      setStatus(`Pick a ${place} from 0 to ${last.toLocaleString()}.`)
       return
     }
-    go(at, `Starting at decimal place ${at.toLocaleString()}.`)
+    go(to, `Starting at ${place} ${to.toLocaleString()}.`)
   }
 
   const find = (from: number) => {
@@ -56,13 +61,13 @@ export function StartPanel({ full, start, onStart }: StartPanelProps) {
       setFound(null)
       setStatus(
         from > 0
-          ? `No more ${digits} in the first ${last.toLocaleString()} decimal places.`
-          : `${digits} isn’t in the first ${last.toLocaleString()} decimal places.`,
+          ? `No more ${digits} in the first ${last.toLocaleString()} ${places}.`
+          : `${digits} isn’t in the first ${last.toLocaleString()} ${places}.`,
       )
       return
     }
     setFound({ digits, at })
-    go(at, `Found ${digits} at decimal place ${at.toLocaleString()}.`)
+    go(at, `Found ${digits} at ${place} ${at.toLocaleString()}.`)
   }
 
   return (
@@ -70,8 +75,8 @@ export function StartPanel({ full, start, onStart }: StartPanelProps) {
       <h2 id="start-heading">Where in {number.symbol}</h2>
       <p className="hint">
         {start === 0
-          ? `Starting at the beginning, ${opening}… — ${last.toLocaleString()} decimal places loaded.`
-          : `Starting at decimal place ${start.toLocaleString()} of ${last.toLocaleString()}.`}
+          ? `Starting at the beginning, ${opening}… — ${last.toLocaleString()} ${places} loaded.`
+          : `Starting at ${place} ${start.toLocaleString()} of ${last.toLocaleString()}.`}
       </p>
       <form
         className="field"
@@ -80,14 +85,14 @@ export function StartPanel({ full, start, onStart }: StartPanelProps) {
           goToPlace()
         }}
       >
-        <label htmlFor={ids.place}>Decimal place</label>
+        <label htmlFor={ids.place}>{place[0]!.toUpperCase() + place.slice(1)}</label>
         <span className="inline-row">
           <input
             id={ids.place}
             className="text-input"
             inputMode="numeric"
-            value={place}
-            onChange={(e) => setPlace(e.target.value)}
+            value={at}
+            onChange={(e) => setAt(e.target.value)}
           />
           <button type="submit" className="btn">
             Go
@@ -121,7 +126,7 @@ export function StartPanel({ full, start, onStart }: StartPanelProps) {
           className="btn btn-small"
           onClick={() => {
             const at = 1 + Math.floor(Math.random() * last)
-            go(at, `Somewhere random: decimal place ${at.toLocaleString()}.`)
+            go(at, `Somewhere random: ${place} ${at.toLocaleString()}.`)
           }}
         >
           Random

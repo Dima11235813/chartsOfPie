@@ -1,5 +1,7 @@
 import type { CoincidentChord } from '../core/composition/performanceLog'
 import type { StepEvent } from '../core/engine/playbackEngine'
+import { placeName } from '../core/series/series'
+import { useNumber } from './numberContext'
 import { useDigitColors } from './palette'
 
 interface StatsPanelProps {
@@ -8,7 +10,7 @@ interface StatsPanelProps {
   lastStep: StepEvent | null
   recent: readonly (readonly [number, number])[]
   lastChord?: CoincidentChord | null
-  /** Decimal place the performance started at: step i is decimal place offset + i. */
+  /** Position the performance started at: step i is position offset + i. */
   offset?: number
 }
 
@@ -23,6 +25,7 @@ export function StatsPanel({
   offset = 0,
 }: StatsPanelProps) {
   const colors = useDigitColors()
+  const number = useNumber()
   return (
     <div className="stats">
       <section aria-labelledby="stream-heading">
@@ -31,8 +34,8 @@ export function StatsPanel({
           {recent.length === 0 ? (
             <span className="muted">
               {offset === 0
-                ? 'Press Play to start at 3.14159…'
-                : `Press Play to start at decimal place ${offset.toLocaleString()}.`}
+                ? `Press Play to start at ${number.opening ? `${number.opening}…` : 'the beginning.'}`
+                : `Press Play to start at ${placeName(number)} ${offset.toLocaleString()}.`}
             </span>
           ) : (
             recent.map(([index, digit], i) => (
@@ -81,7 +84,7 @@ export function StatsPanel({
           <dt>Last chord (by coincidence)</dt>
           <dd data-testid="last-chord">
             {lastChord
-              ? `${lastChord.chord.symbol} — ${lastChord.chord.quality.name} at decimal place ${(offset + lastChord.index).toLocaleString()}`
+              ? `${lastChord.chord.symbol} — ${lastChord.chord.quality.name} at ${placeName(number)} ${(offset + lastChord.index).toLocaleString()}`
               : '–'}
           </dd>
         </div>
