@@ -7,6 +7,7 @@ import {
 import { seededRandom } from '../random/seededRandom'
 import { Arranger, droneNotesFor, notationToSeconds, noteTableFor } from './arranger'
 import {
+  GOLDEN_SWING,
   compositionConfigSchema,
   decodeConfig,
   encodeConfig,
@@ -76,6 +77,16 @@ describe('Arranger', () => {
     expect(delays[1]).toBeCloseTo(166.67, 1)
     expect(delays[0]! / delays[1]!).toBeCloseTo(2) // long : short = 2 : 1
     expect(delays[2]! + delays[3]!).toBeCloseTo(500) // each beat keeps its length
+  })
+
+  it('golden swing: eighths alternate long : short = φ ≈ 1.618 (≈309 ms + 191 ms at 120 BPM)', () => {
+    expect(GOLDEN_SWING).toBeCloseTo(0.2360679775, 9) // √5 − 2 = 1/φ³
+    const swung = new Arranger({ ...tempo, swing: GOLDEN_SWING })
+    const delays = [1, 2, 3, 4].map((d) => swung.arrange(d).delayMs)
+    expect(delays[0]).toBeCloseTo(309.02, 1)
+    expect(delays[1]).toBeCloseTo(190.98, 1)
+    expect(delays[0]! / delays[1]!).toBeCloseTo((1 + Math.sqrt(5)) / 2, 9)
+    expect(delays[2]! + delays[3]!).toBeCloseTo(500)
   })
 
   it('swing spans the steps a long digit covers, and is ignored for quarter notes', () => {

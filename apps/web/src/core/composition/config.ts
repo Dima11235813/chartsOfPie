@@ -29,6 +29,12 @@ export const INSTRUMENT_IDS = [
 ] as const
 export type InstrumentId = (typeof INSTRUMENT_IDS)[number]
 
+/**
+ * Golden swing: on-beats long and off-beats short in the golden ratio, (1 + s)/(1 − s) = φ, so
+ * s = (φ − 1)/(φ + 1) = 1/φ³ ≈ 0.236 — between straight (1:1) and triplet swing (2:1).
+ */
+export const GOLDEN_SWING = Math.sqrt(5) - 2
+
 export const RHYTHMS = [
   { id: 'legacy', name: 'Original', description: 'Each digit has its own note length (16n … 1n)' },
   { id: 'steady', name: 'Steady', description: 'Every digit gets one step' },

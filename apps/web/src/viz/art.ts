@@ -5,6 +5,8 @@
 
 const TAU = Math.PI * 2
 
+/** The golden ratio φ = (1 + √5)/2 ≈ 1.6180339887. */
+export const PHI = (1 + Math.sqrt(5)) / 2
 /** 1/φ — successive multiples mod 1 spread points evenly and never need re-spacing. */
 export const GOLDEN_RATIO_CONJUGATE = (Math.sqrt(5) - 1) / 2
 /** The golden angle, 360°·(1 − 1/φ) ≈ 137.508°, in radians. */
@@ -86,6 +88,34 @@ export function seedPosition(n: number, spacing: number): [number, number] {
   return [r * Math.cos(theta), r * Math.sin(theta)]
 }
 
+/** Fibonacci numbers used as spiral offsets (enough for a million seeds: √10⁶ ≈ 1,000). */
+export const SPIRAL_OFFSETS = [
+  1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1597, 2584,
+]
+
+/**
+ * The two earlier seeds nearest to seed n, as offsets back from n. In Vogel's model they are always
+ * two consecutive Fibonacci numbers (13 and 21, then 21 and 34, 34 and 55… further out), which is
+ * why a sunflower shows 34 spirals one way and 55 the other: joining every seed to these two draws
+ * both families of spirals (parastichies). Only Fibonacci offsets are tried, so it is cheap.
+ */
+export function spiralNeighbours(n: number): [number, number] | null {
+  const [x, y] = seedPosition(n, 1)
+  let best: [number, number] = [Infinity, 0]
+  let second: [number, number] = [Infinity, 0]
+  for (const offset of SPIRAL_OFFSETS) {
+    if (offset > n) break
+    const [px, py] = seedPosition(n - offset, 1)
+    const d = (x - px) ** 2 + (y - py) ** 2
+    if (d < best[0]) {
+      second = best
+      best = [d, offset]
+    } else if (d < second[0]) second = [d, offset]
+  }
+  if (second[1] === 0) return null
+  return best[1] < second[1] ? [best[1], second[1]] : [second[1], best[1]]
+}
+
 /** Seeds the canvas is laid out for: grows ×4 so rescaling (a full redraw) is rare. */
 export function sunflowerCapacity(count: number): number {
   let capacity = 400
@@ -113,6 +143,18 @@ export function ringAngle(digit: number, occurrence: number): number {
   const [start, end] = ringSegment(digit)
   const t = (occurrence * GOLDEN_RATIO_CONJUGATE) % 1
   return start + t * (end - start)
+}
+
+/**
+ * Golden string art: the ratio of consecutive Fibonacci numbers for `step` = 0, 1, 2…:
+ * 2/1, 3/2, 5/3, 8/5, 13/8… — alternately above and below φ and closing in on it. Steps wrap after
+ * `cycle` so the figure keeps converging again.
+ */
+export function fibonacciRatio(step: number, cycle = 12): { ratio: number; p: number; q: number } {
+  let q = 1
+  let p = 2
+  for (let i = 0; i < step % cycle; i++) [p, q] = [p + q, p]
+  return { ratio: p / q, p, q }
 }
 
 /** Point on a circle of radius r around the origin. */

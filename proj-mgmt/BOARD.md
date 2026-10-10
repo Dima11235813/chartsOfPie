@@ -1,6 +1,6 @@
 # Board
 
-_Last updated with E05 M2 (φ, e, √2 and the Number picker) in review on PR #19._
+_Last updated with the golden slice (F05.8): golden swing, string art, harmonograph and sunflower spirals; φ, e, √2 merged (PR #19)._
 
 ## Epics
 
@@ -34,19 +34,21 @@ _Last updated with E05 M2 (φ, e, √2 and the Number picker) in review on PR #1
 | F10.4   | Save & "My pieces"                              | done   |
 | F10.5   | Installable, offline PWA                        | ready  |
 
-## Planned: E05 — more numbers (R-011)
+## Now: E05 — more numbers (R-011, R-012)
 
-| Milestone | Feature / story | Title                                        | Status  |
-| --------- | --------------- | -------------------------------------------- | ------- |
-| M0        | R-011           | Shared architecture and phased plan          | review  |
-| M1        | S05.1.1         | SymbolSource and series registry (π only)    | review  |
-| M1        | S05.1.2         | SourceConfig in share links and saved pieces | review  |
-| M1        | S05.1.3         | Series-aware playback hook and labels        | review  |
-| M2        | F05.3           | Constants: φ, e, √2                          | review  |
-| M3        | F05.2, F05.4    | Fibonacci and primes in base 10              | backlog |
-| M4        | F05.5           | Any alphabet: residues, bases, binary        | backlog |
-| M5        | F05.7           | Series-native views and rhythms              | backlog |
-| Later     | F05.6           | User sequences                               | backlog |
+| Milestone | Feature / story | Title                                                   | Status  |
+| --------- | --------------- | ------------------------------------------------------- | ------- |
+| M0        | R-011           | Shared architecture and phased plan                     | done    |
+| M1        | S05.1.1         | SymbolSource and series registry (π only)               | done    |
+| M1        | S05.1.2         | SourceConfig in share links and saved pieces            | done    |
+| M1        | S05.1.3         | Series-aware playback hook and labels                   | done    |
+| M2        | F05.3           | Constants: φ, e, √2                                     | done    |
+| G         | S05.8.1         | Golden slice (swing, string art, harmonograph, spirals) | done    |
+| G         | S05.8.2         | Fibonacci-word and Zeckendorf rhythms                   | ready   |
+| M3        | F05.2, F05.4    | Fibonacci and primes in base 10                         | backlog |
+| M4        | F05.5           | Any alphabet: residues, bases, binary                   | backlog |
+| M5        | F05.7           | Series-native views and rhythms                         | backlog |
+| Later     | F05.6           | User sequences                                          | backlog |
 
 ## E02 progress (previous slice: configurable music, presets, pleasant sound)
 

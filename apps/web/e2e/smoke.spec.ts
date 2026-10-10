@@ -410,6 +410,13 @@ test('swing and full screen', async ({ page }) => {
   await page.reload()
   await page.getByText('Customize').click()
   await expect(page.getByLabel('Swing')).toHaveValue('0.33')
+  // Golden swing: long : short = φ, kept exactly through the link.
+  await page.getByRole('button', { name: 'Golden swing' }).click()
+  await expect(page.getByText('24% (golden, φ : 1)')).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Golden swing' })).toBeDisabled()
+  await page.reload()
+  await page.getByText('Customize').click()
+  await expect(page.getByText('24% (golden, φ : 1)')).toBeVisible()
 
   await page.getByRole('button', { name: 'Full screen' }).click()
   await expect.poll(() => page.evaluate(() => document.fullscreenElement?.className)).toBe('stage')

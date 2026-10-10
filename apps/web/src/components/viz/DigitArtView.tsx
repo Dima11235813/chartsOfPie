@@ -8,6 +8,7 @@ import {
 } from '../../core/piece/visualConfig'
 import type { PerformanceLog } from '../../core/composition/performanceLog'
 import type { DigitSource } from '../../core/digits/digitSource'
+import { spiralNeighbours } from '../../viz/art'
 import { ART, type ArtKind } from '../../viz/render/registry'
 import type { DigitRenderer } from '../../viz/render/renderer'
 import { useDigitColors } from '../palette'
@@ -27,6 +28,9 @@ interface DigitArtViewProps {
   shapeFilter?: string | null
   /** The mosaic's current column count (for the shape census). */
   onLayout?: (columns: number) => void
+  /** Sunflower only: draw the Fibonacci spirals. */
+  sunflower?: ViewOptions['sunflower']
+  onSunflowerChange?: (change: Partial<ViewOptions['sunflower']>) => void
 }
 
 const GROUP_CHOICES = [0, 2, 3, 4, 5] as const
@@ -50,6 +54,8 @@ export function DigitArtView({
   mosaic,
   onMosaicChange,
   shapeFilter = null,
+  sunflower,
+  onSunflowerChange,
   onLayout,
 }: DigitArtViewProps) {
   const { ref, canvasRef, size } = useCanvas(onCanvas)
@@ -63,6 +69,7 @@ export function DigitArtView({
   const columns = mosaic?.columns ?? 0
   const minGroup = mosaic?.minGroup ?? 0
   const sweep = kind === 'mosaic' && Boolean(mosaic?.sweep)
+  const spirals = kind === 'sunflower' && Boolean(sunflower?.spirals)
 
   const speed = mosaic?.sweepSpeed ?? 1
   // The sweep goes from half to one-and-a-half times the chosen width (or, in Fit mode, the width
@@ -81,6 +88,13 @@ export function DigitArtView({
       onLayout?.(cols)
     }
     if (count === 0) return 'No digits yet.'
+    if (spirals) {
+      const pair = spiralNeighbours(count - 1)
+      const families = pair
+        ? ` At the edge, ${pair[0]} spirals turn one way and ${pair[1]} the other: consecutive Fibonacci numbers.`
+        : ''
+      return `${definition.summary(count, source.length)}${families}`
+    }
     if (kind !== 'mosaic' || !cols) return definition.summary(count, source.length)
     const groups = shapeFilter
       ? ' Showing only one shape of group.'
@@ -105,7 +119,7 @@ export function DigitArtView({
   // the sweep state is part of the key and the picture is rebuilt (B-018).
   useDigitFeed(
     log,
-    `${kind}:${source.id}:${size.width}x${size.height}:${colors.join()}:${layoutColumns}:${minGroup}:${shapeFilter}:${sweep}`,
+    `${kind}:${source.id}:${size.width}x${size.height}:${colors.join()}:${layoutColumns}:${minGroup}:${shapeFilter}:${sweep}:${spirals}`,
     {
       reset() {
         const canvas = canvasRef.current
@@ -122,6 +136,7 @@ export function DigitArtView({
             mosaicColumns: layoutColumns || undefined,
             mosaicMinGroup: minGroup,
             mosaicShape: shapeFilter ?? undefined,
+            sunflowerSpirals: spirals,
           },
         )
         compose()
@@ -144,6 +159,20 @@ export function DigitArtView({
       aria-label={`${withSymbol(definition.describe, number.symbol)} ${summary}`}
     />
   )
+  if (kind === 'sunflower' && onSunflowerChange)
+    return (
+      <div className="viz-layer">
+        {canvas}
+        <label className="viz-toggle">
+          <input
+            type="checkbox"
+            checked={spirals}
+            onChange={(e) => onSunflowerChange({ spirals: e.target.checked })}
+          />
+          Spirals
+        </label>
+      </div>
+    )
   if (kind !== 'mosaic' || !onMosaicChange) return canvas
 
   const fit = columns === 0

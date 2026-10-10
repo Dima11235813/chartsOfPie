@@ -67,7 +67,21 @@ function build(lenient: boolean) {
           z.object({ order: field(z.enum(['chromatic', 'fifths']), 'chromatic') }),
           {},
         ),
-        harmonograph: z.prefault(z.object({ pure: field(z.boolean(), false) }), {}),
+        harmonograph: z.prefault(
+          z.object({
+            pure: field(z.boolean(), false),
+            /** Draw φ : 1 (833 cents) instead of the interval (added later: additive). */
+            golden: field(z.boolean(), false),
+          }),
+          {},
+        ),
+        /** Sunflower: join each seed to its Fibonacci neighbours (added later: additive). */
+        sunflower: z.prefault(z.object({ spirals: field(z.boolean(), false) }), {}),
+        /** String art: k from the digits, or Fibonacci ratios closing in on φ (added later). */
+        stringArt: z.prefault(
+          z.object({ mode: field(z.enum(['digits', 'golden']), 'digits') }),
+          {},
+        ),
         scope: z.prefault(z.object({ mode: field(z.enum(['vector', 'wave']), 'vector') }), {}),
         /** Guitar fretboard: tuning (additive after v1). */
         fretboard: z.prefault(
