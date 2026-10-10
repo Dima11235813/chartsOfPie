@@ -12,13 +12,17 @@
         "pi",
         "phi",
         "e",
-        "sqrt2"
+        "sqrt2",
+        "fibonacci",
+        "primes"
       ]
     },
     "reading": {
       "type": "string",
       "enum": [
-        "digits"
+        "digits",
+        "concat",
+        "last-digit"
       ]
     }
   },

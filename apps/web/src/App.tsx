@@ -4,7 +4,16 @@ import { findMatchingPreset } from './core/composition/presets'
 import type { DigitSource } from './core/digits/digitSource'
 import { loadSource as loadSeriesSource } from './core/series/load'
 import { sameSource, sourceKey, type SourceConfig } from './core/series/sourceConfig'
-import { getSeries, SERIES, withSymbol, type SeriesId } from './core/series/series'
+import {
+  digitCount,
+  getReading,
+  getSeries,
+  placeName,
+  SERIES,
+  withSymbol,
+  type ReadingId,
+  type SeriesId,
+} from './core/series/series'
 import { NumberContext } from './components/numberContext'
 import { Controls } from './components/Controls'
 import { VIEWS } from './components/views'
@@ -155,11 +164,11 @@ export default function App({
     else void stageRef.current?.requestFullscreen?.()
   }
   const label = findMatchingPreset(config)?.name ?? 'Custom'
-  const changeNumber = (series: SeriesId) => {
-    if (series === source.series) return
-    // Decimal places of one number mean nothing in another: start the new one at its beginning.
+  const changeSource = (series: SeriesId, reading: ReadingId = getSeries(series).readings[0]) => {
+    if (series === source.series && reading === source.reading) return
+    // Positions in one number mean nothing in another: start the new one at its beginning.
     setStart(0)
-    setSource({ version: 1, series, reading: getSeries(series).readings[0] })
+    setSource({ version: 1, series, reading })
   }
   // A piece of another number resumes once that number's symbols have loaded.
   const pendingPiece = useRef<Piece | null>(null)
@@ -184,9 +193,9 @@ export default function App({
   const captionRef = useRef('')
   useEffect(() => {
     captionRef.current = `${label} · ${playback.total.toLocaleString()} digits of ${number.symbol}${
-      playingFrom > 0 ? ` from decimal place ${playingFrom.toLocaleString()}` : ''
+      playingFrom > 0 ? ` from ${placeName(number)} ${playingFrom.toLocaleString()}` : ''
     }${playback.lastChord ? ` · last chord ${playback.lastChord.chord.symbol}` : ''}`
-  }, [label, playback.total, playback.lastChord, playingFrom, number.symbol])
+  }, [label, playback.total, playback.lastChord, playingFrom, number])
 
   return (
     <NumberContext.Provider value={number}>
@@ -201,13 +210,15 @@ export default function App({
             </h1>
             <p className="tagline">
               Watch and listen to the{' '}
-              {loaded ? `first ${(loaded.full.length - 1).toLocaleString()}` : 'first million'}{' '}
+              {loaded
+                ? `first ${digitCount(number, loaded.full.length).toLocaleString()}`
+                : 'first million'}{' '}
               digits of{' '}
               <label className="number-pick">
                 <select
                   aria-label="Number"
                   value={source.series}
-                  onChange={(e) => changeNumber(e.target.value as SeriesId)}
+                  onChange={(e) => changeSource(e.target.value as SeriesId)}
                 >
                   {SERIES.map((s) => (
                     <option key={s.id} value={s.id}>
@@ -216,6 +227,24 @@ export default function App({
                   ))}
                 </select>
               </label>
+              {number.readings.length > 1 && (
+                <>
+                  {' '}
+                  <label className="number-pick">
+                    <select
+                      aria-label="Reading"
+                      value={source.reading}
+                      onChange={(e) => changeSource(source.series, e.target.value as ReadingId)}
+                    >
+                      {number.readings.map((id) => (
+                        <option key={id} value={id}>
+                          {getReading(id).name.toLowerCase()}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                </>
+              )}
             </p>
             <AccountBar account={account} />
           </header>

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useId, useRef, useState, type ReactNode } from 
 import type { CompositionConfig } from '../core/composition/config'
 import { createBackup, piecesInFile } from '../core/piece/backup'
 import { createPiece, pieceToDocument, type Piece } from '../core/piece/piece'
+import { getSeries, placeName } from '../core/series/series'
 import type { SourceConfig } from '../core/series/sourceConfig'
 import type { VisualConfig } from '../core/piece/visualConfig'
 import type { Doc } from '../core/schema/migrate'
@@ -219,7 +220,7 @@ export function PiecesPanel({
       <p className="hint">
         Saves the sound, the view and where you are in {number.symbol} ({position.toLocaleString()}{' '}
         digits
-        {start ? ` from decimal place ${start.toLocaleString()}` : ''}) on this device.
+        {start ? ` from ${placeName(number)} ${start.toLocaleString()}` : ''}) on this device.
       </p>
       {status && (
         <p className="hint" role="status">
@@ -280,7 +281,7 @@ export function PiecesPanel({
                     {ok?.piece.position
                       ? ` · digit ${ok.piece.position.digitIndex.toLocaleString()}${
                           ok.piece.position.start
-                            ? ` from decimal place ${ok.piece.position.start.toLocaleString()}`
+                            ? ` from ${placeName(getSeries(ok.piece.source.series))} ${ok.piece.position.start.toLocaleString()}`
                             : ''
                         }`
                       : ''}

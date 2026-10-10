@@ -37,3 +37,25 @@ test('other numbers draw their own digits (φ)', async ({ page }, testInfo) => {
       .toMatchSnapshot(`phi-${kind}.png`, { maxDiffPixelRatio: 0.002, threshold: 0.05 })
   }
 })
+
+test('Fibonacci draws its own digits: written out, and the 60-step loop of last digits', async ({
+  page,
+}, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop', 'posters are the same on every viewport')
+  await page.goto('/lab.html')
+  await page.waitForFunction(() => window.posterLab !== undefined)
+  for (const [reading, kind] of [
+    ['concat', 'walk'],
+    ['last-digit', 'walk'],
+    ['last-digit', 'mosaic'],
+  ] as const) {
+    const dataUrl = await page.evaluate(
+      ([r, k]) => window.posterLab.render(k, { series: 'fibonacci', reading: r }),
+      [reading, kind] as const,
+    )
+    const png = Buffer.from(dataUrl.split(',')[1]!, 'base64')
+    const name = `fibonacci-${reading}-${kind}.png`
+    await testInfo.attach(name, { body: png, contentType: 'image/png' })
+    expect.soft(png).toMatchSnapshot(name, { maxDiffPixelRatio: 0.002, threshold: 0.05 })
+  }
+})

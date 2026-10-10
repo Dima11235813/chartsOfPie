@@ -26,8 +26,10 @@ describe('series registry', () => {
     // Adding an id is fine; renaming or removing one breaks links and saved pieces (R-011 §6).
     expect(SERIES.map((s) => s.id)).toEqual([...SERIES_IDS])
     expect(READINGS.map((r) => r.id)).toEqual([...READING_IDS])
-    for (const id of ['pi', 'phi', 'e', 'sqrt2'] as const) expect(SERIES_IDS).toContain(id)
-    for (const id of ['digits'] as const) expect(READING_IDS).toContain(id)
+    for (const id of ['pi', 'phi', 'e', 'sqrt2', 'fibonacci', 'primes'] as const) {
+      expect(SERIES_IDS).toContain(id)
+    }
+    for (const id of ['digits', 'concat', 'last-digit'] as const) expect(READING_IDS).toContain(id)
   })
 
   test('every series offers readings that exist', () => {
@@ -62,11 +64,11 @@ describe('SourceConfig', () => {
 
   test('a newer version, series or reading is too-new — never π', () => {
     expect(readSourceConfig({ version: 2, series: 'pi', reading: 'digits' }).status).toBe('too-new')
-    expect(readSourceConfig({ version: 1, series: 'primes', reading: 'digits' }).status).toBe(
+    expect(readSourceConfig({ version: 1, series: 'tribonacci', reading: 'digits' }).status).toBe(
       'too-new',
     )
     expect(readSourceConfig({ version: 1, series: 'pi', reading: 'mod' }).status).toBe('too-new')
-    expect(parseSourceLinkParam('fibonacci.last-digit').status).toBe('too-new')
+    expect(parseSourceLinkParam('tribonacci.last-digit').status).toBe('too-new')
   })
 
   test('garbage is invalid', () => {
@@ -82,10 +84,36 @@ describe('SourceConfig', () => {
     expect(parseSourceLinkParam('phi')).toEqual({ status: 'ok', config: phi })
     expect(sourceKey(phi)).toBe('phi')
     expect(sourceName(phi)).toBe('φ (golden ratio)')
-    expect(SERIES.map((s) => s.symbol)).toEqual(['π', 'φ', 'e', '√2'])
-    expect(SERIES.map((s) => s.oeis)).toEqual(['A000796', 'A001622', 'A001113', 'A002193'])
+    expect(SERIES.map((s) => s.symbol)).toEqual(['π', 'φ', 'e', '√2', 'Fibonacci', 'Primes'])
+    expect(SERIES.map((s) => s.oeis)).toEqual([
+      'A000796',
+      'A001622',
+      'A001113',
+      'A002193',
+      'A000045',
+      'A000040',
+    ])
     expect(withSymbol('π walk', 'φ')).toBe('φ walk')
     expect(withSymbol('Typographic π', '√2')).toBe('Typographic √2')
+  })
+
+  test('sequences: written out by default, last digits named in the link', () => {
+    const fib = { version: 1, series: 'fibonacci', reading: 'concat' } as const
+    const loop = { version: 1, series: 'fibonacci', reading: 'last-digit' } as const
+    expect(sourceLinkParam(fib)).toBe('fibonacci')
+    expect(sourceLinkParam(loop)).toBe('fibonacci.last-digit')
+    expect(parseSourceLinkParam('fibonacci.last-digit')).toEqual({ status: 'ok', config: loop })
+    expect(parseSourceLinkParam('primes')).toEqual({
+      status: 'ok',
+      config: { version: 1, series: 'primes', reading: 'concat' },
+    })
+    expect(sourceKey(loop)).toBe('fibonacci:last-digit')
+    expect(sourceName(loop)).toBe('Fibonacci numbers · last digits')
+    // A reading a series doesn't offer is invalid; one this app doesn't know is too-new.
+    expect(parseSourceLinkParam('pi.last-digit').status).toBe('invalid')
+    expect(parseSourceLinkParam('fibonacci.mod-12')).toEqual({ status: 'too-new' })
+    expect(getSeries('fibonacci')).toMatchObject({ kind: 'integers', oeis: 'A000045' })
+    expect(getSeries('primes')).toMatchObject({ kind: 'integers', oeis: 'A000040' })
   })
 
   test('link values round-trip', () => {
