@@ -134,8 +134,10 @@ Zeckendorf rhythms. This note adds detail and a few more, all usable with any nu
    repeating but always feeling regular. A new enum value is additive. Older apps that meet it
    fall back through the existing unknown-value path and must show the "newer version" notice
    rather than play it silently as another rhythm (rule 8; check `replaced` handling).
-2. **Zeckendorf rhythm** (`rhythm: 'zeckendorf'`): a digit d plays its Zeckendorf code as hits
-   and rests (4 → x-x, 7 → x-x-, 12 → x-x-x), so no two hits are adjacent.
+2. **Zeckendorf rhythm** (`rhythm: 'zeckendorf'`): built as the _Zeckendorf ruler_. A note lasts
+   the smallest term of its position's Zeckendorf sum (1 2 3 1 5 1 2 8 …, held at most 5 steps).
+   The first sketch (a digit's own code as hits and rests, 4 → x-x) needs several attacks per
+   digit, which the player, MIDI and performance log don't support (S05.8.2).
 3. **Golden swing:** a named notch at swing 0.236 (long : short = φ). No schema change; it is a
    value of the existing field. The UI shows "Golden" when the value matches.
 4. **Golden interval:** in the harmonograph, a toggle that draws φ:1 (833 ¢) for comparison with

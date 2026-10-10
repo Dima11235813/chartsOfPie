@@ -105,7 +105,7 @@ export function usePiPlayback(
         const source = windowFrom(full, start)
         engineRef.current = new PlaybackEngine({
           source,
-          arrange: (digit) => arranger.arrange(digit),
+          arrange: (digit, index) => arranger.arrange(digit, index),
           onStep: (event) => {
             if (!silentRef.current) {
               player.playStep(event.note, event.durationSec, event.velocity, gapRef.current)

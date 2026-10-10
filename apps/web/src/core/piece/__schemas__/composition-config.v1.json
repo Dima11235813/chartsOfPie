@@ -62,7 +62,9 @@
         "legacy",
         "steady",
         "steady-rests",
-        "digit-length"
+        "digit-length",
+        "fibonacci-word",
+        "zeckendorf"
       ]
     },
     "timing": {

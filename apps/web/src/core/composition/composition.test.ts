@@ -89,6 +89,29 @@ describe('Arranger', () => {
     expect(delays[2]! + delays[3]!).toBeCloseTo(500)
   })
 
+  it('Fibonacci word rhythm: long and short in the ratio φ, following 0100101001…', () => {
+    const word = new Arranger({ ...tempo, rhythm: 'fibonacci-word', swing: 0.3 })
+    const delays = Array.from({ length: 10 }, (_, i) => word.arrange(4, i).delayMs)
+    const long = delays[0]!
+    const short = delays[1]!
+    expect(long / short).toBeCloseTo((1 + Math.sqrt(5)) / 2, 9)
+    // 0 1 0 0 1 0 1 0 0 1: long, short, long, long, short… (swing is ignored: it has its own)
+    expect(delays.map((d) => (d === long ? 'L' : 'S')).join('')).toBe('LSLLSLSLLS')
+    expect(long).toBeCloseTo(292.7, 1) // 250 ms grid step × φ³/(φ² + 1)
+    // Position, not call order, decides: the same digit at index 1 is short after a jump.
+    expect(new Arranger({ ...tempo, rhythm: 'fibonacci-word' }).arrange(4, 1).delayMs).toBeCloseTo(
+      short,
+    )
+  })
+
+  it('Zeckendorf ruler rhythm: notes last 1 2 3 1 5 1 2 5 steps', () => {
+    const ruler = new Arranger({ ...tempo, rhythm: 'zeckendorf' })
+    const delays = Array.from({ length: 8 }, (_, i) => ruler.arrange(4, i).delayMs)
+    expect(delays.map((d) => d / 250)).toEqual([1, 2, 3, 1, 5, 1, 2, 5])
+    expect(ruler.arrange(4, 0).note).toBe('A4') // every digit sounds; zeros are not rests
+    expect(ruler.arrange(0, 0).note).not.toBeNull()
+  })
+
   it('swing spans the steps a long digit covers, and is ignored for quarter notes', () => {
     // digit-length: digit 3 covers steps 0,1,2 → (1+s)+(1−s)+(1+s) units.
     const long = new Arranger({ ...tempo, rhythm: 'digit-length', swing: 0.2 }).arrange(3)

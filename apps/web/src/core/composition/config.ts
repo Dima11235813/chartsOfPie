@@ -44,6 +44,16 @@ export const RHYTHMS = [
     name: 'Digit length',
     description: 'A digit lasts that many steps; zeros are short rests',
   },
+  {
+    id: 'fibonacci-word',
+    name: 'Fibonacci word',
+    description: 'Long and short notes in the golden ratio, in a pattern that never repeats',
+  },
+  {
+    id: 'zeckendorf',
+    name: 'Zeckendorf ruler',
+    description: 'Notes last 1, 2, 3 or 5 steps, following the Fibonacci numbers in each position',
+  },
 ] as const
 export type Rhythm = (typeof RHYTHMS)[number]['id']
 
