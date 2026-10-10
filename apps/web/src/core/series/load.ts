@@ -1,7 +1,7 @@
 import { createDigitSource, type SymbolSource } from '../digits/digitSource'
 import { CONSTANTS, loadConstantDigits } from '../digits/constants'
 import { loadPiDigits } from '../digits/pi'
-import { fibonacciConcatenated, fibonacciLastDigits } from './fibonacci'
+import { fibonacciConcatenated, fibonacciLastDigits, PISANO_10 } from './fibonacci'
 import type { ReadingId, SeriesId } from './series'
 import type { SourceConfig } from './sourceConfig'
 
@@ -28,7 +28,7 @@ function loadFibonacci(reading: ReadingId): SymbolSource {
     lastDigit ? 'Fibonacci numbers · last digit' : 'Fibonacci numbers',
     symbols,
   )
-  return { ...source, terms }
+  return { ...source, terms, ...(lastDigit ? { period: PISANO_10 } : {}) }
 }
 
 /** Fetch or generate the symbols a source config names. */

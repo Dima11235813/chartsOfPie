@@ -939,3 +939,17 @@ body {
 .viz-toggles .viz-toggle {
   position: static;
 }
+
+/* Mosaic: widths that line up a periodic reading's loop. */
+.viz-columns-loop {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.85rem;
+}
+
+.viz-columns-loop .btn[aria-pressed='true'] {
+  border-color: var(--accent);
+  color: var(--accent);
+}

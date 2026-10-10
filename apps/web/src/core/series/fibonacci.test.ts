@@ -78,3 +78,29 @@ describe('loading Fibonacci', () => {
     expect(last.digitAt(60 * 1000 + 7)).toBe(3) // F₇ = 13
   })
 })
+
+describe('positions as terms', () => {
+  it('names terms with subscripts and says where a position sits', async () => {
+    const { describePosition, termName } = await import('./fibonacci')
+    expect(termName(100)).toBe('F₁₀₀')
+    const all = fibonacciConcatenated(3000)
+    expect(describePosition(all, 8)).toBe('in F₇') // the 3 of 13
+    const last = { ...fibonacciLastDigits(500), period: PISANO_10 }
+    expect(describePosition(last, 123)).toBe('F₁₂₃ · step 4 of 60')
+    expect(describePosition({}, 5)).toBe('')
+  })
+
+  it('counts the first digit of each term that starts in a range (Benford)', async () => {
+    const { benfordShare, firstDigitCounts } = await import('./fibonacci')
+    const { symbols, terms } = fibonacciConcatenated(48)
+    const source = { digitAt: (i: number) => symbols[i]! }
+    // F₁…F₂₀: 1 1 2 3 5 8 13 21 34 55 89 144 233 377 610 987 1597 2584 4181 6765 (F₀ = 0 skipped).
+    expect(firstDigitCounts(source, terms, 0, 48)).toEqual([0, 5, 4, 3, 1, 2, 2, 0, 2, 1])
+    // A range that starts inside a term skips it: [8, 11) holds only 21 (13 began at 7, 34 at 11).
+    expect(firstDigitCounts(source, terms, 8, 11)).toEqual([0, 0, 1, 0, 0, 0, 0, 0, 0, 0])
+    expect(benfordShare(1)).toBeCloseTo(0.30103, 5)
+    expect(
+      Array.from({ length: 9 }, (_, i) => benfordShare(i + 1)).reduce((a, b) => a + b, 0),
+    ).toBeCloseTo(1, 12)
+  })
+})

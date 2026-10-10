@@ -71,3 +71,49 @@ export function fibonacciConcatenated(length: number): FibonacciSymbols {
     },
   }
 }
+
+const SUBSCRIPTS = '₀₁₂₃₄₅₆₇₈₉'
+
+/** Fₙ with a subscript index: F₁₀₀. */
+export const termName = (n: number) => `F${String(n).replace(/\d/g, (d) => SUBSCRIPTS[Number(d)]!)}`
+
+/**
+ * Where a position sits among the terms, for labels: "in F₁₀₀" for concatenated digits, or
+ * "F₁₂₃ · step 4 of 60" for a periodic one-symbol-per-term reading. Empty without a term index.
+ */
+export function describePosition(
+  source: { terms?: TermIndex; period?: number },
+  position: number,
+): string {
+  if (!source.terms) return ''
+  const term = source.terms.termAt(position)
+  if (source.period)
+    return `${termName(term)} · step ${(term % source.period) + 1} of ${source.period}`
+  return `in ${termName(term)}`
+}
+
+/**
+ * First digits of the terms that start in [from, to): counts for 1–9 (index = digit). Benford's
+ * law predicts a share log₁₀(1 + 1/d) for digit d, which Fibonacci numbers follow.
+ */
+export function firstDigitCounts(
+  symbols: { digitAt(i: number): number },
+  terms: TermIndex,
+  from: number,
+  to: number,
+): number[] {
+  const counts = new Array<number>(10).fill(0)
+  if (to <= from) return counts
+  for (let t = terms.termAt(from); t < terms.count; t++) {
+    const start = terms.startOf(t)
+    if (start >= to) break
+    if (start < from) continue
+    const digit = symbols.digitAt(start)
+    // F₀ = 0 is the only term starting with 0; Benford counts from F₁.
+    if (digit > 0) counts[digit]!++
+  }
+  return counts
+}
+
+/** Benford's law: the share of numbers whose first digit is d. */
+export const benfordShare = (d: number) => Math.log10(1 + 1 / d)

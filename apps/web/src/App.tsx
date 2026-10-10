@@ -451,6 +451,7 @@ export default function App({
                 recent={playback.recent}
                 lastChord={playback.lastChord}
                 offset={playingFrom}
+                source={load.status === 'ready' ? load.source : undefined}
               />
               {playback.audioError && (
                 <p className="notice error" role="status">

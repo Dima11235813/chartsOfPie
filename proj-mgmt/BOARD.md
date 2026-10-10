@@ -1,6 +1,6 @@
 # Board
 
-_Last updated with Fibonacci as a number (S05.2.1–2): all digits or the 60-step last-digit loop._
+_Last updated with the Fibonacci affordances (S05.2.6): Jump to Fₙ, terms, loop widths, Benford table; B-021 fixed._
 
 ## Epics
 
@@ -130,3 +130,4 @@ E06 story S06.1.1 · E02 stories listed above as done.
 | B-016 | Canvas views blank when opened while paused                  | medium   | done    |
 | B-017 | My pieces "Name + Save" row overflows at 360 px              | low      | done    |
 | B-018 | Neighbour mosaic blank after turning Sweep off               | high     | done    |
+| B-021 | Typographic decimal point after a jump / for whole numbers   | low      | done    |

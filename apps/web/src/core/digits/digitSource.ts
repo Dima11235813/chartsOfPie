@@ -24,6 +24,8 @@ export interface DigitSource {
    * (a window keeps its source's index; add `offset`). Absent for constants.
    */
   readonly terms?: TermIndex
+  /** For periodic readings (Fibonacci last digits: 60), the length of the repeating loop. */
+  readonly period?: number
 }
 
 /** Where each term's symbols start, for readings of whole-number sequences (R-011 §3, pass 4). */
@@ -61,6 +63,7 @@ export function windowFrom(source: DigitSource, start: number): DigitSource {
     offset: base + from,
     ...(source.alphabetSize === undefined ? {} : { alphabetSize: source.alphabetSize }),
     ...(source.terms === undefined ? {} : { terms: source.terms }),
+    ...(source.period === undefined ? {} : { period: source.period }),
     digitAt: (index) => {
       if (!Number.isInteger(index) || index < 0 || index >= source.length - from) {
         throw new RangeError(`Digit index ${index} is outside 0..${source.length - from - 1}`)

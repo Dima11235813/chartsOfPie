@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import {
   circlePointAngle,
+  decimalPointCell,
+  loopColumnWidths,
   clockAngle,
   clockPosition,
   earlierNeighbours,
@@ -123,6 +125,24 @@ describe('sunflower', () => {
     expect(sunflowerCapacity(400)).toBe(400)
     expect(sunflowerCapacity(401)).toBe(1600)
     expect(sunflowerCapacity(100_000)).toBe(102_400)
+  })
+})
+
+describe('typographic decimal point (B-021)', () => {
+  it('follows the first cell only for a constant played from its start', () => {
+    expect(decimalPointCell('constant', 0)).toBe(0) // 3.14159…
+    // After a jump to the Feynman point the first cell is decimal 762, not the integer part.
+    expect(decimalPointCell('constant', 762)).toBeNull()
+    // Fibonacci numbers are whole numbers: no point at all.
+    expect(decimalPointCell('integers', 0)).toBeNull()
+  })
+})
+
+describe('loop widths', () => {
+  it('divide the loop: Fibonacci last digits (60) line up at 12, 15, 20, 30 and 60 columns', () => {
+    expect(loopColumnWidths(60)).toEqual([12, 15, 20, 30, 60])
+    expect(loopColumnWidths(24)).toEqual([12, 24])
+    expect(loopColumnWidths(7)).toEqual([])
   })
 })
 

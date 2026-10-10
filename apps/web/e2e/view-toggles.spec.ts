@@ -242,6 +242,59 @@ test('number: Fibonacci, both readings, and back to π, while paused, keeps view
   await expect.poll(() => inkedPixels(page)).toBeGreaterThan(100)
 })
 
+test('Fibonacci: jump to Fₙ, terms, Benford table, loop widths on and off', async ({ page }) => {
+  await openView(page, 'Neighbour mosaic', 0)
+  await page.getByRole('combobox', { name: 'Number' }).selectOption({ label: 'Fibonacci numbers' })
+  const where = page.getByRole('region', { name: 'Where in Fibonacci' })
+  const step = async (n: number) => {
+    await page.locator('body').click({ position: { x: 5, y: 5 } })
+    for (let i = 0; i < n; i++) await page.keyboard.press('ArrowRight')
+  }
+
+  // F₁₀₀ = 354224848179261915075 starts at digit 1,051.
+  await where.getByLabel(/Jump to Fₙ/).fill('100')
+  await where.getByRole('button', { name: 'Jump' }).click()
+  await expect(where.getByRole('status')).toHaveText('F₁₀₀ starts at digit 1,051.')
+  await expect(where).toContainText('Starting at digit 1,051 of 999,999 (in F₁₀₀)')
+  await step(21)
+  await expect(page.locator('.stream')).toHaveText('354224848179261915075')
+  await expect(page.getByTestId('term')).toHaveText('in F₁₀₀')
+  // First digits so far: F₁₀₀ and F₁₀₁ have started… only F₁₀₀ wholly inside: one 3.
+  await expect(page.getByTestId('first-digits')).toBeVisible()
+  await expect(page.getByTestId('first-digits')).toContainText('30.10%') // Benford for 1
+
+  // Last digit: F₁₂₃ ends in 2, step 4 of the 60-step loop; the mosaic offers loop widths.
+  await page.getByRole('combobox', { name: 'Reading' }).selectOption({ label: 'Last digit' })
+  await expect(page.getByTestId('first-digits')).toHaveCount(0)
+  await where.getByLabel(/Jump to Fₙ/).fill('123')
+  await where.getByRole('button', { name: 'Jump' }).click()
+  await expect(where.getByRole('status')).toHaveText('F₁₂₃: step 4 of the 60-step loop.')
+  await step(120)
+  await expect(page.locator('.stream .digit').first()).toHaveText(/\d/)
+  const loop = page.getByRole('group', { name: 'Loop widths' })
+  await loop.getByRole('button', { name: /^60 columns/ }).click()
+  await expect(loop.getByRole('button', { name: /^60 columns/ })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  )
+  await expect(page.getByRole('img', { name: /in 60 columns/ })).toBeVisible()
+  await expect.poll(() => inkedPixels(page)).toBeGreaterThan(200)
+  await expect(page.getByTestId('loop-note')).toContainText('repeats every 60 digits')
+  // …and back to Fit (rule 9).
+  await page.getByRole('checkbox', { name: 'Fit' }).check()
+  await expect(loop.getByRole('button', { name: /^60 columns/ })).toHaveAttribute(
+    'aria-pressed',
+    'false',
+  )
+  await expect.poll(() => inkedPixels(page)).toBeGreaterThan(200)
+
+  // π has none of this.
+  await page.getByRole('combobox', { name: 'Number' }).selectOption({ label: 'π (pi)' })
+  await expect(page.getByRole('group', { name: 'Loop widths' })).toHaveCount(0)
+  await expect(where).toHaveCount(0)
+  await expect(page.getByLabel(/Jump to Fₙ/)).toHaveCount(0)
+})
+
 for (const [view, toggle] of [
   ['Music clock', 'Circle of fifths'],
   ['Harmonograph', 'Pure ratios'],
