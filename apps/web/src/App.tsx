@@ -267,6 +267,10 @@ export default function App({
                       log={playback.log}
                       onCanvas={setCanvas}
                       mosaic={viewOptions.mosaic}
+                      sunflower={viewOptions.sunflower}
+                      onSunflowerChange={(change) =>
+                        updateViewOptions('sunflower', { ...viewOptions.sunflower, ...change })
+                      }
                       onMosaicChange={(change) =>
                         updateViewOptions('mosaic', { ...viewOptions.mosaic, ...change })
                       }
@@ -299,7 +303,13 @@ export default function App({
                     <HarmonographView
                       log={playback.log}
                       pure={viewOptions.harmonograph.pure}
-                      onPureChange={(pure) => updateViewOptions('harmonograph', { pure })}
+                      onPureChange={(pure) =>
+                        updateViewOptions('harmonograph', { ...viewOptions.harmonograph, pure })
+                      }
+                      golden={viewOptions.harmonograph.golden}
+                      onGoldenChange={(golden) =>
+                        updateViewOptions('harmonograph', { ...viewOptions.harmonograph, golden })
+                      }
                       onCanvas={setCanvas}
                     />
                   )}
@@ -314,7 +324,13 @@ export default function App({
                     />
                   )}
                   {view === 'strings' && (
-                    <StringArtView source={load.source} log={playback.log} onCanvas={setCanvas} />
+                    <StringArtView
+                      source={load.source}
+                      log={playback.log}
+                      onCanvas={setCanvas}
+                      mode={viewOptions.stringArt.mode}
+                      onModeChange={(mode) => updateViewOptions('stringArt', { mode })}
+                    />
                   )}
                   {view === 'spectrogram' && (
                     <SpectrogramView

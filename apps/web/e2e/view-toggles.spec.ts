@@ -202,6 +202,9 @@ test('number: φ and back to π, while paused, keeps the views drawing', async (
 for (const [view, toggle] of [
   ['Music clock', 'Circle of fifths'],
   ['Harmonograph', 'Pure ratios'],
+  ['Harmonograph', 'Golden ratio'],
+  ['String art', 'Golden ratios'],
+  ['Sunflower', 'Spirals'],
 ] as const) {
   test(`${view}: "${toggle}" on and off keeps it drawn`, async ({ page }) => {
     await openView(page, view, 12)
@@ -214,6 +217,19 @@ for (const [view, toggle] of [
     await expectDrawnLike(page, before, `${view} after ${toggle} off`)
   })
 }
+
+test('sunflower spirals name the Fibonacci families, and go away again', async ({ page }) => {
+  await openView(page, 'Sunflower', 120)
+  const flower = page.getByRole('img', { name: /Sunflower/ })
+  await expect(flower).not.toHaveAttribute('aria-label', /spirals turn/)
+  await page.getByRole('checkbox', { name: 'Spirals' }).check()
+  // 120 seeds: the outer seeds' nearest neighbours are 21 and 34 steps back.
+  await expect(flower).toHaveAttribute('aria-label', /21 spirals turn one way and 34 the other/)
+  await expect.poll(() => inkedPixels(page)).toBeGreaterThan(100)
+  await page.getByRole('checkbox', { name: 'Spirals' }).uncheck()
+  await expect(flower).not.toHaveAttribute('aria-label', /spirals turn/)
+  await expect.poll(() => inkedPixels(page)).toBeGreaterThan(100)
+})
 
 test('guitar fretboard: changing the tuning and back keeps it drawn', async ({ page }) => {
   await openView(page, 'Guitar fretboard', 12)

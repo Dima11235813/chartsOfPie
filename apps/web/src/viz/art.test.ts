@@ -8,7 +8,10 @@ import {
   mosaicFill,
   mosaicGroupSizes,
   sweepColumns,
+  fibonacciRatio,
   GOLDEN_ANGLE,
+  PHI,
+  spiralNeighbours,
   ringAngle,
   ringSegment,
   RING_GAP,
@@ -88,11 +91,63 @@ describe('sunflower', () => {
     expect(seedPosition(0, 5)).toEqual([0, 0])
   })
 
+  it('the two nearest earlier seeds are always consecutive Fibonacci numbers back', () => {
+    // Checked against a brute-force nearest-neighbour search over every earlier seed.
+    const FIB = [1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1597]
+    const brute = (n: number) => {
+      const [x, y] = seedPosition(n, 1)
+      return Array.from({ length: n }, (_, k) => k + 1)
+        .map((k) => {
+          const [px, py] = seedPosition(n - k, 1)
+          return [Math.hypot(x - px, y - py), k] as const
+        })
+        .sort((a, b) => a[0] - b[0])
+        .slice(0, 2)
+        .map(([, k]) => k)
+        .sort((a, b) => a - b)
+    }
+    for (const n of [50, 99, 100, 401, 1000, 1600, 5000]) {
+      const pair = spiralNeighbours(n)!
+      expect(pair).toEqual(brute(n))
+      expect(FIB.indexOf(pair[1])).toBe(FIB.indexOf(pair[0]) + 1)
+    }
+    // The classic sunflower counts: 21/34 near the centre, 34/55 at 400 seeds, 89/144 at 1,600.
+    expect(spiralNeighbours(100)).toEqual([21, 34])
+    expect(spiralNeighbours(400)).toEqual([34, 55])
+    expect(spiralNeighbours(1600)).toEqual([89, 144])
+    expect(spiralNeighbours(0)).toBeNull()
+  })
+
   it('grows capacity by ×4 steps', () => {
     expect(sunflowerCapacity(1)).toBe(400)
     expect(sunflowerCapacity(400)).toBe(400)
     expect(sunflowerCapacity(401)).toBe(1600)
     expect(sunflowerCapacity(100_000)).toBe(102_400)
+  })
+})
+
+describe('golden ratio', () => {
+  it('φ = (1 + √5)/2 and 1/φ = φ − 1', () => {
+    expect(PHI).toBeCloseTo(1.6180339887, 10)
+    expect(1 / PHI).toBeCloseTo(PHI - 1, 12)
+  })
+
+  it('Fibonacci ratios 2/1, 3/2, 5/3, 8/5… alternate around φ and close in on it', () => {
+    const steps = Array.from({ length: 12 }, (_, i) => fibonacciRatio(i))
+    expect(steps.slice(0, 5).map(({ p, q }) => `${p}/${q}`)).toEqual([
+      '2/1',
+      '3/2',
+      '5/3',
+      '8/5',
+      '13/8',
+    ])
+    for (let i = 0; i < steps.length; i++) {
+      const error = steps[i]!.ratio - PHI
+      expect(Math.sign(error)).toBe(i % 2 === 0 ? 1 : -1) // above, below, above…
+      if (i > 0) expect(Math.abs(error)).toBeLessThan(Math.abs(steps[i - 1]!.ratio - PHI))
+    }
+    expect(steps[11]!.ratio).toBeCloseTo(PHI, 4) // 377/233
+    expect(fibonacciRatio(12)).toEqual(fibonacciRatio(0)) // wraps and converges again
   })
 })
 

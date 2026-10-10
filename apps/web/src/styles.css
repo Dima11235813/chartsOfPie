@@ -923,3 +923,19 @@ body {
 .start-picks .btn {
   white-space: nowrap;
 }
+
+/* Several toggles on one view: stacked in the top-right corner, wrapping on narrow stages. */
+.viz-toggles {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+  max-width: calc(100% - 16px);
+}
+
+.viz-toggles .viz-toggle {
+  position: static;
+}

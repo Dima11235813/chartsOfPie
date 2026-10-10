@@ -1,5 +1,11 @@
 import { useId, useState } from 'react'
-import { DYNAMICS, RHYTHMS, TIMINGS, type CompositionConfig } from '../core/composition/config'
+import {
+  DYNAMICS,
+  GOLDEN_SWING,
+  RHYTHMS,
+  TIMINGS,
+  type CompositionConfig,
+} from '../core/composition/config'
 import { noteTableFor } from '../core/composition/arranger'
 import { findMatchingPreset, getPreset, PRESETS } from '../core/composition/presets'
 import { MAPPING_STRATEGIES } from '../core/music/mapping'
@@ -25,6 +31,7 @@ export function SoundPanel({ config, onChange }: SoundPanelProps) {
   const notes = noteTableFor(config)
   const scale = getScale(config.scale)
   const isTempo = config.timing === 'tempo'
+  const swingOff = !isTempo || config.rhythm === 'legacy' || config.subdivision === 1
   const usesSteps = config.rhythm !== 'legacy'
 
   const choosePreset = (id: string) => {
@@ -208,11 +215,26 @@ export function SoundPanel({ config, onChange }: SoundPanelProps) {
             format={(v) =>
               v === 0
                 ? 'straight'
-                : `${Math.round(v * 100)}%${Math.abs(v - 1 / 3) < 0.02 ? ' (triplet)' : ''}`
+                : `${Math.round(v * 100)}%${
+                    Math.abs(v - GOLDEN_SWING) < 0.005
+                      ? ' (golden, φ : 1)'
+                      : Math.abs(v - 1 / 3) < 0.02
+                        ? ' (triplet)'
+                        : ''
+                  }`
             }
             onChange={(v) => set('swing', v)}
-            disabled={!isTempo || config.rhythm === 'legacy' || config.subdivision === 1}
+            disabled={swingOff}
           />
+          <button
+            type="button"
+            className="btn btn-small"
+            disabled={swingOff || Math.abs(config.swing - GOLDEN_SWING) < 1e-9}
+            title="Long and short notes in the golden ratio, φ : 1 ≈ 1.618 : 1"
+            onClick={() => set('swing', GOLDEN_SWING)}
+          >
+            Golden swing
+          </button>
           <Field label="Rhythm">
             {(id) => (
               <select

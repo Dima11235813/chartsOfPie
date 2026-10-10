@@ -75,6 +75,34 @@
             "pure": {
               "default": false,
               "type": "boolean"
+            },
+            "golden": {
+              "default": false,
+              "type": "boolean"
+            }
+          }
+        },
+        "sunflower": {
+          "default": {},
+          "type": "object",
+          "properties": {
+            "spirals": {
+              "default": false,
+              "type": "boolean"
+            }
+          }
+        },
+        "stringArt": {
+          "default": {},
+          "type": "object",
+          "properties": {
+            "mode": {
+              "default": "digits",
+              "type": "string",
+              "enum": [
+                "digits",
+                "golden"
+              ]
             }
           }
         },

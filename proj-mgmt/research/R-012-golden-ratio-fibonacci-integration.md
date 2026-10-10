@@ -1,7 +1,7 @@
 ---
 id: R-012
 title: 'Golden ratio and Fibonacci: what they change in each feature, and the best order'
-status: review
+status: done
 feeds: [E05, E02, E03, E04]
 ---
 
@@ -182,16 +182,16 @@ then turn Fibonacci from "another stream" into the app's best lesson on periodic
 | CPU: BigInt concatenation on phones                                    | Chunked generation off the main thread; a `perf` scenario for Fibonacci; cache per session                                                                |
 | Facts drift (Pisano periods, Benford shares)                           | Unit tests cite them with OEIS references (A001175, A000045, A003849), as rule 4 requires for musical facts                                               |
 
-## 6. Decisions for the owner
+## 6. Decisions (owner, 2026-10-10: all as recommended)
 
-| #   | Question                                                                                            | Recommended                                                                                       |
-| --- | --------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| G-1 | Merge PR #19 (φ, e, √2 and the Number picker) as built?                                             | **Yes**, after you listen to φ on the preview; it unblocks everything else                        |
-| G-2 | Build the golden slice (swing notch, string art, harmonograph, sunflower spirals) before Fibonacci? | **Yes**: cheap, works on π today, no dependency                                                   |
-| G-3 | Fibonacci's default reading in the picker                                                           | **Concatenated digits**, with "last digit (60-step loop)" as the second option                    |
-| G-4 | Where in Fibonacci: positions as symbols, terms or loop steps?                                      | **Store symbols; show terms** for concatenated digits ("F₁₀₀") and **loop steps** for last digits |
-| G-5 | Add the Fibonacci-word and Zeckendorf rhythms for every number?                                     | **Yes**, as new rhythm ids, after the too-new check                                               |
-| G-6 | Golden microtonal scale (833 ¢ steps)                                                               | **Later**, as a new scale id with a listening review; the harmonograph demo comes first           |
+| #   | Question                                               | Decision                                                                                                     |
+| --- | ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------ |
+| G-1 | Merge PR #19 (φ, e, √2 and the Number picker)?         | **Merged** after re-checking it on today's master                                                            |
+| G-2 | Golden slice before Fibonacci?                         | **Yes**. Built: golden swing, golden string art, golden ratio in the harmonograph, sunflower spirals (F05.8) |
+| G-3 | Fibonacci's default reading                            | **Concatenated digits**; "last digit (60-step loop)" second                                                  |
+| G-4 | Positions for Fibonacci                                | **Store symbol indices; show terms** ("F₁₀₀", Jump to Fₙ) and **loop steps** for last digits                 |
+| G-5 | Fibonacci-word and Zeckendorf rhythms for every number | **Yes**, as new rhythm ids after the too-new check (S05.8.2)                                                 |
+| G-6 | Golden microtonal scale (833 ¢ steps)                  | **Later**, as a new scale id after a listening review (S05.8.3)                                              |
 
 R-011's D1–D9 still stand. D1 (base 10 first) and D9 (F₀ = 0) are consistent with this plan.
 

@@ -17,6 +17,8 @@ export interface ArtSettings {
   mosaicMinGroup?: number
   /** Neighbour mosaic: only groups of this free shape (a polyplet key), if set. */
   mosaicShape?: string
+  /** Sunflower: join every seed to its two Fibonacci neighbours (the spirals). */
+  sunflowerSpirals?: boolean
 }
 
 export interface ArtDefinition {
@@ -61,7 +63,8 @@ export const ART: Record<ArtKind, ArtDefinition> = {
     name: 'Sunflower',
     describe: 'Sunflower: digits of π as seeds on a golden-angle spiral.',
     summary: (count) => `${n(count)} seeds, one per digit, on a golden-angle spiral.`,
-    live: (options) => createSunflowerRenderer(options),
+    live: (options, settings) =>
+      createSunflowerRenderer(options, { spirals: settings?.sunflowerSpirals }),
     poster: (options, count) => createSunflowerRenderer(options, { capacity: Math.max(1, count) }),
     maxPosterDigits: 1_000_000,
   },

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { PerformanceLog, PerformedNote } from '../../core/composition/performanceLog'
 import { intervalName } from '../../core/music/chords'
 import { harmonographPoints, intervalRatio } from '../../viz/harmonograph'
+import { PHI } from '../../viz/art'
 import { withAlpha } from '../../viz/palettes'
 import { useDigitColors } from '../palette'
 import { prefersReducedMotion, useCanvas } from './useCanvas'
@@ -10,6 +11,9 @@ interface HarmonographViewProps {
   /** Draw the nearest pure ratio instead of the equal-tempered one. */
   pure: boolean
   onPureChange: (pure: boolean) => void
+  /** Draw the golden ratio φ : 1 instead of the interval being played. */
+  golden?: boolean
+  onGoldenChange?: (golden: boolean) => void
   log: PerformanceLog
   onCanvas?: (canvas: HTMLCanvasElement | null) => void
 }
@@ -35,7 +39,17 @@ const FRAME_MS = 1000 / 24 - 2
 /** Stop turning this long after the last note. */
 const IDLE_MS = 4000
 
-export function HarmonographView({ log, pure, onPureChange, onCanvas }: HarmonographViewProps) {
+const GOLDEN_CAPTION =
+  'φ : 1 ≈ 1.618, an interval of 833 cents (between a minor and a major sixth). No whole-number ratio is close to φ, so the figure never closes.'
+
+export function HarmonographView({
+  log,
+  pure,
+  onPureChange,
+  golden = false,
+  onGoldenChange,
+  onCanvas,
+}: HarmonographViewProps) {
   const { ref, canvasRef, size } = useCanvas(onCanvas)
   const colors = useDigitColors()
   const [caption, setCaption] = useState('Press Play — each interval draws its own figure.')
@@ -87,10 +101,12 @@ export function HarmonographView({ log, pure, onPureChange, onCanvas }: Harmonog
       if (current) {
         const [low, high] = current
         const { tempered, just } = intervalRatio(low.midi, high.midi)
-        const ratio = pure ? just[0] / just[1] : tempered
+        // φ is the "most irrational" ratio (its continued fraction is all 1s): no whole-number
+        // ratio approximates it well, so its figure never closes and fills the frame as it turns.
+        const ratio = golden ? PHI : pure ? just[0] / just[1] : tempered
         // A pure p:q figure closes after q periods: draw a few full cycles of it so pure ratios
         // retrace themselves crisply and tempered ones visibly drift.
-        const turns = Math.min(28, Math.max(8, just[1] * 4))
+        const turns = golden ? 28 : Math.min(28, Math.max(8, just[1] * 4))
         const points = harmonographPoints(ratio, phase, { turns, samples: turns * 64 })
         const radius = Math.min(w, h) * 0.42
         const cx = w / 2
@@ -113,7 +129,7 @@ export function HarmonographView({ log, pure, onPureChange, onCanvas }: Harmonog
     }
     frame = requestAnimationFrame(draw)
     return () => cancelAnimationFrame(frame)
-  }, [canvasRef, size, colors, pure])
+  }, [canvasRef, size, colors, pure, golden])
 
   return (
     <div className="viz-layer">
@@ -121,13 +137,34 @@ export function HarmonographView({ log, pure, onPureChange, onCanvas }: Harmonog
         ref={ref}
         className="viz-canvas"
         role="img"
-        aria-label={`Harmonograph${pure ? ' (pure ratios)' : ''}: the current interval drawn as a Lissajous figure. ${caption}`}
+        aria-label={
+          golden
+            ? `Harmonograph (golden ratio): φ : 1 drawn as a Lissajous figure. ${GOLDEN_CAPTION}`
+            : `Harmonograph${pure ? ' (pure ratios)' : ''}: the current interval drawn as a Lissajous figure. ${caption}`
+        }
       />
-      <p className="viz-caption">{caption}</p>
-      <label className="viz-toggle">
-        <input type="checkbox" checked={pure} onChange={(e) => onPureChange(e.target.checked)} />
-        Pure ratios
-      </label>
+      <p className="viz-caption">{golden ? GOLDEN_CAPTION : caption}</p>
+      <span className="viz-toggles">
+        <label className="viz-toggle">
+          <input
+            type="checkbox"
+            checked={pure}
+            disabled={golden}
+            onChange={(e) => onPureChange(e.target.checked)}
+          />
+          Pure ratios
+        </label>
+        {onGoldenChange && (
+          <label className="viz-toggle">
+            <input
+              type="checkbox"
+              checked={golden}
+              onChange={(e) => onGoldenChange(e.target.checked)}
+            />
+            Golden ratio
+          </label>
+        )}
+      </span>
     </div>
   )
 }
