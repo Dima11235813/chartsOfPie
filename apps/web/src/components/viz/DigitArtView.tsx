@@ -8,7 +8,7 @@ import {
 } from '../../core/piece/visualConfig'
 import type { PerformanceLog } from '../../core/composition/performanceLog'
 import type { DigitSource } from '../../core/digits/digitSource'
-import { spiralNeighbours } from '../../viz/art'
+import { decimalPointCell, loopColumnWidths, spiralNeighbours } from '../../viz/art'
 import { ART, type ArtKind } from '../../viz/render/registry'
 import type { DigitRenderer } from '../../viz/render/renderer'
 import { useDigitColors } from '../palette'
@@ -137,6 +137,8 @@ export function DigitArtView({
             mosaicMinGroup: minGroup,
             mosaicShape: shapeFilter ?? undefined,
             sunflowerSpirals: spirals,
+            typeDecimalPoint: decimalPointCell(number.kind, source.offset ?? 0),
+            termStartAt: termStartAt(source),
           },
         )
         compose()
@@ -176,6 +178,9 @@ export function DigitArtView({
   if (kind !== 'mosaic' || !onMosaicChange) return canvas
 
   const fit = columns === 0
+  // A periodic reading (Fibonacci last digits repeat every 60): widths that divide the loop line
+  // it up in columns, so whole columns turn one colour.
+  const loopWidths = source.period ? loopColumnWidths(source.period) : []
   const current = sweep ? swept : fit ? shownColumns || 10 : columns
   const set = (value: number) =>
     onMosaicChange({
@@ -236,6 +241,23 @@ export function DigitArtView({
         >
           +
         </button>
+        {loopWidths.length > 0 && (
+          <span className="viz-columns-loop" role="group" aria-label="Loop widths">
+            Loop
+            {loopWidths.map((w) => (
+              <button
+                key={w}
+                type="button"
+                className="btn btn-small"
+                aria-pressed={!fit && columns === w}
+                aria-label={`${w} columns (the ${source.period}-digit loop ${w === source.period ? 'fills one row' : `every ${source.period! / w} rows`})`}
+                onClick={() => set(w)}
+              >
+                {w}
+              </button>
+            ))}
+          </span>
+        )}
         <output className="viz-columns-count" aria-live={sweep ? 'off' : 'polite'}>
           {current} columns
         </output>
@@ -281,4 +303,15 @@ export function DigitArtView({
       </div>
     </div>
   )
+}
+
+/** True where a new term starts, for concatenated whole-number readings (not one-per-term ones). */
+function termStartAt(source: DigitSource): ((index: number) => boolean) | undefined {
+  const { terms, period } = source
+  if (!terms || period) return undefined
+  const offset = source.offset ?? 0
+  return (index) => {
+    const at = offset + index
+    return terms.startOf(terms.termAt(at)) === at
+  }
 }

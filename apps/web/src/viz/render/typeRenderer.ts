@@ -14,7 +14,17 @@ const MIN_RUN = 3
  */
 export function createTypeRenderer(
   { width, height, scale, colors }: RendererOptions,
-  { fitCount }: { fitCount?: number } = {},
+  {
+    fitCount,
+    decimalPoint = 0,
+    termStartAt,
+  }: {
+    fitCount?: number
+    /** Cell the decimal point follows: 0 for a constant from its start; null for none (B-021). */
+    decimalPoint?: number | null
+    /** Whole-number sequences: true where a new term begins, marked with a thin rule. */
+    termStartAt?: (index: number) => boolean
+  } = {},
 ): DigitRenderer {
   const pad = 12 * scale
   const innerW = width - pad * 2
@@ -61,7 +71,12 @@ export function createTypeRenderer(
       const [x, y] = origin(i)
       t.fillStyle = colors[digit]!
       t.fillText(String(digit), x + cell / 2, y + cell / 2)
-      if (i === 0) t.fillText('.', x + cell * 0.95, y + cell * 0.62)
+      if (i === decimalPoint) t.fillText('.', x + cell * 0.95, y + cell * 0.62)
+      if (termStartAt?.(i)) {
+        // A thin rule before each term, so 13 21 34 read as numbers rather than 1 3 2 1 3 4.
+        t.fillStyle = 'rgba(201, 214, 232, 0.6)'
+        t.fillRect(x, y + cell * 0.18, Math.max(1, cell * 0.06), cell * 0.64)
+      }
       const run = runLengthEndingAt(digitAt, i)
       if (run >= MIN_RUN) {
         // Light the whole run (earlier cells too, the moment it reaches MIN_RUN).

@@ -1,6 +1,7 @@
 import { useId, useState } from 'react'
 import type { DigitSource } from '../core/digits/digitSource'
 import { findDigits, MAX_SEARCH_DIGITS, searchPattern } from '../core/digits/findDigits'
+import { describePosition, termName } from '../core/series/fibonacci'
 import { placesIn } from '../core/series/series'
 import { useNumber } from './numberContext'
 
@@ -21,7 +22,7 @@ const FEYNMAN = '999999'
  * Every limit comes from the data loaded, so a longer data file needs no change here.
  */
 export function StartPanel({ full, start, onStart }: StartPanelProps) {
-  const ids = { place: useId(), find: useId() }
+  const ids = { place: useId(), find: useId(), term: useId() }
   const last = full.length - 1
   const number = useNumber()
   /** "decimal place" for constants, "digit" for whole-number sequences. */
@@ -36,6 +37,26 @@ export function StartPanel({ full, start, onStart }: StartPanelProps) {
   const [query, setQuery] = useState('')
   const [found, setFound] = useState<{ digits: string; at: number } | null>(null)
   const [status, setStatus] = useState('')
+  const [term, setTerm] = useState('')
+  const terms = full.terms
+  /** Where the starting point sits among the terms ("in F₁₀₀"), for whole-number sequences. */
+  const startTerm = describePosition(full, start)
+
+  const goToTerm = () => {
+    if (!terms) return
+    const n = Number(term.replace(/[,\s_]/g, ''))
+    if (!Number.isInteger(n) || n < 0 || n >= terms.count) {
+      setStatus(`Pick a term from 0 to ${(terms.count - 1).toLocaleString()}.`)
+      return
+    }
+    const at = Math.min(last, terms.startOf(n))
+    go(
+      at,
+      full.period
+        ? `${termName(n)}: step ${(n % full.period) + 1} of the ${full.period}-step loop.`
+        : `${termName(n)} starts at ${placeWord} ${at.toLocaleString()}.`,
+    )
+  }
 
   const go = (at: number, message: string) => {
     onStart(at)
@@ -78,7 +99,7 @@ export function StartPanel({ full, start, onStart }: StartPanelProps) {
       <p className="hint">
         {start === 0
           ? `Starting at the beginning, ${opening}… — ${loadedCount} ${placeWord}s loaded.`
-          : `Starting at ${placeWord} ${start.toLocaleString()} of ${last.toLocaleString()}.`}
+          : `Starting at ${placeWord} ${start.toLocaleString()} of ${last.toLocaleString()}${startTerm ? ` (${startTerm})` : ''}.`}
       </p>
       <form
         className="field"
@@ -101,6 +122,32 @@ export function StartPanel({ full, start, onStart }: StartPanelProps) {
           </button>
         </span>
       </form>
+      {terms && (
+        <form
+          className="field"
+          onSubmit={(e) => {
+            e.preventDefault()
+            goToTerm()
+          }}
+        >
+          <label htmlFor={ids.term}>
+            Jump to Fₙ (n from 0 to {(terms.count - 1).toLocaleString()})
+          </label>
+          <span className="inline-row">
+            <input
+              id={ids.term}
+              className="text-input"
+              inputMode="numeric"
+              placeholder="e.g. 100"
+              value={term}
+              onChange={(e) => setTerm(e.target.value)}
+            />
+            <button type="submit" className="btn">
+              Jump
+            </button>
+          </span>
+        </form>
+      )}
       <div className="inline-row start-picks">
         <button
           type="button"

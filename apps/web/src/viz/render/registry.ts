@@ -19,6 +19,10 @@ export interface ArtSettings {
   mosaicShape?: string
   /** Sunflower: join every seed to its two Fibonacci neighbours (the spirals). */
   sunflowerSpirals?: boolean
+  /** Typographic: the cell the decimal point follows (default 0), or null for none. */
+  typeDecimalPoint?: number | null
+  /** Typographic: true where a new term of a whole-number sequence begins. */
+  termStartAt?: (index: number) => boolean
 }
 
 export interface ArtDefinition {
@@ -105,8 +109,17 @@ export const ART: Record<ArtKind, ArtDefinition> = {
     describe:
       'Typographic π: the digits themselves, coloured; runs of three or more equal digits glow.',
     summary: (count) => `${n(count)} digits set in type.`,
-    live: (options) => createTypeRenderer(options),
-    poster: (options, count) => createTypeRenderer(options, { fitCount: Math.max(1, count) }),
+    live: (options, settings) =>
+      createTypeRenderer(options, {
+        decimalPoint: settings?.typeDecimalPoint,
+        termStartAt: settings?.termStartAt,
+      }),
+    poster: (options, count, settings) =>
+      createTypeRenderer(options, {
+        fitCount: Math.max(1, count),
+        decimalPoint: settings?.typeDecimalPoint,
+        termStartAt: settings?.termStartAt,
+      }),
     maxPosterDigits: 100_000,
   },
 }

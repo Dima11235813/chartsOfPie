@@ -159,6 +159,12 @@ export function MosaicShapesPanel({
             ? 'Play some digits: every group of equal neighbours is a shape.'
             : `${total.toLocaleString()} groups of 2–5 equal neighbours at ${countedColumns} columns${countedPlayed > WINDOW ? ` (last ${WINDOW.toLocaleString()} digits)` : ''}. Change the width — or sweep — to discover more shapes.`}
         </p>
+        {source.period && (
+          <p className="hint" data-testid="loop-note">
+            This reading repeats every {source.period} digits, so once a loop has played no new
+            shapes appear at this width — only another width shows others.
+          </p>
+        )}
         {selected && (
           <p className="undo-bar" role="status">
             Showing one shape only.{' '}

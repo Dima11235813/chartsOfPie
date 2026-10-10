@@ -368,3 +368,21 @@ export function runLengthEndingAt(digitAt: (i: number) => number, i: number): nu
   while (i - length >= 0 && digitAt(i - length) === digit) length++
   return length
 }
+
+// ── Typographic ────────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Which cell of a performance the decimal point follows: the first, for a constant played from
+ * its start (3.14…); none after a jump (the integer part is not on screen) or for a sequence of
+ * whole numbers, which has no decimal point (B-021).
+ */
+export function decimalPointCell(kind: 'constant' | 'integers', offset: number): number | null {
+  return kind === 'constant' && offset === 0 ? 0 : null
+}
+
+/** Widths (12 columns or more) that divide a loop of `period` digits: 12 15 20 30 60 for 60. */
+export function loopColumnWidths(period: number, max = 120): number[] {
+  const widths: number[] = []
+  for (let w = 12; w <= Math.min(period, max); w++) if (period % w === 0) widths.push(w)
+  return widths
+}
