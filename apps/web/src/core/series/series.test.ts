@@ -66,7 +66,8 @@ describe('SourceConfig', () => {
       'too-new',
     )
     expect(readSourceConfig({ version: 1, series: 'pi', reading: 'mod' }).status).toBe('too-new')
-    expect(parseSourceLinkParam('fibonacci.last-digit').status).toBe('too-new')
+    // Primes come later (R-011 M3): a link to them from a newer app is never played as π.
+    expect(parseSourceLinkParam('primes.last-digit').status).toBe('too-new')
   })
 
   test('garbage is invalid', () => {
@@ -82,10 +83,31 @@ describe('SourceConfig', () => {
     expect(parseSourceLinkParam('phi')).toEqual({ status: 'ok', config: phi })
     expect(sourceKey(phi)).toBe('phi')
     expect(sourceName(phi)).toBe('φ (golden ratio)')
-    expect(SERIES.map((s) => s.symbol)).toEqual(['π', 'φ', 'e', '√2'])
-    expect(SERIES.map((s) => s.oeis)).toEqual(['A000796', 'A001622', 'A001113', 'A002193'])
+    expect(SERIES.map((s) => s.symbol)).toEqual(['π', 'φ', 'e', '√2', 'Fibonacci'])
+    expect(SERIES.map((s) => s.oeis)).toEqual([
+      'A000796',
+      'A001622',
+      'A001113',
+      'A002193',
+      'A000045',
+    ])
     expect(withSymbol('π walk', 'φ')).toBe('φ walk')
     expect(withSymbol('Typographic π', '√2')).toBe('Typographic √2')
+  })
+
+  test('Fibonacci: all digits by default (s=fibonacci), the last-digit loop by name', () => {
+    const all = { version: 1, series: 'fibonacci', reading: 'concat' } as const
+    const last = { version: 1, series: 'fibonacci', reading: 'last-digit' } as const
+    expect(sourceLinkParam(all)).toBe('fibonacci')
+    expect(sourceLinkParam(last)).toBe('fibonacci.last-digit')
+    expect(parseSourceLinkParam('fibonacci')).toEqual({ status: 'ok', config: all })
+    expect(parseSourceLinkParam('fibonacci.last-digit')).toEqual({ status: 'ok', config: last })
+    expect(sourceName(last)).toBe('Fibonacci numbers · last digit')
+    expect(sourceKey(last)).toBe('fibonacci:last-digit')
+    // Readings belong to their series.
+    expect(parseSourceLinkParam('fibonacci.digits').status).toBe('invalid')
+    expect(parseSourceLinkParam('pi.concat').status).toBe('invalid')
+    expect(withSymbol('π walk', 'Fibonacci')).toBe('Fibonacci walk')
   })
 
   test('link values round-trip', () => {

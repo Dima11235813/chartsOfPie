@@ -4,7 +4,15 @@ import { findMatchingPreset } from './core/composition/presets'
 import type { DigitSource } from './core/digits/digitSource'
 import { loadSource as loadSeriesSource } from './core/series/load'
 import { sameSource, sourceKey, type SourceConfig } from './core/series/sourceConfig'
-import { getSeries, SERIES, withSymbol, type SeriesId } from './core/series/series'
+import {
+  getReading,
+  getSeries,
+  placesIn,
+  SERIES,
+  withSymbol,
+  type ReadingId,
+  type SeriesId,
+} from './core/series/series'
 import { NumberContext } from './components/numberContext'
 import { Controls } from './components/Controls'
 import { VIEWS } from './components/views'
@@ -161,6 +169,13 @@ export default function App({
     setStart(0)
     setSource({ version: 1, series, reading: getSeries(series).readings[0] })
   }
+  const changeReading = (reading: ReadingId) => {
+    if (reading === source.reading) return
+    // A position in one reading is a different digit in another: start at the beginning.
+    setStart(0)
+    setSource({ ...source, reading })
+  }
+  const readings = getSeries(source.series).readings
   // A piece of another number resumes once that number's symbols have loaded.
   const pendingPiece = useRef<Piece | null>(null)
   const resume = playback.seek
@@ -184,9 +199,9 @@ export default function App({
   const captionRef = useRef('')
   useEffect(() => {
     captionRef.current = `${label} · ${playback.total.toLocaleString()} digits of ${number.symbol}${
-      playingFrom > 0 ? ` from decimal place ${playingFrom.toLocaleString()}` : ''
+      playingFrom > 0 ? ` from ${number.place} ${playingFrom.toLocaleString()}` : ''
     }${playback.lastChord ? ` · last chord ${playback.lastChord.chord.symbol}` : ''}`
-  }, [label, playback.total, playback.lastChord, playingFrom, number.symbol])
+  }, [label, playback.total, playback.lastChord, playingFrom, number.symbol, number.place])
 
   return (
     <NumberContext.Provider value={number}>
@@ -201,7 +216,9 @@ export default function App({
             </h1>
             <p className="tagline">
               Watch and listen to the{' '}
-              {loaded ? `first ${(loaded.full.length - 1).toLocaleString()}` : 'first million'}{' '}
+              {loaded
+                ? `first ${placesIn(number, loaded.full.length).toLocaleString()}`
+                : 'first million'}{' '}
               digits of{' '}
               <label className="number-pick">
                 <select
@@ -216,6 +233,23 @@ export default function App({
                   ))}
                 </select>
               </label>
+              {readings.length > 1 && (
+                <label className="number-pick">
+                  {' '}
+                  read as
+                  <select
+                    aria-label="Reading"
+                    value={source.reading}
+                    onChange={(e) => changeReading(e.target.value as ReadingId)}
+                  >
+                    {readings.map((id) => (
+                      <option key={id} value={id}>
+                        {getReading(id).name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              )}
             </p>
             <AccountBar account={account} />
           </header>

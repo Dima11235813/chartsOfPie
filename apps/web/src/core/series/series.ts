@@ -14,10 +14,10 @@ import { DECIMAL_ALPHABET } from '../digits/digitSource'
  * and generating the symbols lives in load.ts.
  */
 
-export const SERIES_IDS = ['pi', 'phi', 'e', 'sqrt2'] as const
+export const SERIES_IDS = ['pi', 'phi', 'e', 'sqrt2', 'fibonacci'] as const
 export type SeriesId = (typeof SERIES_IDS)[number]
 
-export const READING_IDS = ['digits'] as const
+export const READING_IDS = ['digits', 'concat', 'last-digit'] as const
 export type ReadingId = (typeof READING_IDS)[number]
 
 export interface ReadingDefinition {
@@ -35,6 +35,18 @@ export const READINGS: readonly ReadingDefinition[] = [
     description: 'The decimal digits, one after another',
     alphabetSize: DECIMAL_ALPHABET,
   },
+  {
+    id: 'concat',
+    name: 'All digits',
+    description: 'Every digit of every term, one term after another: 0 1 1 2 3 5 8 1 3 2 1…',
+    alphabetSize: DECIMAL_ALPHABET,
+  },
+  {
+    id: 'last-digit',
+    name: 'Last digit',
+    description: 'The last digit of each term: a loop that repeats every 60 terms',
+    alphabetSize: DECIMAL_ALPHABET,
+  },
 ]
 
 export interface SeriesDefinition {
@@ -43,8 +55,10 @@ export interface SeriesDefinition {
   readonly name: string
   /** Short symbol used in labels, e.g. "π" in "π walk". */
   readonly symbol: string
-  /** `constant`: digits of a number; `integers`: a sequence of whole numbers (later). */
+  /** `constant`: digits of a number; `integers`: a sequence of whole numbers. */
   readonly kind: 'constant' | 'integers'
+  /** What a position is called in labels: "decimal place" for constants, "digit" otherwise. */
+  readonly place: string
   /** OEIS entry for the symbols as played (citation shown to listeners). */
   readonly oeis: string
   /** Readings that make sense for this series; the first is the default. */
@@ -57,6 +71,7 @@ export const SERIES: readonly SeriesDefinition[] = [
     name: 'π (pi)',
     symbol: 'π',
     kind: 'constant',
+    place: 'decimal place',
     oeis: 'A000796',
     readings: ['digits'],
   },
@@ -65,6 +80,7 @@ export const SERIES: readonly SeriesDefinition[] = [
     name: 'φ (golden ratio)',
     symbol: 'φ',
     kind: 'constant',
+    place: 'decimal place',
     oeis: 'A001622',
     readings: ['digits'],
   },
@@ -73,6 +89,7 @@ export const SERIES: readonly SeriesDefinition[] = [
     name: 'e (Euler’s number)',
     symbol: 'e',
     kind: 'constant',
+    place: 'decimal place',
     oeis: 'A001113',
     readings: ['digits'],
   },
@@ -81,10 +98,25 @@ export const SERIES: readonly SeriesDefinition[] = [
     name: '√2 (square root of 2)',
     symbol: '√2',
     kind: 'constant',
+    place: 'decimal place',
     oeis: 'A002193',
     readings: ['digits'],
   },
+  {
+    id: 'fibonacci',
+    name: 'Fibonacci numbers',
+    symbol: 'Fibonacci',
+    kind: 'integers',
+    place: 'digit',
+    oeis: 'A000045',
+    // All digits first (owner decision G-3, R-012); the 60-step last-digit loop second.
+    readings: ['concat', 'last-digit'],
+  },
 ]
+
+/** How many symbols a series offers: constants count decimal places (after the integer part). */
+export const placesIn = (series: SeriesDefinition, length: number) =>
+  series.kind === 'constant' ? length - 1 : length
 
 export const isSeriesId = (value: unknown): value is SeriesId =>
   SERIES_IDS.includes(value as SeriesId)

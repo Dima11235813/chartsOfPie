@@ -1,6 +1,7 @@
 import { useId, useState } from 'react'
 import type { DigitSource } from '../core/digits/digitSource'
 import { findDigits, MAX_SEARCH_DIGITS, searchPattern } from '../core/digits/findDigits'
+import { placesIn } from '../core/series/series'
 import { useNumber } from './numberContext'
 
 interface StartPanelProps {
@@ -23,8 +24,14 @@ export function StartPanel({ full, start, onStart }: StartPanelProps) {
   const ids = { place: useId(), find: useId() }
   const last = full.length - 1
   const number = useNumber()
+  /** "decimal place" for constants, "digit" for whole-number sequences. */
+  const placeWord = number.place
+  const loadedCount = placesIn(number, full.length).toLocaleString()
   /** The first digits as a decimal, e.g. 3.14159 for π. */
-  const opening = `${full.digitAt(0)}.${Array.from({ length: Math.min(5, last) }, (_, i) => full.digitAt(i + 1)).join('')}`
+  const opening =
+    number.kind === 'constant'
+      ? `${full.digitAt(0)}.${Array.from({ length: Math.min(5, last) }, (_, i) => full.digitAt(i + 1)).join('')}`
+      : Array.from({ length: Math.min(9, full.length) }, (_, i) => full.digitAt(i)).join(' ')
   const [place, setPlace] = useState(String(start))
   const [query, setQuery] = useState('')
   const [found, setFound] = useState<{ digits: string; at: number } | null>(null)
@@ -39,10 +46,10 @@ export function StartPanel({ full, start, onStart }: StartPanelProps) {
   const goToPlace = () => {
     const at = Number(place.replace(/[,\s_]/g, ''))
     if (!Number.isInteger(at) || at < 0 || at > last) {
-      setStatus(`Pick a decimal place from 0 to ${last.toLocaleString()}.`)
+      setStatus(`Pick a ${placeWord} from 0 to ${last.toLocaleString()}.`)
       return
     }
-    go(at, `Starting at decimal place ${at.toLocaleString()}.`)
+    go(at, `Starting at ${placeWord} ${at.toLocaleString()}.`)
   }
 
   const find = (from: number) => {
@@ -56,13 +63,13 @@ export function StartPanel({ full, start, onStart }: StartPanelProps) {
       setFound(null)
       setStatus(
         from > 0
-          ? `No more ${digits} in the first ${last.toLocaleString()} decimal places.`
-          : `${digits} isn’t in the first ${last.toLocaleString()} decimal places.`,
+          ? `No more ${digits} in the first ${loadedCount} ${placeWord}s.`
+          : `${digits} isn’t in the first ${loadedCount} ${placeWord}s.`,
       )
       return
     }
     setFound({ digits, at })
-    go(at, `Found ${digits} at decimal place ${at.toLocaleString()}.`)
+    go(at, `Found ${digits} at ${placeWord} ${at.toLocaleString()}.`)
   }
 
   return (
@@ -70,8 +77,8 @@ export function StartPanel({ full, start, onStart }: StartPanelProps) {
       <h2 id="start-heading">Where in {number.symbol}</h2>
       <p className="hint">
         {start === 0
-          ? `Starting at the beginning, ${opening}… — ${last.toLocaleString()} decimal places loaded.`
-          : `Starting at decimal place ${start.toLocaleString()} of ${last.toLocaleString()}.`}
+          ? `Starting at the beginning, ${opening}… — ${loadedCount} ${placeWord}s loaded.`
+          : `Starting at ${placeWord} ${start.toLocaleString()} of ${last.toLocaleString()}.`}
       </p>
       <form
         className="field"
@@ -80,7 +87,7 @@ export function StartPanel({ full, start, onStart }: StartPanelProps) {
           goToPlace()
         }}
       >
-        <label htmlFor={ids.place}>Decimal place</label>
+        <label htmlFor={ids.place}>{placeWord[0]!.toUpperCase() + placeWord.slice(1)}</label>
         <span className="inline-row">
           <input
             id={ids.place}
@@ -121,7 +128,7 @@ export function StartPanel({ full, start, onStart }: StartPanelProps) {
           className="btn btn-small"
           onClick={() => {
             const at = 1 + Math.floor(Math.random() * last)
-            go(at, `Somewhere random: decimal place ${at.toLocaleString()}.`)
+            go(at, `Somewhere random: ${placeWord} ${at.toLocaleString()}.`)
           }}
         >
           Random
@@ -131,7 +138,8 @@ export function StartPanel({ full, start, onStart }: StartPanelProps) {
         className="field"
         onSubmit={(e) => {
           e.preventDefault()
-          find(1)
+          // Constants: skip the integer part (π's leading 3); sequences search from their start.
+          find(number.kind === 'constant' ? 1 : 0)
         }}
       >
         <label htmlFor={ids.find}>Find digits</label>

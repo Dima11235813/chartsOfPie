@@ -219,7 +219,7 @@ export function PiecesPanel({
       <p className="hint">
         Saves the sound, the view and where you are in {number.symbol} ({position.toLocaleString()}{' '}
         digits
-        {start ? ` from decimal place ${start.toLocaleString()}` : ''}) on this device.
+        {start ? ` from ${number.place} ${start.toLocaleString()}` : ''}) on this device.
       </p>
       {status && (
         <p className="hint" role="status">
@@ -280,7 +280,7 @@ export function PiecesPanel({
                     {ok?.piece.position
                       ? ` · digit ${ok.piece.position.digitIndex.toLocaleString()}${
                           ok.piece.position.start
-                            ? ` from decimal place ${ok.piece.position.start.toLocaleString()}`
+                            ? ` from ${number.place} ${ok.piece.position.start.toLocaleString()}`
                             : ''
                         }`
                       : ''}

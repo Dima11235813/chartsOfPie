@@ -1,5 +1,6 @@
 import type { CoincidentChord } from '../core/composition/performanceLog'
 import type { StepEvent } from '../core/engine/playbackEngine'
+import { useNumber } from './numberContext'
 import { useDigitColors } from './palette'
 
 interface StatsPanelProps {
@@ -22,6 +23,8 @@ export function StatsPanel({
   lastChord,
   offset = 0,
 }: StatsPanelProps) {
+  const { place } = useNumber()
+  const Place = place[0]!.toUpperCase() + place.slice(1)
   const colors = useDigitColors()
   return (
     <div className="stats">
@@ -32,7 +35,7 @@ export function StatsPanel({
             <span className="muted">
               {offset === 0
                 ? 'Press Play to start at 3.14159…'
-                : `Press Play to start at decimal place ${offset.toLocaleString()}.`}
+                : `Press Play to start at ${place} ${offset.toLocaleString()}.`}
             </span>
           ) : (
             recent.map(([index, digit], i) => (
@@ -40,7 +43,7 @@ export function StatsPanel({
                 key={index}
                 className={i === recent.length - 1 ? 'digit current' : 'digit'}
                 style={{ color: colors[digit] }}
-                title={`Decimal place ${(offset + index).toLocaleString()}`}
+                title={`${Place} ${(offset + index).toLocaleString()}`}
               >
                 {digit}
               </span>
@@ -55,7 +58,7 @@ export function StatsPanel({
           <dd data-testid="total-count">{total.toLocaleString()}</dd>
         </div>
         <div>
-          <dt>Decimal place</dt>
+          <dt>{Place}</dt>
           <dd data-testid="decimal-place">
             {lastStep ? (offset + lastStep.index).toLocaleString() : '–'}
           </dd>
@@ -81,7 +84,7 @@ export function StatsPanel({
           <dt>Last chord (by coincidence)</dt>
           <dd data-testid="last-chord">
             {lastChord
-              ? `${lastChord.chord.symbol} — ${lastChord.chord.quality.name} at decimal place ${(offset + lastChord.index).toLocaleString()}`
+              ? `${lastChord.chord.symbol} — ${lastChord.chord.quality.name} at ${place} ${(offset + lastChord.index).toLocaleString()}`
               : '–'}
           </dd>
         </div>
