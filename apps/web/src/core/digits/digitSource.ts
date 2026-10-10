@@ -19,6 +19,21 @@ export interface DigitSource {
    * `windowFrom`); 0 or absent for a source that starts at the beginning.
    */
   readonly offset?: number
+  /**
+   * For sequences of whole numbers: which term each symbol belongs to, in absolute positions
+   * (a window keeps its source's index; add `offset`). Absent for constants.
+   */
+  readonly terms?: TermIndex
+}
+
+/** Where each term's symbols start, for readings of whole-number sequences (R-011 §3, pass 4). */
+export interface TermIndex {
+  /** Number of terms (wholly or partly) present. */
+  readonly count: number
+  /** Position of the first symbol of term k (k from 0). */
+  startOf(term: number): number
+  /** The term the symbol at `position` belongs to. */
+  termAt(position: number): number
 }
 
 /** Every source a series reading produces is a `SymbolSource`; digits are the alphabet-10 case. */
@@ -45,6 +60,7 @@ export function windowFrom(source: DigitSource, start: number): DigitSource {
     length: source.length - from,
     offset: base + from,
     ...(source.alphabetSize === undefined ? {} : { alphabetSize: source.alphabetSize }),
+    ...(source.terms === undefined ? {} : { terms: source.terms }),
     digitAt: (index) => {
       if (!Number.isInteger(index) || index < 0 || index >= source.length - from) {
         throw new RangeError(`Digit index ${index} is outside 0..${source.length - from - 1}`)

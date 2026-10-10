@@ -199,6 +199,49 @@ test('number: φ and back to π, while paused, keeps the views drawing', async (
   await expect.poll(() => inkedPixels(page)).toBeGreaterThan(100)
 })
 
+test('number: Fibonacci, both readings, and back to π, while paused, keeps views drawing', async ({
+  page,
+}) => {
+  await openView(page, 'Neighbour mosaic', 30)
+  await expect.poll(() => inkedPixels(page)).toBeGreaterThan(100)
+  const number = page.getByRole('combobox', { name: 'Number' })
+  const reading = page.getByRole('combobox', { name: 'Reading' })
+  await expect(reading).toHaveCount(0) // π has one reading: no picker
+  const stream = page.locator('.stream')
+  const step = async (n: number) => {
+    await page.locator('body').click({ position: { x: 5, y: 5 } })
+    for (let i = 0; i < n; i++) await page.keyboard.press('ArrowRight')
+  }
+
+  // All digits (the default): 0 1 1 2 3 5 8 13 21 34 …
+  await number.selectOption({ label: 'Fibonacci numbers' })
+  await expect(page).toHaveURL(/s=fibonacci(&|$)/)
+  await expect(reading).toHaveValue('concat')
+  const where = page.getByRole('region', { name: 'Where in Fibonacci' })
+  await expect(where).toContainText('0 1 1 2 3 5 8 1 3… — 1,000,000 digits loaded')
+  await step(13)
+  await expect(stream).toHaveText('0112358132134')
+  await expect(page.locator('.readout dt').nth(1)).toHaveText('Digit') // not "Decimal place"
+  await expect.poll(() => inkedPixels(page)).toBeGreaterThan(100)
+
+  // Last digit: Fₙ mod 10 — 0 1 1 2 3 5 8 3 1 4 5 9 4 3 7 0 7 7 4 1 5 …
+  await reading.selectOption({ label: 'Last digit' })
+  await expect(page).toHaveURL(/s=fibonacci\.last-digit/)
+  await step(21)
+  await expect(stream).toHaveText('011235831459437077415')
+  await expect.poll(() => inkedPixels(page)).toBeGreaterThan(100)
+
+  // …back to all digits, and back to π.
+  await reading.selectOption({ label: 'All digits' })
+  await expect(page).toHaveURL(/s=fibonacci(&|$)/)
+  await number.selectOption({ label: 'π (pi)' })
+  await expect(page).not.toHaveURL(/s=/)
+  await expect(reading).toHaveCount(0)
+  await step(5)
+  await expect(stream).toHaveText('31415')
+  await expect.poll(() => inkedPixels(page)).toBeGreaterThan(100)
+})
+
 for (const [view, toggle] of [
   ['Music clock', 'Circle of fifths'],
   ['Harmonograph', 'Pure ratios'],

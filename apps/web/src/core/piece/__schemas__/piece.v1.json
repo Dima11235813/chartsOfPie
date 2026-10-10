@@ -401,13 +401,16 @@
             "pi",
             "phi",
             "e",
-            "sqrt2"
+            "sqrt2",
+            "fibonacci"
           ]
         },
         "reading": {
           "type": "string",
           "enum": [
-            "digits"
+            "digits",
+            "concat",
+            "last-digit"
           ]
         }
       },
