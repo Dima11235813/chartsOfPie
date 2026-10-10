@@ -23,3 +23,17 @@ test('every artwork renders as recorded in its poster baseline', async ({ page }
     expect.soft(png).toMatchSnapshot(`${kind}.png`, { maxDiffPixelRatio: 0.002, threshold: 0.05 })
   }
 })
+
+test('other numbers draw their own digits (φ)', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop', 'posters are the same on every viewport')
+  await page.goto('/lab.html')
+  await page.waitForFunction(() => window.posterLab !== undefined)
+  for (const kind of ['walk', 'mosaic']) {
+    const dataUrl = await page.evaluate((k) => window.posterLab.render(k, { series: 'phi' }), kind)
+    const png = Buffer.from(dataUrl.split(',')[1]!, 'base64')
+    await testInfo.attach(`phi-${kind}.png`, { body: png, contentType: 'image/png' })
+    expect
+      .soft(png)
+      .toMatchSnapshot(`phi-${kind}.png`, { maxDiffPixelRatio: 0.002, threshold: 0.05 })
+  }
+})

@@ -16,7 +16,7 @@ responsive by default · every item tracked in this folder.
 | 1     | Music is math: scales, modes, rhythm       | E02                    | **in progress** — scales, modes, presets, sound design, MIDI shipped                        |
 | 2     | Visualization gallery & playgrounds        | E03                    | **in progress** — sheet music + spectrogram shipped; artistic gallery planned (R-006)       |
 | 2.5   | **Next:** save on device + installable PWA | E10                    | ready — planned in R-007, prioritised by the owner                                          |
-| 3     | Beyond π: Fibonacci, φ, e, √2, primes      | E05                    | backlog                                                                                     |
+| 3     | Beyond π: Fibonacci, φ, e, √2, primes      | E05                    | **planned** in R-011: M1 core (π only) → M2 φ → M3 Fibonacci, primes → M4 any alphabet      |
 | 4     | Learn: guided lessons                      | E04                    | backlog                                                                                     |
 | 5     | Accounts: backend, authN/authZ             | E07                    | **in progress** — Cloudflare API + GitHub sign-in built; owner setup pending                |
 | 6     | Save, gallery & share                      | E08                    | export (MIDI, PNG, video, audio) shipped early; cloud saving needs E07; local saving is E10 |
@@ -42,7 +42,7 @@ visualization, sequence and lesson plugs into the same `CompositionConfig`.
 - [E02 — Music theory engine: scales, modes & rhythm](epics/E02-music-theory-engine.md) — in progress
 - [E03 — Visualization gallery & playgrounds](epics/E03-visualization-gallery.md) — in progress
 - [E04 — Learn: guided lessons](epics/E04-learn-lessons.md)
-- [E05 — More numbers: Fibonacci, φ, e, √2, primes](epics/E05-number-sources-fibonacci.md)
+- [E05 — More numbers: Fibonacci, φ, e, √2, primes](epics/E05-number-sources-fibonacci.md) — planned (R-011)
 - [E06 — Developer experience & AI agents](epics/E06-dev-experience-ai-agents.md)
 - [E07 — Backend platform: API, authN & authZ](epics/E07-backend-platform.md)
 - [E08 — Save, gallery & share](epics/E08-save-and-share.md)
@@ -61,3 +61,4 @@ visualization, sequence and lesson plugs into the same `CompositionConfig`.
 - [R-008 — More instruments, classic keyboards & playing through a Nord (Web MIDI)](research/R-008-instruments-and-hardware.md)
 - [R-009 — Shapes in the neighbour mosaic (polyplets) and a seamless sweep](research/R-009-mosaic-shapes.md)
 - [R-010 — Performance pass: playback glitches and CPU use](research/R-010-performance.md)
+- [R-011 — Number series beyond π: shared architecture and phased plan](research/R-011-number-series-architecture.md)

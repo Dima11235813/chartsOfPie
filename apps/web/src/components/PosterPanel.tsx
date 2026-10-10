@@ -10,6 +10,8 @@ import {
 } from '../viz/render/posters'
 import type { ArtSettings } from '../viz/render/registry'
 import { useDigitColors } from './palette'
+import { useNumber } from './numberContext'
+import { withSymbol } from '../core/series/series'
 
 interface PosterPanelProps {
   source: DigitSource
@@ -20,6 +22,7 @@ interface PosterPanelProps {
 /** Print-size PNG of an artistic view for the first N digits of π, in the current palette. */
 export function PosterPanel({ source, settings }: PosterPanelProps) {
   const colors = useDigitColors()
+  const number = useNumber()
   const [kind, setKind] = useState<PosterKind>('ring')
   const [count, setCount] = useState<number>(10_000)
   const [size, setSize] = useState<number>(POSTER_SIZES[0])
@@ -45,6 +48,7 @@ export function PosterPanel({ source, settings }: PosterPanelProps) {
           digitAt: (i) => source.digitAt(i),
           colors,
           settings,
+          symbol: number.symbol,
         },
         setProgress,
       )
@@ -70,14 +74,14 @@ export function PosterPanel({ source, settings }: PosterPanelProps) {
         <select id={ids.kind} value={kind} onChange={(e) => setKind(e.target.value as PosterKind)}>
           {POSTER_KINDS.map((p) => (
             <option key={p.kind} value={p.kind}>
-              {p.name}
+              {withSymbol(p.name, number.symbol)}
             </option>
           ))}
         </select>
       </div>
       <div className="field-row">
         <div className="field">
-          <label htmlFor={ids.count}>Digits of π</label>
+          <label htmlFor={ids.count}>Digits of {number.symbol}</label>
           <select
             id={ids.count}
             value={effectiveCount}

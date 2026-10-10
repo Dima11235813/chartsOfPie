@@ -13,10 +13,11 @@ The long-term plan lives in [`proj-mgmt/ROADMAP.md`](proj-mgmt/ROADMAP.md).
 | `apps/web/src/core/`                 | Framework-free math/music engine — **no DOM/React/Tone/Chart imports**                                                                                |
 | `apps/web/src/audio/`                | Tone.js: instruments, sound chain, `NotePlayer` (analyser + recording taps), offline render & analysis                                                |
 | `apps/web/src/components/`, `hooks/` | UI                                                                                                                                                    |
-| `apps/web/public/data/`              | Verified digit data (`pi-1m.txt`, sha256 pinned in tests)                                                                                             |
+| `apps/web/public/data/`              | Verified digit data (π, φ, e, √2: `*-1m.txt`, sha256 pinned in tests)                                                                                 |
 | `apps/api/`                          | Cloudflare Workers + D1 API (Hono): GitHub sign-in, sessions, pieces + `policy.ts` authZ; tests on `node:sqlite`                                      |
 | `apps/web/e2e/`                      | Playwright smoke tests on desktop, tablet and mobile viewports                                                                                        |
 | `apps/web/src/core/composition/`     | `CompositionConfig` (zod), presets, `Arranger`, `PerformanceLog` (what was played, chords)                                                            |
+| `apps/web/src/core/series/`          | Number series (π, φ, e, √2; Fibonacci and primes next — R-011), `SourceConfig` for `s=` links and pieces                                              |
 | `apps/web/src/core/piece/`           | Saved-piece + `VisualConfig` schemas, share links, migrations, golden fixtures, schema snapshots                                                      |
 | `apps/web/src/core/midi/`            | Dependency-free MIDI writer and performance → MIDI export                                                                                             |
 | `apps/web/src/viz/`                  | Pure geometry/colour maths for views (spectrogram, staff), unit-tested                                                                                |

@@ -1,6 +1,8 @@
 import { PALETTES } from '../viz/palettes'
 import { VIEW_GROUPS, VIEWS, type ViewId } from './views'
 import { CHART_STYLES, type ChartStyle } from './chartConfig'
+import { withSymbol } from '../core/series/series'
+import { useNumber } from './numberContext'
 
 interface ControlsProps {
   disabled: boolean
@@ -23,6 +25,7 @@ interface ControlsProps {
 
 export function Controls(props: ControlsProps) {
   const { disabled, isPlaying, isFinished, muted, chartStyle, view } = props
+  const number = useNumber()
   return (
     <div className="controls" role="toolbar" aria-label="Playback controls">
       <button
@@ -79,7 +82,7 @@ export function Controls(props: ControlsProps) {
               <optgroup key={group} label={group}>
                 {VIEWS.filter((v) => v.group === group).map((v) => (
                   <option key={v.id} value={v.id}>
-                    {v.label}
+                    {withSymbol(v.label, number.symbol)}
                   </option>
                 ))}
               </optgroup>

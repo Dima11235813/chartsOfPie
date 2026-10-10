@@ -2,8 +2,10 @@ import { useCallback, useEffect, useId, useRef, useState, type ReactNode } from 
 import type { CompositionConfig } from '../core/composition/config'
 import { createBackup, piecesInFile } from '../core/piece/backup'
 import { createPiece, pieceToDocument, type Piece } from '../core/piece/piece'
+import type { SourceConfig } from '../core/series/sourceConfig'
 import type { VisualConfig } from '../core/piece/visualConfig'
 import type { Doc } from '../core/schema/migrate'
+import { useNumber } from './numberContext'
 import { downloadBlob, exportFileName } from '../media/sessionRecorder'
 import { requestPersistence, type PieceStore, type StoredPiece } from '../storage/pieceStore'
 
@@ -15,6 +17,8 @@ interface PiecesPanelProps {
   position: number
   /** Decimal place the performance started at. */
   start?: number
+  /** Which number is playing (π by default). */
+  source?: SourceConfig
   /** Suggested name, e.g. "Lydian dream · Music clock". */
   suggestedName: string
   getCanvas: () => HTMLCanvasElement | null
@@ -92,12 +96,14 @@ export function PiecesPanel({
   visual,
   position,
   start = 0,
+  source,
   suggestedName,
   getCanvas,
   onOpen,
   accountSection,
 }: PiecesPanelProps) {
   const ids = { name: useId(), file: useId() }
+  const number = useNumber()
   const [pieces, setPieces] = useState<StoredPiece[]>([])
   const [name, setName] = useState('')
   const [status, setStatus] = useState('')
@@ -121,6 +127,7 @@ export function PiecesPanel({
       now: new Date(),
       sound,
       visual,
+      source,
       position: { digitIndex: position, start },
     })
     try {
@@ -210,7 +217,8 @@ export function PiecesPanel({
         </span>
       </div>
       <p className="hint">
-        Saves the sound, the view and where you are in π ({position.toLocaleString()} digits
+        Saves the sound, the view and where you are in {number.symbol} ({position.toLocaleString()}{' '}
+        digits
         {start ? ` from decimal place ${start.toLocaleString()}` : ''}) on this device.
       </p>
       {status && (

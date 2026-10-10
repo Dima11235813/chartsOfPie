@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import type { CompositionConfig } from '../core/composition/config'
 import { DEFAULT_PRESET_ID, getPreset, PRESETS } from '../core/composition/presets'
 import { buildShareHash, parseShareHash } from '../core/piece/shareLink'
 import type { VisualConfig } from '../core/piece/visualConfig'
+import { DEFAULT_SOURCE_CONFIG, sameSource, type SourceConfig } from '../core/series/sourceConfig'
 
 /** The last sound + view, as a share-link hash, so a plain visit restores the last session. */
 export const LAST_SESSION_KEY = 'charts-of-pie:last-session'
@@ -25,6 +26,14 @@ export interface LinkedState {
   /** Decimal place of π the performance starts at (0 = the beginning). */
   start: number
   setStart: (start: number) => void
+  /** Which number plays (π unless a link or piece names another). */
+  source: SourceConfig
+  setSource: (source: SourceConfig) => void
+  /**
+   * The link named a number this version does not know (made by a newer app). π plays meanwhile;
+   * the value stays in the link until another number is chosen, so updating the app opens it.
+   */
+  newerSource: string | null
   /** True when the URL held something that could not be read. */
   invalidLink: boolean
 }
@@ -43,23 +52,32 @@ export function useLinkedState(fallbackVisual: () => VisualConfig): LinkedState 
       config: shared.sound ?? defaultSound(),
       visual: shared.visual ?? fallbackVisual(),
       start: shared.start ?? 0,
+      source: shared.source ?? DEFAULT_SOURCE_CONFIG,
+      newerSource: shared.newerSource,
       invalidLink: Boolean(hash) && shared.invalid,
     }
   })
   const [config, setConfig] = useState(initial.config)
   const [visual, setVisual] = useState(initial.visual)
   const [start, setStart] = useState(initial.start)
+  const [source, setSourceState] = useState(initial.source)
+  const [newerSource, setNewerSource] = useState(initial.newerSource)
+  const setSource = useCallback((next: SourceConfig) => {
+    setNewerSource(null)
+    // Keep the same object for the same number, so playback does not reload it.
+    setSourceState((prev) => (sameSource(prev, next) ? prev : next))
+  }, [])
 
   useEffect(() => {
     const { pathname, search } = window.location
-    const hash = buildShareHash(config, visual, start)
+    const hash = buildShareHash(config, visual, start, newerSource ?? source)
     window.history.replaceState(null, '', `${pathname}${search}${hash}`)
     try {
       localStorage.setItem(LAST_SESSION_KEY, hash)
     } catch {
       // not remembered (private mode)
     }
-  }, [config, visual, start])
+  }, [config, visual, start, source, newerSource])
 
   return {
     config,
@@ -68,6 +86,9 @@ export function useLinkedState(fallbackVisual: () => VisualConfig): LinkedState 
     setVisual,
     start,
     setStart,
+    source,
+    setSource,
+    newerSource,
     invalidLink: initial.invalidLink,
   }
 }

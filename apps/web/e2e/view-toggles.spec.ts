@@ -175,6 +175,30 @@ test('starting point: jump into π and back, while paused, keeps the views drawi
   await expect.poll(() => inkedPixels(page)).toBeGreaterThan(100)
 })
 
+test('number: φ and back to π, while paused, keeps the views drawing', async ({ page }) => {
+  await openView(page, 'Digit ring', 30)
+  await expect.poll(() => inkedPixels(page)).toBeGreaterThan(100)
+  const number = page.getByRole('combobox', { name: 'Number' })
+  await number.selectOption({ label: 'φ (golden ratio)' })
+  await expect(page).toHaveURL(/s=phi/)
+  await expect(page.getByRole('region', { name: 'Where in φ' })).toBeVisible()
+  await expect(page.getByRole('combobox', { name: 'View' })).toContainText('φ walk')
+  await page.locator('body').click({ position: { x: 5, y: 5 } })
+  for (let i = 0; i < 30; i++) await page.keyboard.press('ArrowRight')
+  await expect(page.locator('.stream .digit').first()).toHaveText('1')
+  await expect.poll(() => inkedPixels(page)).toBeGreaterThan(100)
+  // A view chosen while on φ draws φ.
+  await page.getByRole('combobox', { name: 'View' }).selectOption({ label: 'φ walk' })
+  await expect.poll(() => inkedPixels(page)).toBeGreaterThan(100)
+  // …and back to π.
+  await number.selectOption({ label: 'π (pi)' })
+  await expect(page).not.toHaveURL(/s=/)
+  await page.locator('body').click({ position: { x: 5, y: 5 } })
+  for (let i = 0; i < 30; i++) await page.keyboard.press('ArrowRight')
+  await expect(page.locator('.stream .digit').first()).toHaveText('3')
+  await expect.poll(() => inkedPixels(page)).toBeGreaterThan(100)
+})
+
 for (const [view, toggle] of [
   ['Music clock', 'Circle of fifths'],
   ['Harmonograph', 'Pure ratios'],

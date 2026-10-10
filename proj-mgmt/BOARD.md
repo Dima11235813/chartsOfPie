@@ -1,6 +1,6 @@
 # Board
 
-_Last updated with "Where in π" (F01.7): start anywhere in the digits, search, share._
+_Last updated with E05 M2 (φ, e, √2 and the Number picker) in review on PR #19._
 
 ## Epics
 
@@ -10,7 +10,7 @@ _Last updated with "Where in π" (F01.7): start anywhere in the digits, search, 
 | E02  | Music theory engine: scales, modes & rhythm | in-progress | 1     |
 | E03  | Visualization gallery & playgrounds         | in-progress | 2     |
 | E04  | Learn: guided lessons                       | backlog     | 4     |
-| E05  | More numbers: Fibonacci, φ, e, √2, primes   | backlog     | 3     |
+| E05  | More numbers: Fibonacci, φ, e, √2, primes   | in-progress | 3     |
 | E06  | Developer experience & AI agents            | in-progress | ∞     |
 | E07  | Backend platform: API, authN & authZ        | in-progress | 5     |
 | E08  | Save, gallery & share                       | in-progress | 6     |
@@ -33,6 +33,20 @@ _Last updated with "Where in π" (F01.7): start anywhere in the digits, search, 
 | F10.3   | On-device piece store                           | done   |
 | F10.4   | Save & "My pieces"                              | done   |
 | F10.5   | Installable, offline PWA                        | ready  |
+
+## Planned: E05 — more numbers (R-011)
+
+| Milestone | Feature / story | Title                                        | Status  |
+| --------- | --------------- | -------------------------------------------- | ------- |
+| M0        | R-011           | Shared architecture and phased plan          | review  |
+| M1        | S05.1.1         | SymbolSource and series registry (π only)    | review  |
+| M1        | S05.1.2         | SourceConfig in share links and saved pieces | review  |
+| M1        | S05.1.3         | Series-aware playback hook and labels        | review  |
+| M2        | F05.3           | Constants: φ, e, √2                          | review  |
+| M3        | F05.2, F05.4    | Fibonacci and primes in base 10              | backlog |
+| M4        | F05.5           | Any alphabet: residues, bases, binary        | backlog |
+| M5        | F05.7           | Series-native views and rhythms              | backlog |
+| Later     | F05.6           | User sequences                               | backlog |
 
 ## E02 progress (previous slice: configurable music, presets, pleasant sound)
 

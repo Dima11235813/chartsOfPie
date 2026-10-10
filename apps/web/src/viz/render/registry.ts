@@ -24,8 +24,8 @@ export interface ArtDefinition {
   name: string
   /** Accessible description prefix. */
   describe: string
-  /** Summary after `count` digits. */
-  summary: (count: number) => string
+  /** Summary after `count` digits, out of `total` in the source. */
+  summary: (count: number, total: number) => string
   /** Live renderer. */
   live: (options: RendererOptions, settings?: ArtSettings) => DigitRenderer
   /** Poster renderer for exactly `count` digits (may lay out differently from live). */
@@ -91,7 +91,7 @@ export const ART: Record<ArtKind, ArtDefinition> = {
     name: 'Hilbert carpet',
     describe:
       'Hilbert carpet: all million digits of π, one pixel each along a space-filling curve; digits light up as they play.',
-    summary: (count) => `${n(count)} of 1,000,001 digits lit.`,
+    summary: (count, total) => `${n(count)} of ${n(total)} digits lit.`,
     live: (options) => createHilbertRenderer(options),
     poster: (options, count) => createHilbertRenderer(options, { side: hilbertSide(count) }),
     maxPosterDigits: 1_000_000,

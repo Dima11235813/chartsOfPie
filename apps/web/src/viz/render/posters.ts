@@ -1,3 +1,4 @@
+import { withSymbol } from '../../core/series/series'
 import { stringArtMultiplier } from '../art'
 import { ART, type ArtKind, type ArtSettings } from './registry'
 import type { DigitAt } from './renderer'
@@ -21,7 +22,7 @@ export interface PosterOptions {
   kind: PosterKind
   /** Square size in pixels. */
   size: number
-  /** Digits of π to draw (from the start). */
+  /** Digits to draw (from the start). */
   count: number
   digitAt: DigitAt
   colors: readonly string[]
@@ -30,6 +31,8 @@ export interface PosterOptions {
   background?: string
   /** Layout choices from the live view (e.g. mosaic columns). */
   settings?: ArtSettings
+  /** Symbol of the number drawn, for the caption and title (default π). */
+  symbol?: string
 }
 
 /** Digits drawn per slice before yielding to the browser (keeps the page responsive). */
@@ -49,6 +52,7 @@ export async function renderPoster(
     caption = true,
     background = '#0b0b12',
     settings,
+    symbol = 'π',
   }: PosterOptions,
   onProgress?: (fraction: number) => void,
 ): Promise<HTMLCanvasElement> {
@@ -70,7 +74,7 @@ export async function renderPoster(
     drawStringArt(artCtx, art.width, art.height, scale, { multiplier, colors, label: caption })
   } else {
     const definition = ART[kind]
-    name = definition.name
+    name = withSymbol(definition.name, symbol)
     if (kind === 'mosaic' && settings?.mosaicColumns) {
       name += ` · ${settings.mosaicColumns} columns`
     }
@@ -98,11 +102,11 @@ export async function renderPoster(
     ctx.textAlign = 'left'
     ctx.fillStyle = '#8fd3ff'
     ctx.font = `600 ${Math.round(28 * scale)}px Georgia, serif`
-    ctx.fillText('π', 24 * scale, size - captionHeight / 2)
+    ctx.fillText(symbol, 24 * scale, size - captionHeight / 2)
     ctx.fillStyle = '#c9d6e8'
     ctx.font = `${Math.round(18 * scale)}px system-ui, sans-serif`
     ctx.fillText(
-      `${name} · the first ${count.toLocaleString()} digits of π · Charts of Pie`,
+      `${name} · the first ${count.toLocaleString()} digits of ${symbol} · Charts of Pie`,
       58 * scale,
       size - captionHeight / 2,
     )

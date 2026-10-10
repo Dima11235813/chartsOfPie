@@ -6,6 +6,7 @@ import { createPiece, pieceSchema, pieceToDocument, readPiece } from './piece'
 import { buildShareHash, parseShareHash } from './shareLink'
 import { createBackup, piecesInFile } from './backup'
 import shareLinks from './fixtures/share-links.json'
+import { DEFAULT_SOURCE_CONFIG, sourceConfigSchema } from '../series/sourceConfig'
 import {
   DEFAULT_VISUAL_CONFIG,
   decodeVisualConfig,
@@ -31,7 +32,12 @@ const fixture = (path: string) => {
 }
 
 /** Every golden piece ever committed. Adding is fine; removing one fails this suite. */
-const GOLDEN_PIECES = ['v1/minimal.json', 'v1/full.json', 'v1/unicode-name.json']
+const GOLDEN_PIECES = [
+  'v1/minimal.json',
+  'v1/full.json',
+  'v1/unicode-name.json',
+  'v1/with-source.json',
+]
 
 describe('golden piece fixtures', () => {
   test('the manifest lists exactly the committed fixtures', () => {
@@ -54,6 +60,14 @@ describe('golden piece fixtures', () => {
     const read = readPiece(fixture('pieces/v1/minimal.json'))
     expect(read.status === 'ok' && read.piece.visual).toEqual(DEFAULT_VISUAL_CONFIG)
     expect(read.status === 'ok' && read.piece.sound).toEqual(getPreset('original')!.config)
+  })
+
+  test('v1 pieces without a number play π; a named number is kept', () => {
+    const minimal = readPiece(fixture('pieces/v1/minimal.json'))
+    expect(minimal.status === 'ok' && minimal.piece.source).toEqual(DEFAULT_SOURCE_CONFIG)
+    const named = readPiece(fixture('pieces/v1/with-source.json'))
+    expect(named.status === 'ok' && named.piece.source).toEqual(DEFAULT_SOURCE_CONFIG)
+    expect(named.status === 'ok' && named.piece.position).toEqual({ digitIndex: 42, start: 762 })
   })
 
   test('v1 full: every field survives', () => {
@@ -106,12 +120,14 @@ describe('documents from newer versions of the app', () => {
     expect((saved.visual as Record<string, unknown>).viewOptions).toBeDefined()
   })
 
-  test.each(['forward/piece-v99.json', 'forward/sound-v99.json'])(
-    '%s is reported too-new, not invalid',
-    (path) => {
-      expect(readPiece(fixture(path)).status).toBe('too-new')
-    },
-  )
+  test.each([
+    'forward/piece-v99.json',
+    'forward/sound-v99.json',
+    'forward/unknown-series.json',
+    'forward/source-v99.json',
+  ])('%s is reported too-new, not invalid', (path) => {
+    expect(readPiece(fixture(path)).status).toBe('too-new')
+  })
 
   test('garbage is invalid and handed back untouched', () => {
     for (const input of [null, 42, 'x', [], {}, { schema: 'other' }]) {
@@ -133,6 +149,8 @@ describe('share links in the wild', () => {
       sound: expectedSound,
       visual: expected,
       start: null,
+      source: null,
+      newerSource: null,
       invalid,
     })
   })
@@ -147,11 +165,50 @@ describe('share links in the wild', () => {
         sound: preset.id === 'original' ? null : preset.config,
         visual,
         start: null,
+        source: null,
+        newerSource: null,
         invalid: false,
       })
     }
     const custom = { ...original, bpm: 97 }
     expect(buildShareHash(custom, DEFAULT_VISUAL_CONFIG)).toMatch(/^#c=/)
+  })
+
+  test('the number travels as &s= and π is left out', () => {
+    const original = getPreset('original')!.config
+    expect(buildShareHash(original, DEFAULT_VISUAL_CONFIG, 0, DEFAULT_SOURCE_CONFIG)).toBe('')
+    expect(parseShareHash('#s=pi')).toEqual({
+      sound: null,
+      visual: null,
+      start: null,
+      source: DEFAULT_SOURCE_CONFIG,
+      newerSource: null,
+      invalid: false,
+    })
+    expect(parseShareHash('#s=pi.digits').source).toEqual(DEFAULT_SOURCE_CONFIG)
+    // Malformed values are reported like any unreadable part.
+    for (const bad of ['#s=', '#s=PI', '#s=pi..digits', '#s=pi.digits.x', `#s=${'a'.repeat(70)}`])
+      expect(parseShareHash(bad)).toMatchObject({ source: null, newerSource: null, invalid: true })
+    // A series, or a reading of π, that this version does not know: never π silently.
+    expect(parseShareHash('#s=pi.digits-in-base-12')).toMatchObject({
+      source: null,
+      invalid: false,
+    })
+  })
+
+  test('a number from a newer app is reported and kept in the link', () => {
+    const hash = '#p=lydian-dream&s=golden-ratio&at=5'
+    const shared = parseShareHash(hash)
+    expect(shared).toEqual({
+      sound: getPreset('lydian-dream')!.config,
+      visual: null,
+      start: 5,
+      source: null,
+      newerSource: 'golden-ratio',
+      invalid: false,
+    })
+    expect(buildShareHash(shared.sound!, DEFAULT_VISUAL_CONFIG, 5, shared.newerSource!)).toBe(hash)
+    expect(parseShareHash('#s=pi.mod').newerSource).toBe('pi.mod')
   })
 
   test('a starting point travels as &at= and is left out at the beginning', () => {
@@ -162,6 +219,8 @@ describe('share links in the wild', () => {
       sound: null,
       visual: null,
       start: 762,
+      source: null,
+      newerSource: null,
       invalid: false,
     })
     const visual = { ...DEFAULT_VISUAL_CONFIG, view: 'mosaic' as const }
@@ -249,6 +308,7 @@ describe('persisted schema snapshots', () => {
     ['composition-config.v1', compositionConfigSchema],
     ['visual-config.v1', visualConfigSchema],
     ['piece.v1', pieceSchema],
+    ['source-config.v1', sourceConfigSchema],
   ] as const)('%s', async (name, schema) => {
     await expect(snapshot(schema)).toMatchFileSnapshot(`./__schemas__/${name}.json`)
   })

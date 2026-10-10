@@ -8,6 +8,7 @@ import type { NotePlayer } from './audio/notePlayer'
 import { createDigitSource, parseDigits } from './core/digits/digitSource'
 import { encodeConfig } from './core/composition/config'
 import { getPreset } from './core/composition/presets'
+import type { SourceConfig } from './core/series/sourceConfig'
 
 // Chart.js needs a real canvas; the chart itself is covered by chartConfig tests and e2e.
 // Canvas views need a real canvas; they are covered by viz unit tests and e2e.
@@ -274,6 +275,94 @@ describe('App', () => {
     expect(screen.getByTestId('decimal-place')).toHaveTextContent('5')
     expect(screen.getByTestId('current-digit')).toHaveTextContent('9')
     expect(window.location.hash).toMatch(/at=4/)
+  })
+
+  it('plays another number, with labels and the link following it, and back to π', async () => {
+    const user = userEvent.setup()
+    const digits: Record<string, string> = { pi: '31415926', phi: '16180339', e: '27182818' }
+    const loads: string[] = []
+    const numbers = (config: SourceConfig) => {
+      loads.push(config.series)
+      return Promise.resolve(
+        createDigitSource(config.series, config.series, parseDigits(digits[config.series]!)),
+      )
+    }
+    render(<App createPlayer={fakePlayer} loadSource={numbers} />)
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Step' })).toBeEnabled())
+    await user.click(screen.getByRole('button', { name: 'Step' }))
+    expect(screen.getByTestId('current-digit')).toHaveTextContent('3')
+
+    await user.selectOptions(screen.getByLabelText('Number'), 'φ (golden ratio)')
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Step' })).toBeEnabled())
+    expect(loads).toEqual(['pi', 'phi'])
+    expect(window.location.hash).toBe('#s=phi')
+    expect(screen.getByLabelText('Number')).toHaveValue('phi')
+    expect(screen.getAllByRole('option', { name: 'φ walk' })).toHaveLength(2) // View and poster
+    expect(screen.getByRole('heading', { name: 'Where in φ' })).toBeInTheDocument()
+    // Starts over at the beginning of φ: nothing counted yet, then 1, 6.
+    expect(screen.getByTestId('total-count')).toHaveTextContent('0')
+    await user.click(screen.getByRole('button', { name: 'Step' }))
+    await user.click(screen.getByRole('button', { name: 'Step' }))
+    expect(screen.getByTestId('current-digit')).toHaveTextContent('6')
+
+    await user.selectOptions(screen.getByLabelText('Number'), 'π (pi)')
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Step' })).toBeEnabled())
+    expect(window.location.hash).toBe('')
+    expect(screen.getAllByRole('option', { name: 'π walk' })).toHaveLength(2)
+    expect(screen.getByTestId('total-count')).toHaveTextContent('0')
+  })
+
+  it('opens a saved piece of another number where it was', async () => {
+    const user = userEvent.setup()
+    const store = createMemoryStore()
+    const digits: Record<string, string> = { pi: '31415926', e: '27182818' }
+    const numbers = (config: SourceConfig) =>
+      Promise.resolve(
+        createDigitSource(config.series, config.series, parseDigits(digits[config.series]!)),
+      )
+    const first = render(
+      <App createPlayer={fakePlayer} loadSource={numbers} createStore={() => store} />,
+    )
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Step' })).toBeEnabled())
+    await user.selectOptions(screen.getByLabelText('Number'), 'e (Euler’s number)')
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Step' })).toBeEnabled())
+    for (let i = 0; i < 3; i++) await user.click(screen.getByRole('button', { name: 'Step' }))
+    await user.type(screen.getByLabelText('Name'), 'Some e')
+    await user.click(screen.getByRole('button', { name: 'Save' }))
+    await screen.findByRole('button', { name: 'Open Some e' })
+    first.unmount()
+
+    window.history.replaceState(null, '', '/#p=original')
+    render(<App createPlayer={fakePlayer} loadSource={numbers} createStore={() => store} />)
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Step' })).toBeEnabled())
+    expect(screen.getByLabelText('Number')).toHaveValue('pi')
+    await user.click(await screen.findByRole('button', { name: 'Open Some e' }))
+    await waitFor(() => expect(screen.getByTestId('total-count')).toHaveTextContent('3'))
+    expect(screen.getByLabelText('Number')).toHaveValue('e')
+    expect(screen.getByTestId('current-digit')).toHaveTextContent('1')
+    expect(window.location.hash).toMatch(/s=e/)
+  })
+
+  it('a link to a number this version does not know says so and keeps it in the link', async () => {
+    window.history.replaceState(null, '', '/#p=music-box&s=golden-ratio')
+    const loads: unknown[] = []
+    render(
+      <App
+        createPlayer={fakePlayer}
+        loadSource={(config) => {
+          loads.push(config)
+          return source()
+        }}
+      />,
+    )
+    expect(
+      await screen.findByText(/plays a number this version of the app does not know/),
+    ).toBeInTheDocument()
+    expect(screen.queryByText(/share link could not be read/)).not.toBeInTheDocument()
+    expect(screen.getByLabelText('Preset')).toHaveDisplayValue('Music box')
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Step' })).toBeEnabled())
+    expect(loads).toEqual([{ version: 1, series: 'pi', reading: 'digits' }])
+    expect(window.location.hash).toBe('#p=music-box&s=golden-ratio')
   })
 
   it('restores the last session on a plain visit, but a link wins', async () => {

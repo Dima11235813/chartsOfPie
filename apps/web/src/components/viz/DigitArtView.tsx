@@ -1,3 +1,5 @@
+import { withSymbol } from '../../core/series/series'
+import { useNumber } from '../numberContext'
 import { useRef, useState } from 'react'
 import {
   MAX_MOSAIC_COLUMNS,
@@ -53,6 +55,7 @@ export function DigitArtView({
   const { ref, canvasRef, size } = useCanvas(onCanvas)
   const colors = useDigitColors()
   const definition = ART[kind]
+  const number = useNumber()
   const renderer = useRef<DigitRenderer | null>(null)
   const [summary, setSummary] = useState('No digits yet.')
   const [shownColumns, setShownColumns] = useState(0)
@@ -78,7 +81,7 @@ export function DigitArtView({
       onLayout?.(cols)
     }
     if (count === 0) return 'No digits yet.'
-    if (kind !== 'mosaic' || !cols) return definition.summary(count)
+    if (kind !== 'mosaic' || !cols) return definition.summary(count, source.length)
     const groups = shapeFilter
       ? ' Showing only one shape of group.'
       : minGroup > 1
@@ -138,7 +141,7 @@ export function DigitArtView({
       ref={ref}
       className="viz-canvas"
       role="img"
-      aria-label={`${definition.describe} ${summary}`}
+      aria-label={`${withSymbol(definition.describe, number.symbol)} ${summary}`}
     />
   )
   if (kind !== 'mosaic' || !onMosaicChange) return canvas
