@@ -131,3 +131,4 @@ E06 story S06.1.1 · E02 stories listed above as done.
 | B-017 | My pieces "Name + Save" row overflows at 360 px              | low      | done    |
 | B-018 | Neighbour mosaic blank after turning Sweep off               | high     | done    |
 | B-021 | Typographic decimal point after a jump / for whole numbers   | low      | done    |
+| B-022 | CI: flaky full-screen e2e on the mobile viewport             | medium   | done    |

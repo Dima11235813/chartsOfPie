@@ -26,11 +26,11 @@ jobs:
       - name: Cloudflare not configured yet
         if: env.HAS_TOKEN != 'true'
         run: echo "::notice::Set CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID to deploy the API (apps/api/README.md)."
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         if: env.HAS_TOKEN == 'true'
         with:
           ref: ${{ github.event.workflow_run.head_sha || github.sha }}
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         if: env.HAS_TOKEN == 'true'
         with:
           node-version-file: .nvmrc
