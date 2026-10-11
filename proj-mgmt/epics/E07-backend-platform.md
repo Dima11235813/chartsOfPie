@@ -17,6 +17,13 @@ GitHub first. Bearer sessions instead of cookies: the web app (github.io) and th
 (workers.dev) are different sites, and third-party cookies are being phased out. Supersedes the
 PostgreSQL/OIDC-BFF sketch below; R-003 updated.
 
+## Decision (owner, 2026-10-11): offline mode, localhost full stack
+
+The API is **not deployed** for now. The published site is built without `VITE_API_URL` (offline
+mode: accounts hidden, pieces on the device); `deploy-api.yml` is manual-only. The full stack runs
+on localhost with ports from the owner's "Port allocation and resource usage rules" (Google
+Drive, project management). An unreachable API is shown as offline, not as an error.
+
 ## Features
 
 - [x] F07.1 — `apps/api` (Hono on Workers) sharing the piece schema/validation with the web app
@@ -31,8 +38,11 @@ PostgreSQL/OIDC-BFF sketch below; R-003 updated.
       delete (hidden unless `VITE_API_URL` is set)
 - [ ] F07.5 — Account lifecycle: delete account & data export, rate limiting (Workers rate
       limiting binding), audit log
-- [x] F07.6 — Deployment: `deploy-api.yml` (wrangler, D1 migrations) after CI — **owner setup
-      pending** (Cloudflare account, D1 id, GitHub OAuth app, secrets; `apps/api/README.md`)
+- [x] F07.6 — Deployment: `deploy-api.yml` (wrangler, D1 migrations) — **paused**, manual only
+      (2026-10-11 decision above); owner setup still pending (`apps/api/README.md`)
+- [x] F07.7 — Offline mode & local full stack: offline published build, unreachable API shown as
+      offline, configurable local ports (`.env.example`, `.dev.vars.example`, `[dev]` in
+      `wrangler.toml`) — port numbers to match the owner's port-allocation rules
 
 ## Research
 

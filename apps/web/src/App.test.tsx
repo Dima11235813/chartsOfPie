@@ -3,7 +3,12 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import App from './App'
 import { createMemoryStore } from './storage/pieceStore'
-import type { AccountApi, RemotePiece, Visibility } from './account/accountApi'
+import {
+  createAccountApi,
+  type AccountApi,
+  type RemotePiece,
+  type Visibility,
+} from './account/accountApi'
 import type { NotePlayer } from './audio/notePlayer'
 import { createDigitSource, parseDigits } from './core/digits/digitSource'
 import { encodeConfig } from './core/composition/config'
@@ -451,6 +456,25 @@ describe('App', () => {
     await user.click(screen.getByRole('button', { name: 'Sign out' }))
     expect(await screen.findByRole('button', { name: 'Sign in with GitHub' })).toBeInTheDocument()
     expect(localStorage.getItem('charts-of-pie:session')).toBeNull()
+  })
+
+  it('treats an unreachable API as offline mode: no error, pieces stay on this device', async () => {
+    const unreachable = createAccountApi('http://localhost:1', async () => {
+      throw new TypeError('Failed to fetch')
+    })
+    render(
+      <App
+        createPlayer={fakePlayer}
+        loadSource={source}
+        createStore={createMemoryStore}
+        createAccountApi={() => unreachable}
+      />,
+    )
+    expect(
+      await screen.findByText('Account server offline: pieces are saved on this device.'),
+    ).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Sign in with GitHub' })).not.toBeInTheDocument()
+    expect(screen.queryByText(/not reachable|Failed to fetch/)).not.toBeInTheDocument()
   })
 
   it('hides accounts when no API is configured', () => {

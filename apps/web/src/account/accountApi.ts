@@ -32,6 +32,13 @@ export interface AccountApi {
   deletePiece(token: string, id: string): Promise<void>
 }
 
+/** The API could not be reached at all (not deployed, not running locally, or no network). */
+export class ApiUnreachableError extends Error {
+  constructor(cause: unknown) {
+    super('The account server is not reachable', { cause })
+  }
+}
+
 class ApiError extends Error {
   constructor(
     readonly status: number,
@@ -45,13 +52,18 @@ class ApiError extends Error {
 export function createAccountApi(baseUrl: string, fetchImpl: typeof fetch = fetch): AccountApi {
   const base = baseUrl.replace(/\/$/, '')
   const request = async <T>(path: string, init: RequestInit = {}, token?: string): Promise<T> => {
-    const response = await fetchImpl(`${base}${path}`, {
-      ...init,
-      headers: {
-        ...(init.body ? { 'Content-Type': 'application/json' } : {}),
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
-    })
+    let response: Response
+    try {
+      response = await fetchImpl(`${base}${path}`, {
+        ...init,
+        headers: {
+          ...(init.body ? { 'Content-Type': 'application/json' } : {}),
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      })
+    } catch (cause) {
+      throw new ApiUnreachableError(cause)
+    }
     const body = (await response.json().catch(() => ({}))) as { error?: string }
     if (!response.ok) throw new ApiError(response.status, body.error ?? response.statusText)
     return body as T
@@ -94,7 +106,11 @@ export function createAccountApi(baseUrl: string, fetchImpl: typeof fetch = fetc
   }
 }
 
-/** The configured API, or null when this build has none (accounts are then hidden). */
+/**
+ * The configured API, or null when this build has none: offline mode, where accounts are hidden
+ * and pieces live only on this device. The published site is built this way while the API is not
+ * deployed; `VITE_API_URL=http://localhost:<api port>` turns accounts on for local full-stack work.
+ */
 export function defaultAccountApi(): AccountApi | null {
   const url = import.meta.env.VITE_API_URL as string | undefined
   return url ? createAccountApi(url) : null

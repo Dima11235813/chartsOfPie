@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import type { AccountApi, AccountUser } from './accountApi'
+import { ApiUnreachableError, type AccountApi, type AccountUser } from './accountApi'
 
 const SESSION_KEY = 'charts-of-pie:session'
 
@@ -22,6 +22,8 @@ const writeToken = (token: string | null) => {
 export interface AccountState {
   /** False when this build has no API configured. */
   enabled: boolean
+  /** An API is configured but could not be reached: work stays on this device. */
+  offline: boolean
   user: AccountUser | null
   token: string | null
   busy: boolean
@@ -39,6 +41,7 @@ export function useAccount(api: AccountApi | null): AccountState {
   const [user, setUser] = useState<AccountUser | null>(null)
   const [busy, setBusy] = useState(() => Boolean(api && (readToken() || loginCode())))
   const [error, setError] = useState<string | null>(null)
+  const [offline, setOffline] = useState(false)
 
   useEffect(() => {
     if (!api) return
@@ -56,14 +59,18 @@ export function useAccount(api: AccountApi | null): AccountState {
           writeToken(current)
           if (!cancelled) setToken(current)
         }
-        const me = current ? await api.me(current) : null
+        // Signed out, this still asks /me (401 = fine) so an unreachable API shows as offline.
+        const me = await api.me(current ?? '')
         if (current && !me) writeToken(null)
         if (!cancelled) {
           setUser(me)
           if (!me) setToken(null)
         }
       } catch (cause) {
-        if (!cancelled) setError(cause instanceof Error ? cause.message : 'Sign-in failed')
+        if (cancelled) return
+        // An unreachable API is offline mode, not an error: keep the session for when it is back.
+        if (cause instanceof ApiUnreachableError) setOffline(true)
+        else setError(cause instanceof Error ? cause.message : 'Sign-in failed')
       } finally {
         if (!cancelled) setBusy(false)
       }
@@ -85,7 +92,16 @@ export function useAccount(api: AccountApi | null): AccountState {
     setUser(null)
   }, [api, token])
 
-  return { enabled: api !== null, user, token: user ? token : null, busy, error, signIn, signOut }
+  return {
+    enabled: api !== null,
+    offline,
+    user,
+    token: user ? token : null,
+    busy,
+    error,
+    signIn,
+    signOut,
+  }
 }
 
 function loginCode(): string | null {
