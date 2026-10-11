@@ -10,8 +10,13 @@ export interface RendererOptions {
   height: number
   /** UI scale: devicePixelRatio for live views, ≈ width / 800 for posters. */
   scale: number
-  /** Ten digit colours. */
+  /**
+   * One colour per symbol: ten for decimal digits. Its length is the alphabet size, so a renderer
+   * with one arc, direction or glyph per symbol draws k of them for a k-symbol source (F05.5).
+   */
   colors: readonly string[]
+  /** Symbol of the number drawn (the digit ring shows it in the middle); default π. */
+  symbol?: string
   /**
    * The whole digit source, for renderers that show what is still to come (the Hilbert carpet
    * draws all million digits faintly and lights them up as they play).

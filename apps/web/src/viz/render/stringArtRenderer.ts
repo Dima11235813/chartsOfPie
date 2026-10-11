@@ -31,10 +31,11 @@ export function drawStringArt(
   ctx.clearRect(0, 0, width, height)
   ctx.lineWidth = Math.max(0.6, scale * 0.9)
   const alpha = Math.min(1, 0.55 + glow * 0.45)
-  // Batch strings by colour (the digit n mod 10) for speed.
-  for (let d = 0; d < 10; d++) {
+  // Batch strings by colour (point n takes colour n mod k, k = 10 for digits) for speed.
+  const k = colors.length
+  for (let d = 0; d < k; d++) {
     ctx.beginPath()
-    for (let n = d; n < points; n += 10) {
+    for (let n = d; n < points; n += k) {
       const [x1, y1] = polar(circlePointAngle(n, points), radius)
       const [x2, y2] = polar(
         circlePointAngle(stringArtTarget(n, multiplier, points), points),

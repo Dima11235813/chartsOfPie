@@ -70,7 +70,8 @@ export async function renderPoster(
 
   if (kind === 'string-art') {
     name = 'Times-table string art'
-    const multiplier = count >= 2 ? stringArtMultiplier(digitAt(count - 2), digitAt(count - 1)) : 2
+    const multiplier =
+      count >= 2 ? stringArtMultiplier(digitAt(count - 2), digitAt(count - 1), colors.length) : 2
     drawStringArt(artCtx, art.width, art.height, scale, { multiplier, colors, label: caption })
   } else {
     const definition = ART[kind]
@@ -82,7 +83,7 @@ export async function renderPoster(
       name += ` · groups of ${settings.mosaicMinGroup}+`
     }
     const renderer = definition.poster(
-      { width: art.width, height: art.height, scale, colors },
+      { width: art.width, height: art.height, scale, colors, symbol },
       count,
       settings,
     )

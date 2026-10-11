@@ -8,6 +8,8 @@ import type { TermIndex } from '../digits/digitSource'
  *   D9). A million digits need only 3,094 terms (the last has ~650 digits), so BigInt is cheap.
  * - `last-digit`: Fₙ mod 10, one symbol per term. It repeats every 60 terms (the Pisano period
  *   π(10) = 60, A001175), so it is a table, no big numbers at all.
+ * - `mod-12`: Fₙ mod 12, one pitch class per term (F05.5). It repeats every 24 terms (π(12) = 24)
+ *   and never reaches 6, so played as semitones above C it is a 24-note melody without F♯.
  */
 
 export interface FibonacciSymbols {
@@ -17,6 +19,22 @@ export interface FibonacciSymbols {
 
 /** Pisano period of 10: Fₙ mod 10 repeats every 60 terms. */
 export const PISANO_10 = 60
+/** Pisano period of 12: Fₙ mod 12 repeats every 24 terms. */
+export const PISANO_12 = 24
+
+/**
+ * The Pisano period π(m): the length of the loop Fₙ mod m repeats (OEIS A001175). The pair
+ * (Fₙ, Fₙ₊₁) mod m determines the rest, so the loop closes when (0, 1) comes back.
+ */
+export function pisanoPeriod(modulus: number): number {
+  if (!Number.isInteger(modulus) || modulus < 1) throw new RangeError(`Bad modulus: ${modulus}`)
+  if (modulus === 1) return 1
+  let [a, b] = [0, 1]
+  for (let n = 1; ; n++) {
+    ;[a, b] = [b, (a + b) % modulus]
+    if (a === 0 && b === 1) return n
+  }
+}
 
 /** One term per symbol: term k starts at position k. */
 const oneTermPerSymbol = (count: number): TermIndex => ({
@@ -25,18 +43,23 @@ const oneTermPerSymbol = (count: number): TermIndex => ({
   termAt: (position) => position,
 })
 
-/** Fₙ mod 10 for n = 0 … length − 1. */
-export function fibonacciLastDigits(length: number): FibonacciSymbols {
-  const period = new Uint8Array(PISANO_10)
-  let [a, b] = [0, 1]
-  for (let n = 0; n < PISANO_10; n++) {
+/** Fₙ mod `modulus` (at most 256) for n = 0 … length − 1: one loop of π(m) terms, repeated. */
+export function fibonacciResidues(length: number, modulus: number): FibonacciSymbols {
+  if (modulus > 256) throw new RangeError(`Modulus ${modulus} does not fit a byte`)
+  const size = pisanoPeriod(modulus)
+  const period = new Uint8Array(size)
+  let [a, b] = [0, 1 % modulus]
+  for (let n = 0; n < size; n++) {
     period[n] = a
-    ;[a, b] = [b, (a + b) % 10]
+    ;[a, b] = [b, (a + b) % modulus]
   }
   const symbols = new Uint8Array(length)
-  for (let n = 0; n < length; n++) symbols[n] = period[n % PISANO_10]!
+  for (let n = 0; n < length; n++) symbols[n] = period[n % size]!
   return { symbols, terms: oneTermPerSymbol(length) }
 }
+
+/** Fₙ mod 10 for n = 0 … length − 1. */
+export const fibonacciLastDigits = (length: number) => fibonacciResidues(length, 10)
 
 /** The first `length` digits of F₀ F₁ F₂ … written one after another, with each term's start. */
 export function fibonacciConcatenated(length: number): FibonacciSymbols {

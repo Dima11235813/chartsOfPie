@@ -21,7 +21,13 @@ interface Window {
     kinds: string[]
     render(
       kind: string,
-      options?: { count?: number; size?: number; palette?: string; series?: string },
+      options?: {
+        count?: number
+        size?: number
+        palette?: string
+        series?: string
+        reading?: string
+      },
     ): Promise<string>
   }
   audioLab: {

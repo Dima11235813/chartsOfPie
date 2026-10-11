@@ -4,14 +4,23 @@ import { noteToMidi } from '../core/music/notes'
  * Colour palettes shared by every view (chart, staff, stream, ring, walk, sunflower). A palette
  * turns the ten digits into colours; the Scriabin palette goes through the notes the current
  * scale assigns to each digit, so colour follows pitch.
+ *
+ * Other alphabets (F05.5): a palette gives one colour per entry of the note table, so k symbols
+ * get k colours. Ten stay exactly the colours below; other counts are interpolated through them
+ * (fewer than ten distinct ones take the first k of the colour-blind set), and Scriabin follows
+ * pitch for any count, so mod 12 on semitones gets his twelve colours.
  */
 export interface Palette {
   readonly id: string
   readonly name: string
   readonly description: string
-  /** Colour per digit (index = digit). `noteTable` is the note each digit plays. */
+  /** Colour per symbol (index = symbol). `noteTable` is the note each symbol plays. */
   digitColors(noteTable: readonly string[]): string[]
 }
+
+/** `colors` for ten symbols; for k ≠ 10, interpolated through them (`steps` = k). */
+const forAlphabet = (colors: readonly string[], size: number) =>
+  size === colors.length ? [...colors] : paletteRamp(colors, size)
 
 /** The original 2019 rainbow (digits 0/9, 1/8 and 2/7 share colours). */
 export const RAINBOW = [
@@ -82,29 +91,31 @@ export const PALETTES: readonly Palette[] = [
     id: 'rainbow',
     name: 'Rainbow (original)',
     description: 'The 2019 colours',
-    digitColors: () => [...RAINBOW],
+    digitColors: (noteTable) => forAlphabet(RAINBOW, noteTable.length),
   },
   {
     id: 'colour-blind',
     name: 'Colour-blind friendly',
     description: "Paul Tol's light scheme: ten distinct, high-contrast colours",
-    digitColors: () => [...TOL_LIGHT],
+    // Qualitative: interpolating would blur neighbours together, so fewer symbols take the
+    // first k and more symbols are interpolated.
+    digitColors: (noteTable) =>
+      noteTable.length <= TOL_LIGHT.length
+        ? TOL_LIGHT.slice(0, noteTable.length)
+        : forAlphabet(TOL_LIGHT, noteTable.length),
   },
   {
     id: 'scriabin',
     name: 'Scriabin (by pitch)',
     description: "Each digit takes the colour Scriabin gave its note's pitch class",
     digitColors: (noteTable) =>
-      Array.from({ length: 10 }, (_, digit) => {
-        const note = noteTable[digit]
-        return note ? SCRIABIN[((noteToMidi(note) % 12) + 12) % 12]! : RAINBOW[digit]!
-      }),
+      noteTable.map((note) => SCRIABIN[((noteToMidi(note) % 12) + 12) % 12]!),
   },
   {
     id: 'ink',
     name: 'Ink (sequential)',
     description: 'Calm blues from dark (0) to light (9)',
-    digitColors: () => [...INK],
+    digitColors: (noteTable) => forAlphabet(INK, noteTable.length),
   },
 ]
 

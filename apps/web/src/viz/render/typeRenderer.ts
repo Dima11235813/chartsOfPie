@@ -1,4 +1,5 @@
 import { runLengthEndingAt } from '../art'
+import { symbolGlyph } from '../../core/digits/digitSource'
 import { withAlpha } from '../palettes'
 import { createLayer, type DigitAt, type DigitRenderer, type RendererOptions } from './renderer'
 
@@ -70,7 +71,7 @@ export function createTypeRenderer(
       const digit = digitAt(i)
       const [x, y] = origin(i)
       t.fillStyle = colors[digit]!
-      t.fillText(String(digit), x + cell / 2, y + cell / 2)
+      t.fillText(symbolGlyph(digit), x + cell / 2, y + cell / 2)
       if (i === decimalPoint) t.fillText('.', x + cell * 0.95, y + cell * 0.62)
       if (termStartAt?.(i)) {
         // A thin rule before each term, so 13 21 34 read as numbers rather than 1 3 2 1 3 4.

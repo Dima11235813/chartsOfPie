@@ -1,4 +1,5 @@
 import type { ChartConfiguration, ChartType } from 'chart.js'
+import { symbolGlyph } from '../core/digits/digitSource'
 import { RAINBOW } from '../viz/palettes'
 
 /** Chart styles offered in the UI. `horizontalBar` was a Chart.js 2 type; v4 uses `indexAxis`. */
@@ -20,6 +21,12 @@ export const DEFAULT_CHART_STYLE: ChartStyle = 'bar'
 export const DIGIT_COLORS = RAINBOW
 
 export const DIGIT_LABELS = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
+
+/** One label per symbol: 0–9 for digits, then A, B… (mod 12 has twelve bars, 0–9, A and B). */
+export const symbolLabels = (count: number) =>
+  count === DIGIT_LABELS.length
+    ? DIGIT_LABELS
+    : Array.from({ length: count }, (_, s) => symbolGlyph(s))
 
 /** Legacy animation length: one beat at 100 BPM minus a 1% buffer. */
 export const CHART_ANIMATION_MS = 594
@@ -54,7 +61,7 @@ export function buildChartConfig(
   return {
     type,
     data: {
-      labels: DIGIT_LABELS,
+      labels: symbolLabels(counts.length),
       datasets: [
         {
           label: 'Numbers of Pie',
@@ -107,6 +114,7 @@ export function applyCounts(
 ) {
   const dataset = config.data.datasets[0]
   if (dataset) dataset.data = [...counts]
+  if (config.data.labels?.length !== counts.length) config.data.labels = symbolLabels(counts.length)
   if (isCartesian(style)) {
     const axis = style === 'horizontalBar' ? config.options?.scales?.x : config.options?.scales?.y
     if (axis) {

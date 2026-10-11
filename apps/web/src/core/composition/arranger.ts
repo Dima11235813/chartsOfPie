@@ -1,3 +1,4 @@
+import { toDecimalSymbol } from '../digits/digitSource'
 import { digitNoteTable } from '../music/mapping'
 import { getScale } from '../music/scaleCatalogue'
 import {
@@ -33,9 +34,15 @@ export const notationToSeconds = (notation: string, bpm: number) => {
 
 const LEGACY_BPM = 120
 
-/** The ten notes (index = digit) a config produces. */
-export function noteTableFor(config: CompositionConfig): string[] {
-  return digitNoteTable(getScale(config.scale), config.root, config.octave, config.mapping)
+/** The notes (index = symbol) a config produces: ten for digits, k for a k-symbol alphabet. */
+export function noteTableFor(config: CompositionConfig, alphabetSize = 10): string[] {
+  return digitNoteTable(
+    getScale(config.scale),
+    config.root,
+    config.octave,
+    config.mapping,
+    alphabetSize,
+  )
 }
 
 /**
@@ -63,6 +70,8 @@ export class Arranger {
   /** Position of the next digit when the caller does not pass one. */
   private position = 0
   private notes: string[]
+  /** Symbols in the alphabet being played (10 for decimal digits). */
+  private alphabetSize = 10
 
   constructor(
     private config: CompositionConfig,
@@ -77,7 +86,14 @@ export class Arranger {
 
   setConfig(config: CompositionConfig): void {
     this.config = config
-    this.notes = noteTableFor(config)
+    this.notes = noteTableFor(config, this.alphabetSize)
+  }
+
+  /** Play symbols of a k-symbol alphabet (e.g. 12 for Fibonacci mod 12): one note per symbol. */
+  setAlphabet(alphabetSize: number): void {
+    if (alphabetSize === this.alphabetSize) return
+    this.alphabetSize = alphabetSize
+    this.notes = noteTableFor(this.config, alphabetSize)
   }
 
   reset(): void {
@@ -93,11 +109,13 @@ export class Arranger {
     const { config } = this
     this.position = index + 1
     const stepSec = 60 / config.bpm / config.subdivision
+    // Rhythms with exactly ten lengths read the symbol scaled onto 0–9 (R-011 D7).
+    const decimal = toDecimalSymbol(digit, this.alphabetSize)
     const isRest =
       (config.rhythm === 'steady-rests' || config.rhythm === 'digit-length') && digit === 0
     const steps =
       config.rhythm === 'digit-length'
-        ? Math.max(1, digit)
+        ? Math.max(1, decimal)
         : config.rhythm === 'zeckendorf'
           ? zeckendorfSteps(index)
           : 1
@@ -112,7 +130,7 @@ export class Arranger {
     let durationSec: number
     let durationLabel: string
     if (config.rhythm === 'legacy') {
-      durationLabel = LEGACY_DIGIT_DURATIONS[digit]!
+      durationLabel = LEGACY_DIGIT_DURATIONS[decimal]!
       const bpm = config.timing === 'tempo' ? config.bpm : LEGACY_BPM
       durationSec = notationToSeconds(durationLabel, bpm)
     } else {

@@ -23,7 +23,8 @@ export function createWalkRenderer(
 ): DigitRenderer {
   const bands = positionTotal ? paletteRamp(colors, POSITION_BANDS) : null
   let layer = createLayer(width, height)
-  const walk = new WalkPath()
+  // One direction per symbol: ten for digits, twelve (a clock face) for mod 12.
+  const walk = new WalkPath(colors.length)
   const digits: number[] = []
   let fit: FitTransform = fitBounds(0, 0, 0, 0, width, height, 1.6)
 
@@ -57,7 +58,7 @@ export function createWalkRenderer(
       return
     }
     // One path per digit colour keeps hundreds of thousands of segments fast.
-    for (let d = 0; d < 10; d++) {
+    for (let d = 0; d < colors.length; d++) {
       ctx.beginPath()
       let any = false
       for (let i = from; i < to; i++) {

@@ -48,6 +48,24 @@ export const alphabetOf = (source: Pick<DigitSource, 'alphabetSize'>) =>
   source.alphabetSize ?? DECIMAL_ALPHABET
 
 /**
+ * One character for a symbol, as in hexadecimal: 0–9, then A = 10, B = 11 … Z = 35, so a symbol
+ * always takes one cell of type (mod 12 reads 0 1 1 2 3 5 8 1 9 A 7 5).
+ */
+export function symbolGlyph(symbol: number): string {
+  if (!Number.isInteger(symbol) || symbol < 0 || symbol > 35) return '?'
+  return symbol < 10 ? String(symbol) : String.fromCharCode(55 + symbol)
+}
+
+/**
+ * Scales a symbol of a k-symbol alphabet onto 0–9 (⌊s · 10 / k⌋), for anything that has exactly
+ * ten choices, such as the original note lengths (R-011 decision D7). Identity for k = 10.
+ */
+export const toDecimalSymbol = (symbol: number, alphabetSize: number) =>
+  alphabetSize === DECIMAL_ALPHABET
+    ? symbol
+    : Math.floor((symbol * DECIMAL_ALPHABET) / alphabetSize)
+
+/**
  * The same digits starting at `start` of `source`: index 0 is `source.digitAt(start)`. Playback
  * uses this to begin anywhere (e.g. at the Feynman point) while every view still sees a
  * performance that starts at 0; `offset` gives the absolute position back for labels.

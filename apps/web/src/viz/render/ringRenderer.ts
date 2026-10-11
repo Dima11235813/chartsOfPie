@@ -1,4 +1,5 @@
 import { polar, ringAngle, ringSegment, TransitionCounts } from '../art'
+import { symbolGlyph } from '../../core/digits/digitSource'
 import { withAlpha } from '../palettes'
 import { createLayer, type DigitAt, type DigitRenderer, type RendererOptions } from './renderer'
 
@@ -11,7 +12,7 @@ export const RING_MAX_REDRAW = 10_000
  * arc, so links spread evenly and never move.
  */
 export function createRingRenderer(
-  { width, height, scale, colors }: RendererOptions,
+  { width, height, scale, colors, symbol = 'π' }: RendererOptions,
   { maxRedraw = RING_MAX_REDRAW } = {},
 ): DigitRenderer {
   const layer = createLayer(width, height)
@@ -19,14 +20,16 @@ export function createRingRenderer(
   const cx = width / 2
   const cy = height / 2
   const radius = Math.max(40 * scale, Math.min(width, height) / 2 - 64 * scale)
-  const occurrences = new Uint32Array(10)
-  const transitions = new TransitionCounts()
+  // One arc per symbol: ten for digits, twelve for mod 12.
+  const k = colors.length
+  const occurrences = new Uint32Array(k)
+  const transitions = new TransitionCounts(k)
   let previous = -1
   let previousAngle = 0
   let lastLink: [number, number, number, number] | null = null
 
   const advance = (digit: number) => {
-    const angle = ringAngle(digit, occurrences[digit]!++)
+    const angle = ringAngle(digit, occurrences[digit]!++, k)
     if (previous >= 0) transitions.add(previous, digit)
     const link = previous >= 0 ? ([previousAngle, angle, previous] as const) : null
     previous = digit
@@ -66,8 +69,8 @@ export function createRingRenderer(
     compose(ctx, { highlight, chordDigits }) {
       ctx.clearRect(0, 0, width, height)
       ctx.drawImage(layer, 0, 0)
-      for (let d = 0; d < 10; d++) {
-        const [start, end] = ringSegment(d)
+      for (let d = 0; d < k; d++) {
+        const [start, end] = ringSegment(d, k)
         ctx.beginPath()
         ctx.arc(cx, cy, radius + 10 * scale, start, end)
         ctx.strokeStyle = colors[d]!
@@ -79,15 +82,15 @@ export function createRingRenderer(
         ctx.font = `${13 * scale}px system-ui, sans-serif`
         ctx.textAlign = 'center'
         ctx.textBaseline = 'middle'
-        ctx.fillText(String(d), cx + lx, cy + ly)
+        ctx.fillText(symbolGlyph(d), cx + lx, cy + ly)
       }
       if (transitions.max > 0) {
-        for (let from = 0; from < 10; from++) {
-          const [start, end] = ringSegment(from)
-          for (let to = 0; to < 10; to++) {
+        for (let from = 0; from < k; from++) {
+          const [start, end] = ringSegment(from, k)
+          for (let to = 0; to < k; to++) {
             const count = transitions.get(from, to)
             if (!count) continue
-            const [bx, by] = polar(start + ((to + 0.5) / 10) * (end - start), radius + 50 * scale)
+            const [bx, by] = polar(start + ((to + 0.5) / k) * (end - start), radius + 50 * scale)
             ctx.beginPath()
             ctx.arc(
               cx + bx,
@@ -111,8 +114,15 @@ export function createRingRenderer(
         ctx.stroke()
       }
       ctx.fillStyle = '#8fd3ff'
-      ctx.font = `${Math.round(radius * 0.22)}px Georgia, serif`
-      ctx.fillText('π', cx, cy)
+      // The number's symbol in the middle, shrunk to fit a long one ("Fibonacci").
+      let font = Math.round(radius * 0.22)
+      ctx.font = `${font}px Georgia, serif`
+      const fit = (radius * 0.9) / Math.max(1, ctx.measureText(symbol).width)
+      if (fit < 1) {
+        font = Math.max(8, Math.floor(font * fit))
+        ctx.font = `${font}px Georgia, serif`
+      }
+      ctx.fillText(symbol, cx, cy)
     },
   }
 }

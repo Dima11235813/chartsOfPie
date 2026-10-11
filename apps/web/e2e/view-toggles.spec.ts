@@ -295,6 +295,83 @@ test('Fibonacci: jump to Fₙ, terms, Benford table, loop widths on and off', as
   await expect(page.getByLabel(/Jump to Fₙ/)).toHaveCount(0)
 })
 
+test('Fibonacci mod 12: twelve symbols in every digit view, semitones on and off, back to π', async ({
+  page,
+}) => {
+  const errors: string[] = []
+  page.on('pageerror', (error) => errors.push(error.message))
+  // Fₙ mod 12: 0 1 1 2 3 5 8 1 9 10 7 5 0 5 5 10 3 1 4 5 9 2 11 1, written 0–9, A, B.
+  await page.goto('/#s=fibonacci.mod-12')
+  await expect(page.getByRole('button', { name: 'Play' })).toBeEnabled({ timeout: 15_000 })
+  await expect(page.getByRole('combobox', { name: 'Reading' })).toHaveValue('mod-12')
+  const step = async (n: number) => {
+    await page.locator('body').click({ position: { x: 5, y: 5 } })
+    for (let i = 0; i < n; i++) await page.keyboard.press('ArrowRight')
+  }
+  await step(24)
+  await expect(page.locator('.stream')).toHaveText('011235819A75055A314592B1')
+  await expect(page.getByTestId('term')).toHaveText('F₂₃ · step 24 of 24')
+  // Twelve rows in the counts table; B (11) has appeared once, 6 never.
+  const table = page.locator('table.ratios').first()
+  await expect(table.locator('tbody tr')).toHaveCount(12)
+  await expect(table.locator('tbody tr').nth(11)).toContainText('B1')
+  await expect(table.locator('tbody tr').nth(6)).toContainText('60')
+
+  // Every view that draws symbols draws twelve of them.
+  const view = page.getByRole('combobox', { name: 'View' })
+  for (const label of [
+    'Digit chart',
+    'Digit ring',
+    'Fibonacci walk',
+    'Sunflower',
+    'Neighbour mosaic',
+    'Hilbert carpet',
+    'Typographic Fibonacci',
+    'String art',
+  ]) {
+    await view.selectOption({ label })
+    await expect
+      .poll(() => inkedPixels(page), { message: `${label} should draw`, timeout: 6_000 })
+      .toBeGreaterThan(100)
+  }
+  // String art reads the last two symbols, B and 1, as a base-12 number: 2 + 11 + 1/12.
+  await expect(page.getByRole('img', { name: /k = 13\.08 from the symbols B1\./ })).toBeVisible()
+
+  // Semitones on: symbol s is s semitones above C, so the clock never lights F♯ …
+  await view.selectOption({ label: 'Music clock' })
+  const hint = page.getByTestId('pitch-class-hint')
+  await expect(hint).toBeVisible()
+  await hint.getByRole('button', { name: 'Use semitones' }).click()
+  await expect(hint).toHaveCount(0)
+  await expect(page.getByRole('list', { name: 'Which note each symbol plays' })).toContainText(
+    'BB4',
+  )
+  await page.getByRole('combobox', { name: 'Reading' }).selectOption({ label: 'Last digit' })
+  await page.getByRole('combobox', { name: 'Reading' }).selectOption({ label: 'Mod 12' })
+  await step(48)
+  await expect(page.getByRole('img', { name: /Music clock/ })).toHaveAttribute(
+    'aria-label',
+    /Heard 11 of 12 pitch classes; never F♯ so far\./,
+  )
+  await expect.poll(() => inkedPixels(page)).toBeGreaterThan(100)
+  // … and back off (rule 9): another mapping brings the hint back, the clock still draws.
+  await page.getByText('Customize').click()
+  await page.getByLabel('Digits → notes').selectOption({ label: 'Ascending' })
+  await expect(hint).toBeVisible()
+  await expect.poll(() => inkedPixels(page)).toBeGreaterThan(100)
+
+  // Back to π from the ring (whose twelve arcs are drawn until π has loaded): ten digits again.
+  await view.selectOption({ label: 'Digit ring' })
+  await page.getByRole('combobox', { name: 'Number' }).selectOption({ label: 'π (pi)' })
+  await expect(page).not.toHaveURL(/s=/)
+  await expect(hint).toHaveCount(0)
+  await step(5)
+  await expect(page.locator('.stream')).toHaveText('31415')
+  await expect(table.locator('tbody tr')).toHaveCount(10)
+  await expect.poll(() => inkedPixels(page)).toBeGreaterThan(100)
+  expect(errors).toEqual([])
+})
+
 for (const [view, toggle] of [
   ['Music clock', 'Circle of fifths'],
   ['Harmonograph', 'Pure ratios'],

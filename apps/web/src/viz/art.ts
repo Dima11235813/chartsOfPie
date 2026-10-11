@@ -14,9 +14,12 @@ export const GOLDEN_ANGLE = Math.PI * (3 - Math.sqrt(5))
 
 // ── π walk (Nadieh Bremer, "The Art in Pi") ────────────────────────────────────────────────────
 
-/** Unit step for a digit: ten directions, 0 pointing up, increasing clockwise (36° apart). */
-export function walkStep(digit: number): [number, number] {
-  const angle = (digit / 10) * TAU
+/**
+ * Unit step for a digit: ten directions, 0 pointing up, increasing clockwise (36° apart). A
+ * k-symbol alphabet has k directions (mod 12: a clock face, 30° apart).
+ */
+export function walkStep(digit: number, alphabetSize = 10): [number, number] {
+  const angle = (digit / alphabetSize) * TAU
   return [Math.sin(angle), -Math.cos(angle)]
 }
 
@@ -30,6 +33,9 @@ export class WalkPath {
   minY = 0
   maxY = 0
 
+  /** `alphabetSize`: how many directions there are (one per symbol). */
+  constructor(readonly alphabetSize = 10) {}
+
   push(digit: number): void {
     if (this.length === this.xs.length) {
       const grow = (old: Float64Array) => {
@@ -40,7 +46,7 @@ export class WalkPath {
       this.xs = grow(this.xs)
       this.ys = grow(this.ys)
     }
-    const [dx, dy] = walkStep(digit)
+    const [dx, dy] = walkStep(digit, this.alphabetSize)
     const x = this.xs[this.length - 1]! + dx
     const y = this.ys[this.length - 1]! + dy
     this.xs[this.length] = x
@@ -128,9 +134,12 @@ export function sunflowerCapacity(count: number): number {
 /** Gap between digit segments, radians. */
 export const RING_GAP = 0.06
 
-/** Angular extent [start, end] of a digit's segment; 0 starts at the top, clockwise. */
-export function ringSegment(digit: number): [number, number] {
-  const width = TAU / 10
+/**
+ * Angular extent [start, end] of a digit's segment; 0 starts at the top, clockwise. One segment per
+ * symbol: ten for digits, k for a k-symbol alphabet.
+ */
+export function ringSegment(digit: number, alphabetSize = 10): [number, number] {
+  const width = TAU / alphabetSize
   const start = -Math.PI / 2 + digit * width + RING_GAP / 2
   return [start, start + width - RING_GAP]
 }
@@ -139,8 +148,8 @@ export function ringSegment(digit: number): [number, number] {
  * Where on its segment a link endpoint sits: the k-th occurrence of a digit lands at
  * frac(k / φ) along the segment, which spreads endpoints evenly without ever moving old ones.
  */
-export function ringAngle(digit: number, occurrence: number): number {
-  const [start, end] = ringSegment(digit)
+export function ringAngle(digit: number, occurrence: number, alphabetSize = 10): number {
+  const [start, end] = ringSegment(digit, alphabetSize)
   const t = (occurrence * GOLDEN_RATIO_CONJUGATE) % 1
   return start + t * (end - start)
 }
@@ -163,19 +172,23 @@ export const polar = (angle: number, r: number): [number, number] => [
   r * Math.sin(angle),
 ]
 
-/** Counts of digit → next-digit transitions (10 × 10). */
+/** Counts of digit → next-digit transitions (10 × 10, or k × k for a k-symbol alphabet). */
 export class TransitionCounts {
-  readonly counts = new Uint32Array(100)
+  readonly counts: Uint32Array
   max = 0
 
+  constructor(readonly alphabetSize = 10) {
+    this.counts = new Uint32Array(alphabetSize * alphabetSize)
+  }
+
   add(from: number, to: number): number {
-    const value = ++this.counts[from * 10 + to]!
+    const value = ++this.counts[from * this.alphabetSize + to]!
     this.max = Math.max(this.max, value)
     return value
   }
 
   get(from: number, to: number): number {
-    return this.counts[from * 10 + to]!
+    return this.counts[from * this.alphabetSize + to]!
   }
 
   reset(): void {
@@ -292,9 +305,16 @@ export function mosaicFill(
 
 // ── Times-table string art (modular multiplication on a circle) ────────────────────────────────
 
-/** Multiplier chosen by the two latest digits: 2 + d₁ + d₂/10, i.e. 2.0 … 11.9. */
-export function stringArtMultiplier(previousDigit: number, digit: number): number {
-  return 2 + previousDigit + digit / 10
+/**
+ * Multiplier chosen by the two latest digits: 2 + d₁ + d₂/10, i.e. 2.0 … 11.9. A k-symbol alphabet
+ * reads them as a two-digit number in base k: 2 + d₁ + d₂/k (mod 12: 2.0 … 13.92).
+ */
+export function stringArtMultiplier(
+  previousDigit: number,
+  digit: number,
+  alphabetSize = 10,
+): number {
+  return 2 + previousDigit + digit / alphabetSize
 }
 
 /** End point (as a fractional point index) of the chord from point n: k·n mod N. */
