@@ -458,8 +458,17 @@ test('swing and full screen', async ({ page }) => {
 
   await page.getByRole('button', { name: 'Full screen' }).click()
   await expect.poll(() => page.evaluate(() => document.fullscreenElement?.className)).toBe('stage')
-  await page.keyboard.press('f')
-  await expect.poll(() => page.evaluate(() => document.fullscreenElement)).toBeNull()
+  // F leaves full screen. On a slow CI runner Chrome can still be finishing the transition into
+  // full screen and drop an exit requested at that moment (B-022), so press again while the page
+  // is still full screen. That is safe (the shortcut only exits while full screen) and still fails
+  // if F never works.
+  await expect(async () => {
+    if (await page.evaluate(() => document.fullscreenElement !== null))
+      await page.keyboard.press('f')
+    await expect
+      .poll(() => page.evaluate(() => document.fullscreenElement), { timeout: 1_500 })
+      .toBeNull()
+  }).toPass({ timeout: 10_000 })
 })
 
 test('mosaic: groups only, and a sweep that re-groups the digits as the width changes', async ({
