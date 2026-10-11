@@ -1,6 +1,6 @@
 # Board
 
-_Last updated with any alphabet (F05.5 first slice) and Fibonacci mod 12 (S05.2.4); B-023 fixed._
+_Last updated with the Golden rectangle view (S05.7.2)._
 
 ## Epics
 
@@ -36,19 +36,19 @@ _Last updated with any alphabet (F05.5 first slice) and Fibonacci mod 12 (S05.2.
 
 ## Now: E05 — more numbers (R-011, R-012)
 
-| Milestone | Feature / story | Title                                                                  | Status      |
-| --------- | --------------- | ---------------------------------------------------------------------- | ----------- |
-| M0        | R-011           | Shared architecture and phased plan                                    | done        |
-| M1        | S05.1.1         | SymbolSource and series registry (π only)                              | done        |
-| M1        | S05.1.2         | SourceConfig in share links and saved pieces                           | done        |
-| M1        | S05.1.3         | Series-aware playback hook and labels                                  | done        |
-| M2        | F05.3           | Constants: φ, e, √2                                                    | done        |
-| G         | S05.8.1         | Golden slice (swing, string art, harmonograph, spirals)                | done        |
-| G         | S05.8.2         | Fibonacci-word and Zeckendorf rhythms                                  | done        |
-| M3        | F05.2, F05.4    | Fibonacci in base 10 and affordances done; primes in PR #27            | in-progress |
-| M4        | F05.5           | Any alphabet: k symbols everywhere, Fibonacci mod 12 done; binary next | in-progress |
-| M5        | F05.7           | Series-native views and rhythms                                        | backlog     |
-| Later     | F05.6           | User sequences                                                         | backlog     |
+| Milestone | Feature / story | Title                                                                   | Status      |
+| --------- | --------------- | ----------------------------------------------------------------------- | ----------- |
+| M0        | R-011           | Shared architecture and phased plan                                     | done        |
+| M1        | S05.1.1         | SymbolSource and series registry (π only)                               | done        |
+| M1        | S05.1.2         | SourceConfig in share links and saved pieces                            | done        |
+| M1        | S05.1.3         | Series-aware playback hook and labels                                   | done        |
+| M2        | F05.3           | Constants: φ, e, √2                                                     | done        |
+| G         | S05.8.1         | Golden slice (swing, string art, harmonograph, spirals)                 | done        |
+| G         | S05.8.2         | Fibonacci-word and Zeckendorf rhythms                                   | done        |
+| M3        | F05.2, F05.4    | Fibonacci in base 10 and affordances done; primes in PR #27             | in-progress |
+| M4        | F05.5           | Any alphabet: k symbols everywhere, Fibonacci mod 12 done; binary next  | in-progress |
+| M5        | F05.7           | Series-native views: Golden rectangle done; ratio → φ, Pisano loop next | in-progress |
+| Later     | F05.6           | User sequences                                                          | backlog     |
 
 ## E02 progress (previous slice: configurable music, presets, pleasant sound)
 

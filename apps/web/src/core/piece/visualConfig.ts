@@ -32,6 +32,7 @@ export const VIEW_IDS = [
   'scope',
   'fretboard',
   'cymatics',
+  'golden',
 ] as const
 export const PALETTE_IDS = ['rainbow', 'colour-blind', 'scriabin', 'ink'] as const
 export const CHART_STYLE_IDS = [
@@ -75,6 +76,8 @@ function build(lenient: boolean) {
           }),
           {},
         ),
+        /** Golden rectangle: draw the squares and the golden spiral (added later: additive). */
+        golden: z.prefault(z.object({ spiral: field(z.boolean(), true) }), {}),
         /** Sunflower: join each seed to its Fibonacci neighbours (added later: additive). */
         sunflower: z.prefault(z.object({ spirals: field(z.boolean(), false) }), {}),
         /** String art: k from the digits, or Fibonacci ratios closing in on φ (added later). */

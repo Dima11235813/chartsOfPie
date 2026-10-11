@@ -208,6 +208,7 @@ test('artistic views draw and follow the colour palette', async ({ page }, testI
     ['Music clock', /Music clock/, /Now: /],
     ['String art', /Times-table string art/, /k = \d/],
     ['Hilbert carpet', /Hilbert carpet/, /\d+ of 1,000,001 digits lit/],
+    ['Golden rectangle', /Golden rectangle/, /\d+ digits in \d+ squares/],
     ['Typographic π', /Typographic π/, /\d+ digits set in type/],
     ['Harmonograph', /Harmonograph/, / · ratio \d/],
     ['Oscilloscope', /Oscilloscope/, /vectorscope/],
