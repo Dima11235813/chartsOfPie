@@ -404,6 +404,26 @@ test('sunflower spirals name the Fibonacci families, and go away again', async (
   await expect.poll(() => inkedPixels(page)).toBeGreaterThan(100)
 })
 
+test('golden rectangle: the spiral off and back on keeps it drawn', async ({ page }) => {
+  // 60 digits need six squares (8 × 13 = 104 cells): 1 + 1 + 4 + 9 + 25 = 40, then the 8 × 8.
+  await openView(page, 'Golden rectangle', 60)
+  const art = page.getByRole('img', { name: /Golden rectangle/ })
+  await expect(art).toHaveAttribute(
+    'aria-label',
+    /60 digits in 6 squares, the largest 8 × 8; the rectangle is 8 × 13/,
+  )
+  const spiral = page.getByRole('checkbox', { name: 'Spiral' })
+  await expect(spiral).toBeChecked() // on by default
+  await expect.poll(() => inkedPixels(page)).toBeGreaterThan(100)
+  const withSpiral = await inkedPixels(page)
+  await spiral.uncheck()
+  // The digits stay; the gold spiral goes.
+  await expect.poll(() => inkedPixels(page)).toBeGreaterThan(100)
+  await expect.poll(() => inkedPixels(page)).toBeLessThan(withSpiral)
+  await spiral.check()
+  await expectDrawnLike(page, withSpiral, 'golden rectangle with the spiral back on')
+})
+
 test('guitar fretboard: changing the tuning and back keeps it drawn', async ({ page }) => {
   await openView(page, 'Guitar fretboard', 12)
   await expect.poll(() => inkedPixels(page)).toBeGreaterThan(100)

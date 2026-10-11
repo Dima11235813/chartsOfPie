@@ -236,7 +236,8 @@
             "harmonograph",
             "scope",
             "fretboard",
-            "cymatics"
+            "cymatics",
+            "golden"
           ]
         },
         "palette": {
@@ -290,6 +291,16 @@
                 },
                 "golden": {
                   "default": false,
+                  "type": "boolean"
+                }
+              }
+            },
+            "golden": {
+              "default": {},
+              "type": "object",
+              "properties": {
+                "spiral": {
+                  "default": true,
                   "type": "boolean"
                 }
               }

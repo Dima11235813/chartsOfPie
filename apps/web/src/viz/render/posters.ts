@@ -75,6 +75,7 @@ export async function renderPoster(
     drawStringArt(artCtx, art.width, art.height, scale, { multiplier, colors, label: caption })
   } else {
     const definition = ART[kind]
+    count = definition.posterDigits?.(count) ?? count
     name = withSymbol(definition.name, symbol)
     if (kind === 'mosaic' && settings?.mosaicColumns) {
       name += ` · ${settings.mosaicColumns} columns`

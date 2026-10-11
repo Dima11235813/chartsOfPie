@@ -31,6 +31,9 @@ interface DigitArtViewProps {
   /** Sunflower only: draw the Fibonacci spirals. */
   sunflower?: ViewOptions['sunflower']
   onSunflowerChange?: (change: Partial<ViewOptions['sunflower']>) => void
+  /** Golden rectangle only: outline the squares and draw the spiral. */
+  golden?: ViewOptions['golden']
+  onGoldenChange?: (change: Partial<ViewOptions['golden']>) => void
 }
 
 const GROUP_CHOICES = [0, 2, 3, 4, 5] as const
@@ -56,6 +59,8 @@ export function DigitArtView({
   shapeFilter = null,
   sunflower,
   onSunflowerChange,
+  golden,
+  onGoldenChange,
   onLayout,
 }: DigitArtViewProps) {
   const { ref, canvasRef, size } = useCanvas(onCanvas)
@@ -70,6 +75,7 @@ export function DigitArtView({
   const minGroup = mosaic?.minGroup ?? 0
   const sweep = kind === 'mosaic' && Boolean(mosaic?.sweep)
   const spirals = kind === 'sunflower' && Boolean(sunflower?.spirals)
+  const goldenSpiral = kind !== 'golden' || (golden?.spiral ?? true)
 
   const speed = mosaic?.sweepSpeed ?? 1
   // The sweep goes from half to one-and-a-half times the chosen width (or, in Fit mode, the width
@@ -119,7 +125,7 @@ export function DigitArtView({
   // the sweep state is part of the key and the picture is rebuilt (B-018).
   useDigitFeed(
     log,
-    `${kind}:${source.id}:${size.width}x${size.height}:${colors.join()}:${layoutColumns}:${minGroup}:${shapeFilter}:${sweep}:${spirals}`,
+    `${kind}:${source.id}:${size.width}x${size.height}:${colors.join()}:${layoutColumns}:${minGroup}:${shapeFilter}:${sweep}:${spirals}:${goldenSpiral}`,
     {
       reset() {
         const canvas = canvasRef.current
@@ -138,6 +144,7 @@ export function DigitArtView({
             mosaicMinGroup: minGroup,
             mosaicShape: shapeFilter ?? undefined,
             sunflowerSpirals: spirals,
+            goldenSpiral,
             typeDecimalPoint: decimalPointCell(number.kind, source.offset ?? 0),
             termStartAt: termStartAt(source),
           },
@@ -173,6 +180,20 @@ export function DigitArtView({
             onChange={(e) => onSunflowerChange({ spirals: e.target.checked })}
           />
           Spirals
+        </label>
+      </div>
+    )
+  if (kind === 'golden' && onGoldenChange)
+    return (
+      <div className="viz-layer">
+        {canvas}
+        <label className="viz-toggle">
+          <input
+            type="checkbox"
+            checked={goldenSpiral}
+            onChange={(e) => onGoldenChange({ spiral: e.target.checked })}
+          />
+          Spiral
         </label>
       </div>
     )

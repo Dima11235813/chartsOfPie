@@ -1,3 +1,4 @@
+import { createGoldenRenderer } from './goldenRenderer'
 import { createHilbertRenderer } from './hilbertRenderer'
 import { createMosaicRenderer } from './mosaicRenderer'
 import type { DigitRenderer, RendererOptions } from './renderer'
@@ -6,8 +7,9 @@ import { createSunflowerRenderer } from './sunflowerRenderer'
 import { createTypeRenderer } from './typeRenderer'
 import { createWalkRenderer } from './walkRenderer'
 import { hilbertSide } from '../art'
+import { goldenLayout, goldenSquaresFor } from '../golden'
 
-export type ArtKind = 'ring' | 'walk' | 'sunflower' | 'mosaic' | 'hilbert' | 'type'
+export type ArtKind = 'ring' | 'walk' | 'sunflower' | 'mosaic' | 'hilbert' | 'golden' | 'type'
 
 /** User choices that change how an artwork is laid out (from the view's options). */
 export interface ArtSettings {
@@ -17,6 +19,8 @@ export interface ArtSettings {
   mosaicMinGroup?: number
   /** Neighbour mosaic: only groups of this free shape (a polyplet key), if set. */
   mosaicShape?: string
+  /** Golden rectangle: outline the squares and draw the spiral (default on). */
+  goldenSpiral?: boolean
   /** Sunflower: join every seed to its two Fibonacci neighbours (the spirals). */
   sunflowerSpirals?: boolean
   /** Typographic: the cell the decimal point follows (default 0), or null for none. */
@@ -38,6 +42,8 @@ export interface ArtDefinition {
   poster: (options: RendererOptions, count: number, settings?: ArtSettings) => DigitRenderer
   /** Largest poster digit count that renders in a few seconds. */
   maxPosterDigits: number
+  /** Digits a poster of `count` actually draws, when the layout needs fewer (default: all). */
+  posterDigits?: (count: number) => number
 }
 
 const n = (count: number) => count.toLocaleString()
@@ -102,6 +108,27 @@ export const ART: Record<ArtKind, ArtDefinition> = {
     live: (options) => createHilbertRenderer(options),
     poster: (options, count) => createHilbertRenderer(options, { side: hilbertSide(count) }),
     maxPosterDigits: 1_000_000,
+  },
+  golden: {
+    kind: 'golden',
+    name: 'Golden rectangle',
+    describe:
+      'Golden rectangle: digits of π fill the Fibonacci squares 1, 1, 2, 3, 5, 8… from the centre outwards, with the golden spiral drawn through them.',
+    summary: (count) => {
+      const { squares, width, height } = goldenLayout(goldenSquaresFor(count))
+      const [short, long] = [Math.min(width, height), Math.max(width, height)]
+      return `${n(count)} digits in ${squares.length} squares, the largest ${squares.at(-1)!.side} × ${squares.at(-1)!.side}; the rectangle is ${short} × ${long}, and ${long}/${short} = ${(long / short).toFixed(5)} closes in on φ = 1.61803.`
+    },
+    live: (options, settings) => createGoldenRenderer(options, { spiral: settings?.goldenSpiral }),
+    poster: (options, count, settings) =>
+      createGoldenRenderer(options, { count: Math.max(1, count), spiral: settings?.goldenSpiral }),
+    maxPosterDigits: 1_000_000,
+    // A print shows whole squares only: the digits that fill Fₖ × Fₖ₊₁ (e.g. 6,765 of 10,000).
+    posterDigits: (count) => {
+      let k = goldenSquaresFor(count)
+      while (k > 1 && goldenLayout(k).cells > count) k--
+      return Math.min(count, goldenLayout(k).cells)
+    },
   },
   type: {
     kind: 'type',

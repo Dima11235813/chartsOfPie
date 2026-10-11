@@ -298,6 +298,7 @@ export default function App({
                     view === 'sunflower' ||
                     view === 'mosaic' ||
                     view === 'hilbert' ||
+                    view === 'golden' ||
                     view === 'type') && (
                     <DigitArtView
                       key={view}
@@ -307,6 +308,10 @@ export default function App({
                       onCanvas={setCanvas}
                       mosaic={viewOptions.mosaic}
                       sunflower={viewOptions.sunflower}
+                      golden={viewOptions.golden}
+                      onGoldenChange={(change) =>
+                        updateViewOptions('golden', { ...viewOptions.golden, ...change })
+                      }
                       onSunflowerChange={(change) =>
                         updateViewOptions('sunflower', { ...viewOptions.sunflower, ...change })
                       }
