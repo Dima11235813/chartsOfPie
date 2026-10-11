@@ -2,6 +2,9 @@
 
 Cloudflare Workers + D1 (owner decision, R-003/E07). Front end stays on GitHub Pages.
 
+**Not deployed for now** (owner decision 2026-10-11): the published site runs in offline mode and
+the API runs on localhost only (`npm run api:dev`; local setup in the root README).
+
 - **AuthN:** "Sign in with GitHub" (OAuth). The API sends the browser back to the web app with a
   one-time `?login=` code (60 s); the app trades it for a bearer session token (30 days). Only
   SHA-256 hashes of codes and tokens are stored. `return_to` must be one of `ALLOWED_ORIGINS`

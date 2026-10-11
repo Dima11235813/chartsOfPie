@@ -13,3 +13,4 @@ test-results/
 .serena/logs/
 audio-renders/
 perf-report/
+.dev.vars

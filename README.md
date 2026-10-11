@@ -29,6 +29,21 @@ npm run dev        # http://localhost:5173
 | `npm run check`        | Everything CI runs except e2e                              |
 | `npm run audio:render` | Render every sound preset to WAV + a loudness report       |
 
+### Offline mode and local full stack
+
+The published site runs in **offline mode**: the API (`apps/api`) is not deployed, so accounts
+are hidden and saved pieces stay in your browser. To run the full stack on localhost:
+
+1. `apps/web/.env.local` (from [`.env.example`](apps/web/.env.example)): `WEB_PORT` /
+   `PREVIEW_PORT` per the project's port-allocation rules.
+2. `apps/web/.env.development.local`: `VITE_API_URL=http://localhost:<api port>`.
+3. `apps/api/.dev.vars` (from [`.dev.vars.example`](apps/api/.dev.vars.example)): the web
+   origin in `ALLOWED_ORIGINS`, and a localhost GitHub OAuth app.
+4. `npm run api:dev` (port from `apps/api/wrangler.toml`, or `npm run api:dev -- --port <n>`)
+   and `npm run dev`.
+
+If the configured API isn't running, the app says so quietly and keeps working on this device.
+
 ## Sound presets
 
 Pick a preset in the **Sound** panel, or open **Customize** to choose the scale (major, minor,

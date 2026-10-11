@@ -3,6 +3,11 @@ name = "charts-of-pie-api"
 main = "src/index.ts"
 compatibility_date = "2026-10-01"
 
+# Local dev server (`npm run api:dev`). Override with `npm run api:dev -- --port <n>` to follow the
+# owner's port-allocation rules; then point the web app's VITE_API_URL at it.
+[dev]
+port = 8787
+
 [vars]
 # Where the web app runs: CORS, and the only places sign-in may return to.
 ALLOWED_ORIGINS = "https://dima11235813.github.io,http://localhost:5173,http://localhost:4173"

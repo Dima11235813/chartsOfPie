@@ -1,12 +1,9 @@
 name: Deploy API (Cloudflare Workers)
 
-# Applies D1 migrations and deploys apps/api after CI passes on master. Skipped until the
-# repository has the CLOUDFLARE_API_TOKEN secret (setup: apps/api/README.md).
+# Applies D1 migrations and deploys apps/api. Manual only for now: the API is not deployed
+# (owner decision 2026-10-11, full stack runs on localhost). Skipped until the repository has the
+# CLOUDFLARE_API_TOKEN secret (setup: apps/api/README.md).
 on:
-  workflow_run:
-    workflows: [CI]
-    types: [completed]
-    branches: [master]
   workflow_dispatch:
 
 permissions:
@@ -18,7 +15,6 @@ concurrency:
 
 jobs:
   deploy:
-    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     env:
       HAS_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN != '' }}
@@ -29,7 +25,7 @@ jobs:
       - uses: actions/checkout@v5
         if: env.HAS_TOKEN == 'true'
         with:
-          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          ref: ${{ github.sha }}
       - uses: actions/setup-node@v5
         if: env.HAS_TOKEN == 'true'
         with:

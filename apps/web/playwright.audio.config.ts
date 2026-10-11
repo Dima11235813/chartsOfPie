@@ -1,6 +1,6 @@
 import { defineConfig, devices } from '@playwright/test'
 
-const PORT = 5179
+const PORT = Number(process.env.AUDIO_PORT ?? 5179)
 
 /** Offline audio renders (see scripts/render-presets.spec.ts); runs against the Vite dev server. */
 export default defineConfig({

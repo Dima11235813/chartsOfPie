@@ -4,6 +4,12 @@ import type { AccountState } from '../account/useAccount'
 export function AccountBar({ account }: { account: AccountState }) {
   if (!account.enabled) return null
   if (account.busy) return <p className="account-bar hint">Signing in…</p>
+  if (account.offline)
+    return (
+      <p className="account-bar hint" role="status">
+        Account server offline: pieces are saved on this device.
+      </p>
+    )
   return (
     <div className="account-bar">
       {account.user ? (

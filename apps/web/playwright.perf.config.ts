@@ -1,6 +1,6 @@
 import { defineConfig, devices } from '@playwright/test'
 
-const PORT = 4180
+const PORT = Number(process.env.PERF_PORT ?? 4180)
 
 /**
  * Performance harness (scripts/perf.spec.ts): plays a fast tempo on every view against the

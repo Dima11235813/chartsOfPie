@@ -1,4 +1,4 @@
-import { createAccountApi } from './accountApi'
+import { ApiUnreachableError, createAccountApi } from './accountApi'
 
 test('the API client sends bearer tokens and JSON, and maps 401 on /me to "signed out"', async () => {
   const calls: { url: string; init: RequestInit }[] = []
@@ -27,4 +27,12 @@ test('the API client sends bearer tokens and JSON, and maps 401 on /me to "signe
     visibility: 'public',
   })
   await expect(api.listPieces('tok')).rejects.toThrow('nope')
+})
+
+test('a fetch that never reaches the server is reported as unreachable (offline mode)', async () => {
+  const api = createAccountApi('http://localhost:1', (async () => {
+    throw new TypeError('Failed to fetch')
+  }) as unknown as typeof fetch)
+  await expect(api.me('tok')).rejects.toBeInstanceOf(ApiUnreachableError)
+  await expect(api.listPieces('tok')).rejects.toBeInstanceOf(ApiUnreachableError)
 })
