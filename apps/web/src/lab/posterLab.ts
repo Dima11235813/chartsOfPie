@@ -3,34 +3,47 @@
  * (e2e/poster-snapshots.spec.ts). The first digits of a number (π unless another series is named)
  * in the original rainbow palette.
  */
-import type { DigitSource } from '../core/digits/digitSource'
+import { noteTableFor } from '../core/composition/arranger'
+import { DEFAULT_PRESET_ID, getPreset } from '../core/composition/presets'
+import { alphabetOf, type DigitSource } from '../core/digits/digitSource'
 import { loadSource } from '../core/series/load'
-import { getSeries, isSeriesId } from '../core/series/series'
+import { getSeries, isReadingId, isSeriesId } from '../core/series/series'
 import { getPalette } from '../viz/palettes'
 import { POSTER_KINDS, renderPoster, type PosterKind } from '../viz/render/posters'
 
 const sources = new Map<string, Promise<DigitSource>>()
-function digits(series: string) {
+function digits(series: string, reading?: string) {
   if (!isSeriesId(series)) throw new Error(`Unknown series: ${series}`)
-  let source = sources.get(series)
+  if (reading !== undefined && !isReadingId(reading)) throw new Error(`Unknown reading: ${reading}`)
+  const key = `${series}.${reading ?? ''}`
+  let source = sources.get(key)
   if (!source) {
-    source = loadSource({ version: 1, series, reading: getSeries(series).readings[0] })
-    sources.set(series, source)
+    source = loadSource({ version: 1, series, reading: reading ?? getSeries(series).readings[0] })
+    sources.set(key, source)
   }
   return source
 }
 
 export async function renderPosterDataUrl(
   kind: PosterKind,
-  { count = 2_000, size = 512, palette = 'rainbow', series = 'pi' } = {},
+  {
+    count = 2_000,
+    size = 512,
+    palette = 'rainbow',
+    series = 'pi',
+    reading = undefined as string | undefined,
+  } = {},
 ): Promise<string> {
-  const number = await digits(series)
+  const number = await digits(series, reading)
+  // One colour per symbol: ten for digits, twelve for mod 12 (F05.5).
+  const noteTable = noteTableFor(getPreset(DEFAULT_PRESET_ID)!.config, alphabetOf(number))
   const canvas = await renderPoster({
     kind,
     size,
     count,
     digitAt: (i) => number.digitAt(i),
-    colors: getPalette(palette).digitColors([]),
+    colors: getPalette(palette).digitColors(noteTable),
+    symbol: isSeriesId(series) ? getSeries(series).symbol : 'π',
     caption: false,
   })
   return canvas.toDataURL('image/png')

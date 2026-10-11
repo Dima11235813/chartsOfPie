@@ -2,7 +2,7 @@ import { midiToNote, noteToMidi, type PitchClass } from './notes'
 import type { ScaleDefinition } from './scales'
 
 /**
- * How the ten digits are laid onto a scale. Scales have 5–12 notes, so this is a creative choice
+ * How the ten digits (or the k symbols of another alphabet, F05.5) are laid onto a scale. Scales have 5–12 notes, so this is a creative choice
  * with an audible effect on range and melodic shape. See proj-mgmt/research/R-001.
  */
 export const MAPPING_STRATEGIES = [
@@ -39,20 +39,29 @@ export function degreeToMidi(scale: ScaleDefinition, rootMidi: number, degree: n
   return rootMidi + octave * 12 + scale.intervals[index]!
 }
 
+/**
+ * MIDI note of a symbol. `alphabetSize` (10 for decimal digits) sets the range checked and the
+ * centre of the `centred` mapping (⌊k/2⌋: 5 for digits, 6 for the 12 pitch classes of mod 12).
+ */
 export function digitToMidi(
   digit: number,
   strategy: MappingStrategy,
   scale: ScaleDefinition,
   rootMidi: number,
+  alphabetSize = 10,
 ): number {
-  if (!Number.isInteger(digit) || digit < 0 || digit > 9) {
-    throw new RangeError(`Not a decimal digit: ${digit}`)
+  if (!Number.isInteger(digit) || digit < 0 || digit >= alphabetSize) {
+    throw new RangeError(
+      alphabetSize === 10
+        ? `Not a decimal digit: ${digit}`
+        : `Symbol ${digit} is outside 0..${alphabetSize - 1}`,
+    )
   }
   switch (strategy) {
     case 'ascending':
       return degreeToMidi(scale, rootMidi, digit)
     case 'centred':
-      return degreeToMidi(scale, rootMidi, digit - 5)
+      return degreeToMidi(scale, rootMidi, digit - Math.floor(alphabetSize / 2))
     case 'wrap':
       return degreeToMidi(scale, rootMidi, digit % scale.intervals.length)
     case 'semitones':
@@ -60,15 +69,19 @@ export function digitToMidi(
   }
 }
 
-/** The ten notes (index = digit) for a scale, root, octave and strategy. */
+/**
+ * The notes (index = symbol) for a scale, root, octave and strategy: ten for decimal digits, k for
+ * a k-symbol alphabet. With `semitones`, symbol s of mod 12 is exactly pitch class s above the root.
+ */
 export function digitNoteTable(
   scale: ScaleDefinition,
   root: PitchClass,
   octave: number,
   strategy: MappingStrategy,
+  alphabetSize = 10,
 ): string[] {
   const rootMidi = noteToMidi(`${root}${octave}`)
-  return Array.from({ length: 10 }, (_, digit) =>
-    midiToNote(digitToMidi(digit, strategy, scale, rootMidi)),
+  return Array.from({ length: alphabetSize }, (_, digit) =>
+    midiToNote(digitToMidi(digit, strategy, scale, rootMidi, alphabetSize)),
   )
 }

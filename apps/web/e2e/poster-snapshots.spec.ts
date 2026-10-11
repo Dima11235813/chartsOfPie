@@ -37,3 +37,22 @@ test('other numbers draw their own digits (φ)', async ({ page }, testInfo) => {
       .toMatchSnapshot(`phi-${kind}.png`, { maxDiffPixelRatio: 0.002, threshold: 0.05 })
   }
 })
+
+test('a 12-symbol reading draws twelve arcs, directions and colours (Fibonacci mod 12)', async ({
+  page,
+}, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop', 'posters are the same on every viewport')
+  await page.goto('/lab.html')
+  await page.waitForFunction(() => window.posterLab !== undefined)
+  for (const kind of ['ring', 'walk', 'type', 'string-art']) {
+    const dataUrl = await page.evaluate(
+      (k) => window.posterLab.render(k, { series: 'fibonacci', reading: 'mod-12' }),
+      kind,
+    )
+    const png = Buffer.from(dataUrl.split(',')[1]!, 'base64')
+    await testInfo.attach(`mod12-${kind}.png`, { body: png, contentType: 'image/png' })
+    expect
+      .soft(png)
+      .toMatchSnapshot(`mod12-${kind}.png`, { maxDiffPixelRatio: 0.002, threshold: 0.05 })
+  }
+})

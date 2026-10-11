@@ -130,6 +130,7 @@ export function DigitArtView({
             height: canvas.height,
             scale: size.ratio,
             colors,
+            symbol: number.symbol,
             ghost: { count: source.length, digitAt: (i) => source.digitAt(i) },
           },
           {

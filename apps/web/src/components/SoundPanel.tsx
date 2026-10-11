@@ -9,6 +9,7 @@ import {
 import { noteTableFor } from '../core/composition/arranger'
 import { findMatchingPreset, getPreset, PRESETS } from '../core/composition/presets'
 import { MAPPING_STRATEGIES } from '../core/music/mapping'
+import { symbolGlyph } from '../core/digits/digitSource'
 import { PITCH_CLASSES } from '../core/music/notes'
 import { getScale, SCALE_CATALOGUE } from '../core/music/scaleCatalogue'
 import { INSTRUMENTS } from '../audio/instruments'
@@ -17,18 +18,22 @@ import { useDigitColors } from './palette'
 interface SoundPanelProps {
   config: CompositionConfig
   onChange: (config: CompositionConfig) => void
+  /** Symbols in the number playing: 10 for digits, 12 for Fibonacci mod 12 (F05.5). */
+  alphabetSize?: number
 }
 
 const CUSTOM = 'custom'
 
-export function SoundPanel({ config, onChange }: SoundPanelProps) {
+export function SoundPanel({ config, onChange, alphabetSize = 10 }: SoundPanelProps) {
   const colors = useDigitColors()
   const preset = findMatchingPreset(config)
   const [lastPresetName, setLastPresetName] = useState(preset?.name ?? '')
   const [copied, setCopied] = useState(false)
   const set = <K extends keyof CompositionConfig>(key: K, value: CompositionConfig[K]) =>
     onChange({ ...config, [key]: value })
-  const notes = noteTableFor(config)
+  const notes = noteTableFor(config, alphabetSize)
+  const unit = alphabetSize === 10 ? 'digit' : 'symbol'
+  const Unit = unit[0]!.toUpperCase() + unit.slice(1)
   const scale = getScale(config.scale)
   const isTempo = config.timing === 'tempo'
   const swingOff = !isTempo || config.rhythm === 'legacy' || config.subdivision === 1
@@ -79,11 +84,21 @@ export function SoundPanel({ config, onChange }: SoundPanelProps) {
         {preset?.description ?? 'Your own combination — share it with the link below.'}
       </p>
 
-      <ol className="note-legend" aria-label="Which note each digit plays">
+      {alphabetSize === 12 && config.mapping !== 'semitones' && (
+        // Mod 12 symbols are pitch classes: on semitones, symbol s is s semitones above the root.
+        <p className="hint" data-testid="pitch-class-hint">
+          Each of the 12 symbols can be its own note.{' '}
+          <button type="button" className="btn" onClick={() => set('mapping', 'semitones')}>
+            Use semitones
+          </button>
+        </p>
+      )}
+
+      <ol className="note-legend" aria-label={`Which note each ${unit} plays`}>
         {notes.map((note, digit) => (
-          <li key={digit} title={`Digit ${digit} plays ${note}`}>
+          <li key={digit} title={`${Unit} ${symbolGlyph(digit)} plays ${note}`}>
             <span className="legend-digit" style={{ color: colors[digit] }}>
-              {digit}
+              {symbolGlyph(digit)}
             </span>
             <span className="legend-note">{note}</span>
           </li>

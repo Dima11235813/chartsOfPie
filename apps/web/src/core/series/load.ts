@@ -1,7 +1,7 @@
 import { createDigitSource, type SymbolSource } from '../digits/digitSource'
 import { CONSTANTS, loadConstantDigits } from '../digits/constants'
 import { loadPiDigits } from '../digits/pi'
-import { fibonacciConcatenated, fibonacciLastDigits, PISANO_10 } from './fibonacci'
+import { fibonacciConcatenated, fibonacciResidues, pisanoPeriod } from './fibonacci'
 import type { ReadingId, SeriesId } from './series'
 import type { SourceConfig } from './sourceConfig'
 
@@ -17,18 +17,28 @@ const LOADERS: Record<SeriesId, (reading: ReadingId) => Promise<SymbolSource>> =
 /** Symbols of a generated sequence, as many as a constant's data file holds. */
 export const GENERATED_LENGTH = 1_000_000
 
+/** Residue readings of Fibonacci: the modulus each one takes. */
+const FIBONACCI_MODULI: Partial<Record<ReadingId, number>> = { 'last-digit': 10, 'mod-12': 12 }
+
 /** Fibonacci is generated, not fetched: ~35 ms for a million digits (3,094 BigInt terms). */
 function loadFibonacci(reading: ReadingId): SymbolSource {
-  const lastDigit = reading === 'last-digit'
-  const { symbols, terms } = (lastDigit ? fibonacciLastDigits : fibonacciConcatenated)(
-    GENERATED_LENGTH,
-  )
+  const modulus = FIBONACCI_MODULI[reading]
+  if (modulus === undefined) {
+    const { symbols, terms } = fibonacciConcatenated(GENERATED_LENGTH)
+    return { ...createDigitSource('fibonacci', 'Fibonacci numbers', symbols), terms }
+  }
+  const { symbols, terms } = fibonacciResidues(GENERATED_LENGTH, modulus)
   const source = createDigitSource(
-    lastDigit ? 'fibonacci:last-digit' : 'fibonacci',
-    lastDigit ? 'Fibonacci numbers · last digit' : 'Fibonacci numbers',
+    `fibonacci:${reading}`,
+    `Fibonacci numbers · ${reading === 'last-digit' ? 'last digit' : `mod ${modulus}`}`,
     symbols,
   )
-  return { ...source, terms, ...(lastDigit ? { period: PISANO_10 } : {}) }
+  return {
+    ...source,
+    terms,
+    period: pisanoPeriod(modulus),
+    ...(modulus === 10 ? {} : { alphabetSize: modulus }),
+  }
 }
 
 /** Fetch or generate the symbols a source config names. */

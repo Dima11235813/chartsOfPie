@@ -20,6 +20,7 @@ import {
 } from 'chart.js'
 import { applyCounts, buildChartConfig, shouldRedraw, type ChartStyle } from './chartConfig'
 import { useDigitColors } from './palette'
+import { symbolGlyph } from '../core/digits/digitSource'
 
 Chart.register(
   ArcElement,
@@ -99,8 +100,8 @@ export function DigitChart({ style, counts, total, onCanvas }: DigitChartProps) 
     <canvas
       ref={canvasRef}
       role="img"
-      aria-label={`${style} chart of how often each digit 0 to 9 has appeared: ${counts
-        .map((c, d) => `${d}: ${c}`)
+      aria-label={`${style} chart of how often each ${counts.length === 10 ? 'digit' : 'symbol'} 0 to ${symbolGlyph(counts.length - 1)} has appeared: ${counts
+        .map((c, d) => `${symbolGlyph(d)}: ${c}`)
         .join(', ')}`}
     />
   )

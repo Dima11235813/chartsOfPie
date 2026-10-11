@@ -161,8 +161,9 @@ export function MosaicShapesPanel({
         </p>
         {source.period && (
           <p className="hint" data-testid="loop-note">
-            This reading repeats every {source.period} digits, so once a loop has played no new
-            shapes appear at this width — only another width shows others.
+            This reading repeats every {source.period}{' '}
+            {(source.alphabetSize ?? 10) === 10 ? 'digits' : 'symbols'}, so once a loop has played
+            no new shapes appear at this width — only another width shows others.
           </p>
         )}
         {selected && (

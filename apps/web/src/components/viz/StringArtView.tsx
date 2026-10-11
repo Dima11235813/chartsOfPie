@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { PerformanceLog } from '../../core/composition/performanceLog'
-import type { DigitSource } from '../../core/digits/digitSource'
+import { alphabetOf, symbolGlyph, type DigitSource } from '../../core/digits/digitSource'
 import { fibonacciRatio, PHI, stringArtMultiplier } from '../../viz/art'
 import { drawStringArt, STRING_ART_POINTS } from '../../viz/render/stringArtRenderer'
 import { useDigitColors } from '../palette'
@@ -55,9 +55,11 @@ export function StringArtView({
         return
       }
       const previous = count >= 2 ? source.digitAt(count - 2) : 0
-      target.current = stringArtMultiplier(previous, source.digitAt(count - 1))
+      const latest = source.digitAt(count - 1)
+      const k = alphabetOf(source)
+      target.current = stringArtMultiplier(previous, latest, k)
       setSummary(
-        `k = ${target.current.toFixed(1)} from the digits ${previous}${source.digitAt(count - 1)}.`,
+        `k = ${target.current.toFixed(k === 10 ? 1 : 2)} from the ${k === 10 ? 'digits' : 'symbols'} ${symbolGlyph(previous)}${symbolGlyph(latest)}.`,
       )
     }
     update()

@@ -11,7 +11,7 @@ interface MusicClockViewProps {
   order: ClockOrder
   onOrderChange: (order: ClockOrder) => void
   log: PerformanceLog
-  /** The ten notes the current scale gives the digits (to highlight the scale on the rim). */
+  /** The notes the current scale gives the symbols (to highlight the scale on the rim). */
   noteTable: readonly string[]
   onCanvas?: (canvas: HTMLCanvasElement | null) => void
 }
@@ -23,7 +23,8 @@ const pitchClass = (midi: number) => ((midi % 12) + 12) % 12
  * Music clock: the twelve pitch classes around a circle (chromatic order or the circle of fifths).
  * The melody draws a fading trail between successive notes; the notes sounding together form a
  * glowing polygon, and when they make a chord its name appears in the middle. The scale's notes are
- * lit on the rim and dot size shows how often each pitch class has been played.
+ * lit on the rim and dot size shows how often each pitch class has been played; one not heard yet
+ * is a hollow ring (Fibonacci mod 12 on semitones never fills F♯).
  */
 export function MusicClockView({
   log,
@@ -122,8 +123,16 @@ export function MusicClockView({
         ctx.beginPath()
         ctx.arc(x, y, dot, 0, Math.PI * 2)
         const digit = noteTable.findIndex((note) => pitchClass(noteToMidi(note)) === pc)
-        ctx.fillStyle = digit >= 0 ? colors[digit]! : 'rgba(201, 214, 232, 0.25)'
-        ctx.fill()
+        const color = digit >= 0 ? colors[digit]! : 'rgba(201, 214, 232, 0.25)'
+        if (notes.length > 0 && counts.current[pc] === 0 && digit >= 0) {
+          // In the scale but never played: an empty ring, so a missing note stands out.
+          ctx.lineWidth = 1.5 * scale
+          ctx.strokeStyle = color
+          ctx.stroke()
+        } else {
+          ctx.fillStyle = color
+          ctx.fill()
+        }
         if (pcs.includes(pc)) {
           ctx.lineWidth = 2 * scale
           ctx.strokeStyle = '#ffffff'
@@ -143,10 +152,18 @@ export function MusicClockView({
       ctx.fillStyle = isChord ? '#ffe08a' : '#c9d6e8'
       ctx.font = `600 ${Math.round((isChord ? 30 : 18) * scale)}px system-ui, sans-serif`
       ctx.fillText(caption, cx, cy)
+      const missing = PITCH_CLASSES.filter((_, pc) => counts.current[pc] === 0)
+      const heard = `Heard ${12 - missing.length} of 12 pitch classes${
+        missing.length > 0 && missing.length <= 3
+          ? `; never ${missing.map((n) => n.replace('#', '♯')).join(', ')} so far`
+          : ''
+      }.`
       setSummary(
         caption
-          ? `Now: ${caption}. Sounding ${sounding.map((n) => n.note).join(', ') || 'nothing'}.`
-          : 'No notes yet.',
+          ? `Now: ${caption}. Sounding ${sounding.map((n) => n.note).join(', ') || 'nothing'}. ${heard}`
+          : notes.length > 0
+            ? heard
+            : 'No notes yet.',
       )
     }
 

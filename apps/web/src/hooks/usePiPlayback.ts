@@ -1,5 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
-import { windowFrom, type DigitSource } from '../core/digits/digitSource'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import {
+  alphabetOf,
+  DECIMAL_ALPHABET,
+  windowFrom,
+  type DigitSource,
+} from '../core/digits/digitSource'
 import { loadPiDigits } from '../core/digits/pi'
 import { PlaybackEngine, type StepEvent } from '../core/engine/playbackEngine'
 import { Arranger } from '../core/composition/arranger'
@@ -96,6 +101,7 @@ export function usePiPlayback(
         if (cancelled) return
         // Another number replaces the one playing: start over with empty counts and views.
         arranger.reset()
+        arranger.setAlphabet(alphabetOf(full))
         log.reset()
         setLastChord(null)
         setLastStep(null)
@@ -239,11 +245,18 @@ export function usePiPlayback(
     [player],
   )
 
+  // No digit yet: zero counts, one per symbol of the alphabet loaded (12 for mod 12).
+  const alphabet = load.status === 'ready' ? alphabetOf(load.full) : DECIMAL_ALPHABET
+  const emptyCounts = useMemo(
+    () => (alphabet === DECIMAL_ALPHABET ? EMPTY_COUNTS : new Array<number>(alphabet).fill(0)),
+    [alphabet],
+  )
+
   return {
     load,
     isPlaying,
     isFinished,
-    counts: lastStep?.counts ?? EMPTY_COUNTS,
+    counts: lastStep?.counts ?? emptyCounts,
     total: lastStep?.total ?? 0,
     lastStep,
     recent,

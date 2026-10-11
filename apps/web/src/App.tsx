@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { createToneNotePlayer, type NotePlayer } from './audio/notePlayer'
 import { findMatchingPreset } from './core/composition/presets'
-import type { DigitSource } from './core/digits/digitSource'
+import { alphabetOf, DECIMAL_ALPHABET, type DigitSource } from './core/digits/digitSource'
 import { loadSource as loadSeriesSource } from './core/series/load'
 import { sameSource, sourceKey, type SourceConfig } from './core/series/sourceConfig'
 import {
@@ -114,8 +114,6 @@ export default function App({
     key: K,
     options: VisualConfig['viewOptions'][K],
   ) => updateVisual({ viewOptions: { ...viewOptions, [key]: options } })
-  const noteTable = useMemo(() => noteTableFor(config), [config])
-  const colors = useMemo(() => getPalette(paletteId).digitColors(noteTable), [paletteId, noteTable])
   const changePalette = useCallback(
     (id: string) => {
       updateVisual({ palette: id as PaletteId })
@@ -134,6 +132,13 @@ export default function App({
   const number = getSeries(source.series)
   // The symbols loaded are those of the chosen number (not the one it is switching from).
   const loaded = load.status === 'ready' && load.full.id === sourceKey(source) ? load : null
+  // One note and one colour per symbol of what is playing: 10 for digits, 12 for mod 12 (F05.5).
+  // While another number loads, the old one's log is still drawn: keep its alphabet until then.
+  const [alphabetSize, setAlphabetSize] = useState(DECIMAL_ALPHABET)
+  const readyAlphabet = load.status === 'ready' ? alphabetOf(load.full) : null
+  if (readyAlphabet !== null && readyAlphabet !== alphabetSize) setAlphabetSize(readyAlphabet)
+  const noteTable = useMemo(() => noteTableFor(config, alphabetSize), [config, alphabetSize])
+  const colors = useMemo(() => getPalette(paletteId).digitColors(noteTable), [paletteId, noteTable])
   // The starting point lives in the link (and the last session) once the digits are loaded.
   const playingFrom = loaded ? loaded.start : start
   useEffect(() => {
@@ -401,7 +406,7 @@ export default function App({
                   onSelect={setShapeFilter}
                 />
               )}
-              <SoundPanel config={config} onChange={setConfig} />
+              <SoundPanel config={config} onChange={setConfig} alphabetSize={alphabetSize} />
               <MidiPanel midi={midi} />
               <ExportPanel
                 config={config}

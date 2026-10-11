@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import type { CoincidentChord } from '../core/composition/performanceLog'
-import type { DigitSource } from '../core/digits/digitSource'
+import { symbolGlyph, type DigitSource } from '../core/digits/digitSource'
 import { benfordShare, describePosition, firstDigitCounts } from '../core/series/fibonacci'
 import type { StepEvent } from '../core/engine/playbackEngine'
 import { useNumber } from './numberContext'
@@ -29,7 +29,10 @@ export function StatsPanel({
   offset = 0,
   source,
 }: StatsPanelProps) {
-  const { place } = useNumber()
+  const { place, id: numberId } = useNumber()
+  // Ten digits, or another alphabet's symbols (mod 12: 0–9, A, B).
+  const unit = counts.length === 10 ? 'digit' : 'symbol'
+  const Unit = unit[0]!.toUpperCase() + unit.slice(1)
   const Place = place[0]!.toUpperCase() + place.slice(1)
   const colors = useDigitColors()
   const term = source && lastStep ? describePosition(source, offset + lastStep.index) : ''
@@ -50,7 +53,9 @@ export function StatsPanel({
           {recent.length === 0 ? (
             <span className="muted">
               {offset === 0
-                ? 'Press Play to start at 3.14159…'
+                ? numberId === 'pi'
+                  ? 'Press Play to start at 3.14159…'
+                  : 'Press Play to start at the beginning.'
                 : `Press Play to start at ${place} ${offset.toLocaleString()}.`}
             </span>
           ) : (
@@ -61,7 +66,7 @@ export function StatsPanel({
                 style={{ color: colors[digit] }}
                 title={`${Place} ${(offset + index).toLocaleString()}`}
               >
-                {digit}
+                {symbolGlyph(digit)}
               </span>
             ))
           )}
@@ -86,8 +91,8 @@ export function StatsPanel({
           </div>
         )}
         <div>
-          <dt>Current digit</dt>
-          <dd data-testid="current-digit">{lastStep ? lastStep.digit : '–'}</dd>
+          <dt>Current {unit}</dt>
+          <dd data-testid="current-digit">{lastStep ? symbolGlyph(lastStep.digit) : '–'}</dd>
         </div>
         <div>
           <dt>Now playing</dt>
@@ -113,10 +118,10 @@ export function StatsPanel({
       </dl>
 
       <table className="ratios">
-        <caption>How often each digit has appeared</caption>
+        <caption>How often each {unit} has appeared</caption>
         <thead>
           <tr>
-            <th scope="col">Digit</th>
+            <th scope="col">{Unit}</th>
             <th scope="col">Count</th>
             <th scope="col">Share</th>
           </tr>
@@ -126,7 +131,7 @@ export function StatsPanel({
             <tr key={digit} className={lastStep?.digit === digit ? 'active' : undefined}>
               <th scope="row">
                 <span className="swatch" style={{ background: colors[digit] }} />
-                {digit}
+                {symbolGlyph(digit)}
               </th>
               <td>{count.toLocaleString()}</td>
               <td>{formatPercent(total === 0 ? 0 : count / total)}</td>
