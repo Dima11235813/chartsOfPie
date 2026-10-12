@@ -199,6 +199,52 @@ test('number: φ and back to π, while paused, keeps the views drawing', async (
   await expect.poll(() => inkedPixels(page)).toBeGreaterThan(100)
 })
 
+/** Leftmost and rightmost drawn column of the stage canvas, as fractions of its width. */
+const drawnSpan = (page: Page) =>
+  page
+    .locator('.stage .viz-canvas')
+    .first()
+    .evaluate((canvas: HTMLCanvasElement) => {
+      const { data } = canvas.getContext('2d')!.getImageData(0, 0, canvas.width, canvas.height)
+      let min = canvas.width
+      let max = -1
+      for (let y = 0; y < canvas.height; y++)
+        for (let x = 0; x < canvas.width; x++)
+          if (data[(y * canvas.width + x) * 4 + 3]! > 0) {
+            min = Math.min(min, x)
+            max = Math.max(max, x)
+          }
+      return max < 0 ? 0 : (max - min + 1) / canvas.width
+    })
+
+test('mosaic sweep with Fit fills the width at every step, and Fit off keeps one dot size (B-024)', async ({
+  page,
+}) => {
+  await openView(page, 'Neighbour mosaic', 200)
+  await expect(page.getByRole('checkbox', { name: 'Fit' })).toBeChecked()
+  await page.getByRole('checkbox', { name: 'Sweep' }).check()
+  await page.getByRole('combobox', { name: 'Speed' }).selectOption({ label: 'Fast' })
+  // Paused: sample several widths of the sweep; each spans the frame (dots sit at cell centres,
+  // so a small margin stays; before the fix, narrow widths covered under half).
+  const count = page.locator('.viz-columns-count')
+  const widths = new Set<string>()
+  for (let i = 0; i < 6; i++) {
+    await page.waitForTimeout(700)
+    widths.add((await count.textContent()) ?? '')
+    await expect.poll(() => drawnSpan(page), { timeout: 3_000 }).toBeGreaterThan(0.85)
+  }
+  expect(widths.size).toBeGreaterThan(1) // it really swept through several widths
+  // Fit off: one dot size for the whole sweep, so the narrow widths do not fill the frame.
+  await page.getByRole('checkbox', { name: 'Fit' }).uncheck()
+  await expect.poll(() => inkedPixels(page)).toBeGreaterThan(100)
+  await expect.poll(() => drawnSpan(page), { timeout: 8_000 }).toBeLessThan(0.8)
+  // …and back on.
+  await page.getByRole('checkbox', { name: 'Fit' }).check()
+  await expect.poll(() => drawnSpan(page), { timeout: 3_000 }).toBeGreaterThan(0.85)
+  await page.getByRole('checkbox', { name: 'Sweep' }).uncheck()
+  await expect.poll(() => drawnSpan(page)).toBeGreaterThan(0.85)
+})
+
 test('number: Fibonacci, both readings, and back to π, while paused, keeps views drawing', async ({
   page,
 }) => {

@@ -144,6 +144,21 @@ describe('sweep geometry', () => {
     expect(sweepFrame(820, 520, 1, 10, 30, 7).window).toBe(7)
   })
 
+  test('Fit: every width fills the frame, in whole rows (B-024)', () => {
+    // 20 columns of 800 px: 40 px cells, 12 rows of 500 px; 5,003 = 250 rows + 3.
+    const twenty = sweepFrame(820, 520, 1, 10, 30, 5003, 20)
+    expect(twenty.cell).toBe(40)
+    expect(twenty.window).toBe(11 * 20 + 3)
+    expect((5003 - twenty.window) % 20).toBe(0) // the top row is a whole row
+    // 10 columns: twice the cell, half the rows; a full last row when played is a multiple.
+    const ten = sweepFrame(820, 520, 1, 10, 30, 5000, 10)
+    expect(ten.cell).toBe(80)
+    expect(ten.window).toBe(6 * 10)
+    // Few columns on a wide frame: at most a third of the height per cell.
+    expect(sweepFrame(820, 520, 1, 2, 4, 5000, 2).cell).toBeCloseTo(500 / 3)
+    expect(sweepFrame(820, 520, 1, 10, 30, 7, 20).window).toBe(7)
+  })
+
   test('targets are centred and rows count from the first shown digit', () => {
     const frame = sweepFrame(820, 520, 1, 10, 30, 5000)
     const [x, y] = sweepTarget(frame, 20, 40, 45)
