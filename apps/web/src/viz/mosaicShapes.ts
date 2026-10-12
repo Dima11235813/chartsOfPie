@@ -1,4 +1,4 @@
-import { earlierNeighbours } from './art'
+import { earlierNeighbours, MOSAIC_MIN_ROWS } from './art'
 import { fixedKey, freeKeyOfFixed, type Cell } from './polyplets'
 
 /** One group of equal neighbours in the mosaic, with its shape. */
@@ -97,8 +97,14 @@ export interface SweepFrame {
 }
 
 /**
- * One cell size for every width from `low` to `high` columns: `high` columns fit the width, and
- * as many recent digits are shown as fill the frame at `low` columns.
+ * Geometry of the sweep.
+ *
+ * - Fixed (Fit off): one cell size for every width from `low` to `high` columns: `high` columns
+ *   fit the width, and as many recent digits are shown as fill the frame at `low` columns, so the
+ *   grid visibly narrows and widens.
+ * - Fit (`fitColumns` = the current width): every width fills the frame's width (B-024): the cell
+ *   is width / columns (at most a third of the height), and as many recent digits as fill the
+ *   height are shown, so narrow widths show big dots and wide ones many small dots.
  */
 export function sweepFrame(
   width: number,
@@ -107,10 +113,21 @@ export function sweepFrame(
   low: number,
   high: number,
   played: number,
+  fitColumns?: number,
 ): SweepFrame {
   const pad = 10 * scale
   const innerWidth = width - 2 * pad
   const innerHeight = height - 2 * pad
+  if (fitColumns) {
+    const cell = Math.max(
+      2.5 * scale,
+      Math.min(innerWidth / fitColumns, innerHeight / MOSAIC_MIN_ROWS),
+    )
+    const rows = Math.max(1, Math.floor(innerHeight / cell))
+    // Whole rows: full rows above the newest (partly filled) one, so exactly `rows` rows show.
+    const window = (rows - 1) * fitColumns + (played % fitColumns || fitColumns)
+    return { cell, window: Math.min(played, window), left: pad, top: pad, innerWidth }
+  }
   const cell = Math.max(2.5 * scale, Math.min(30 * scale, innerWidth / high))
   const rows = Math.max(1, Math.floor(innerHeight / cell))
   return { cell, window: Math.min(played, low * rows), left: pad, top: pad, innerWidth }

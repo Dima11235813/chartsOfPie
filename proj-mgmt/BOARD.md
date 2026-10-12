@@ -1,6 +1,6 @@
 # Board
 
-_Last updated with the Golden rectangle view (S05.7.2)._
+_Last updated with B-024: the mosaic sweep fills the width in Fit mode._
 
 ## Epics
 

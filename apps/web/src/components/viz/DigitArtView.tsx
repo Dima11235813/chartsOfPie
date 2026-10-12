@@ -219,6 +219,7 @@ export function DigitArtView({
           speed={speed}
           minGroup={minGroup}
           shapeFilter={shapeFilter}
+          fit={fit}
           onLayout={(cols) => {
             setSwept(cols)
             onLayout?.(cols)

@@ -16,6 +16,8 @@ interface MosaicSweepProps {
   minGroup: number
   /** Show only groups with this free shape (from the shape census), or null. */
   shapeFilter: string | null
+  /** Fit: every width fills the frame's width (dots resize as they glide); else one dot size. */
+  fit?: boolean
   onLayout: (columns: number) => void
   onCanvas?: (canvas: HTMLCanvasElement | null) => void
 }
@@ -42,6 +44,7 @@ export function MosaicSweep({
   speed,
   minGroup,
   shapeFilter,
+  fit = false,
   onLayout,
   onCanvas,
 }: MosaicSweepProps) {
@@ -70,6 +73,8 @@ export function MosaicSweep({
 
     let frame: SweepFrame | null = null
     let cols = low
+    /** Cell size the dots are drawn at, easing towards the frame's (Fit changes it per width). */
+    let shownCell = 0
     let layoutAt = 0
     let groupsKey = ''
     let shown = new Uint8Array(0)
@@ -122,7 +127,7 @@ export function MosaicSweep({
         settled = false
       }
       if (settled) return
-      frame = sweepFrame(w, h, size.ratio, low, high, played)
+      frame = sweepFrame(w, h, size.ratio, low, high, played, fit ? cols : undefined)
       start = played - frame.window
       if (loaded !== `${start}:${frame.window}`) {
         loaded = `${start}:${frame.window}`
@@ -134,6 +139,7 @@ export function MosaicSweep({
       const tau = reduced ? TAU * 2 : TAU
       const step = 1 - Math.exp(-dt / tau)
       const { cell, left, top, innerWidth } = frame
+      shownCell = shownCell === 0 ? cell : shownCell + (cell - shownCell) * step
       // Same layout as sweepTarget, inlined: this runs for every digit on every frame.
       const x0 = left + (innerWidth - cols * cell) / 2 + cell / 2
       const y0 = top + cell / 2
@@ -162,12 +168,12 @@ export function MosaicSweep({
         moving = Math.max(moving, Math.abs(dx), Math.abs(dy), Math.abs(da) * 40)
       }
       const linkAlpha = Math.min(1, (now - layoutAt) / 300)
-      settled = moving < 0.3 && linkAlpha >= 1
+      settled = moving < 0.3 && linkAlpha >= 1 && Math.abs(cell - shownCell) < 0.05
 
       ctx.clearRect(0, 0, w, h)
-      const dot = Math.max(0.8, cell * 0.3)
+      const dot = Math.max(0.8, shownCell * 0.3)
       ctx.lineCap = 'round'
-      ctx.lineWidth = Math.max(1, cell * 0.2)
+      ctx.lineWidth = Math.max(1, shownCell * 0.2)
       // Fully faded-in dots and links are batched into one path per digit colour (a few calls a
       // frame instead of thousands); only the ones still fading are drawn one by one.
       const links = colors.map(() => new Path2D())
@@ -241,7 +247,7 @@ export function MosaicSweep({
     onLayoutRef.current(cols)
     raf = requestAnimationFrame(draw)
     return () => cancelAnimationFrame(raf)
-  }, [canvasRef, size, colors, source, log, low, high, speed, minGroup, shapeFilter])
+  }, [canvasRef, size, colors, source, log, low, high, speed, minGroup, shapeFilter, fit])
 
   return (
     <canvas
