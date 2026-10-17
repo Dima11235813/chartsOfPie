@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import type { CoincidentChord } from '../core/composition/performanceLog'
-import { symbolGlyph, type DigitSource } from '../core/digits/digitSource'
+import { alphabetOf, symbolGlyph, type DigitSource } from '../core/digits/digitSource'
 import { benfordShare, describePosition, firstDigitCounts } from '../core/series/fibonacci'
 import type { StepEvent } from '../core/engine/playbackEngine'
 import { useNumber } from './numberContext'
@@ -41,9 +41,11 @@ export function StatsPanel({
     const terms = source?.terms
     if (!source || !terms || source.period || total === 0) return null
     const absolute = { digitAt: (at: number) => source.digitAt(at - offset) }
-    const counts = firstDigitCounts(absolute, terms, offset, offset + total)
+    // Base 12 terms start with 1 … B, and Benford's law holds in base 12 too (R-013).
+    const base = alphabetOf(source)
+    const counts = firstDigitCounts(absolute, terms, offset, offset + total, base)
     const sum = counts.reduce((a, b) => a + b, 0)
-    return sum > 0 ? { counts, sum } : null
+    return sum > 0 ? { counts, sum, base } : null
   }, [source, offset, total])
   return (
     <div className="stats">
@@ -144,7 +146,7 @@ export function StatsPanel({
         <table className="ratios" data-testid="first-digits">
           <caption>
             First digit of each number so far ({firstDigits.sum.toLocaleString()}): Benford’s law
-            predicts 1 most often, 9 least
+            predicts 1 most often, {symbolGlyph(firstDigits.base - 1)} least
           </caption>
           <thead>
             <tr>
@@ -159,11 +161,11 @@ export function StatsPanel({
               <tr key={i + 1}>
                 <th scope="row">
                   <span className="swatch" style={{ background: colors[i + 1] }} />
-                  {i + 1}
+                  {symbolGlyph(i + 1)}
                 </th>
                 <td>{count.toLocaleString()}</td>
                 <td>{formatPercent(count / firstDigits.sum)}</td>
-                <td>{formatPercent(benfordShare(i + 1))}</td>
+                <td>{formatPercent(benfordShare(i + 1, firstDigits.base))}</td>
               </tr>
             ))}
           </tbody>

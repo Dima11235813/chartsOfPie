@@ -22,6 +22,11 @@ const FIBONACCI_MODULI: Partial<Record<ReadingId, number>> = { 'last-digit': 10,
 
 /** Fibonacci is generated, not fetched: ~35 ms for a million digits (3,094 BigInt terms). */
 function loadFibonacci(reading: ReadingId): SymbolSource {
+  if (reading === 'base-12') {
+    const { symbols, terms } = fibonacciConcatenated(GENERATED_LENGTH, 12)
+    const source = createDigitSource('fibonacci:base-12', 'Fibonacci numbers · base 12', symbols)
+    return { ...source, terms, alphabetSize: 12 }
+  }
   const modulus = FIBONACCI_MODULI[reading]
   if (modulus === undefined) {
     const { symbols, terms } = fibonacciConcatenated(GENERATED_LENGTH)

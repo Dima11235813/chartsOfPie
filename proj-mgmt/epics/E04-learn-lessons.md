@@ -14,6 +14,11 @@ Short, interactive lessons that use the playgrounds to teach real math and music
 
 ## Features (to be broken down later)
 
+- [x] F04.0 — **Learn page** (`learn.html`, R-013 §5): one article per number, reading and view,
+      each with a Try it link into the app and OEIS citations; "Learn more" links next to the
+      Number, Reading and View pickers. Articles are data (`src/learn/articles.ts`); a unit test
+      fails if a series, reading or view has no article
+
 - [ ] F04.1 — Lesson framework: MDX content + embeddable live playground with a preset config
 - [ ] F04.2 — Track "Numbers": what is π · irrational vs rational · normal numbers & digit
       frequency (why every bar converges to ~10 %) · Fibonacci & φ

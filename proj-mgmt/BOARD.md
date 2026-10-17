@@ -1,6 +1,6 @@
 # Board
 
-_Last updated with B-024: the mosaic sweep fills the width in Fit mode._
+_Last updated with R-013 L1: Fibonacci in base 12 and the Learn page._
 
 ## Epics
 
@@ -46,9 +46,19 @@ _Last updated with B-024: the mosaic sweep fills the width in Fit mode._
 | G         | S05.8.1         | Golden slice (swing, string art, harmonograph, spirals)                 | done        |
 | G         | S05.8.2         | Fibonacci-word and Zeckendorf rhythms                                   | done        |
 | M3        | F05.2, F05.4    | Fibonacci in base 10 and affordances done; primes in PR #27             | in-progress |
-| M4        | F05.5           | Any alphabet: k symbols everywhere, Fibonacci mod 12 done; binary next  | in-progress |
+| M4        | F05.5           | Any alphabet: k symbols everywhere, Fibonacci mod 12 and base 12 done   | in-progress |
 | M5        | F05.7           | Series-native views: Golden rectangle done; ratio → φ, Pisano loop next | in-progress |
 | Later     | F05.6           | User sequences                                                          | backlog     |
+
+## Now: R-013 — lenses, new views and sounds, Learn more
+
+| Slice | Contents                                                      | Status      |
+| ----- | ------------------------------------------------------------- | ----------- |
+| L1    | Fibonacci in base 12, Benford in any base, Learn page (F04.0) | in-progress |
+| L2    | Place-value wall view                                         | backlog     |
+| L3    | Dozenal semitones preset, term-boundary accent                | backlog     |
+| L4    | Digital root, mod 5, mod 8 readings; Pisano star view         | backlog     |
+| L5    | π, φ, e, √2 in base 12 (verified data)                        | backlog     |
 
 ## E02 progress (previous slice: configurable music, presets, pleasant sound)
 

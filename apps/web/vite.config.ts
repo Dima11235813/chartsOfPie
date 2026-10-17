@@ -13,7 +13,8 @@ export default defineConfig({
   build: {
     rollupOptions: {
       // lab.html: deterministic offline renders (audio spectrograms, posters) for regression tests.
-      input: { main: page('./index.html'), lab: page('./lab.html') },
+      // learn.html: the Learn series, one article per number, reading and view (R-013).
+      input: { main: page('./index.html'), lab: page('./lab.html'), learn: page('./learn.html') },
     },
   },
   test: {
