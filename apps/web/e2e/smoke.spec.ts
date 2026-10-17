@@ -361,6 +361,9 @@ test('the neighbour mosaic narrows and widens, and the pattern re-flows', async 
 
   // Choosing a width re-lays every digit already played.
   const columns = page.getByRole('slider', { name: 'Columns' })
+  // Fit may already show 7 columns (it depends on how many digits played before Pause), and
+  // filling the value the slider already has changes nothing (B-025): step through 6 first.
+  await columns.fill('6')
   await columns.fill('7')
   await expect(mosaic).toHaveAttribute(
     'aria-label',
