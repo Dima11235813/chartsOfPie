@@ -5,6 +5,7 @@ import { modeForMidi, settleGrains, type Mode } from '../../viz/chladni'
 import { mixColors, parseColor } from '../../viz/palettes'
 import { useDigitColors } from '../palette'
 import { prefersReducedMotion, useCanvas } from './useCanvas'
+import { createFrameBudget } from '../../viz/frameBudget'
 
 interface CymaticsViewProps {
   log: PerformanceLog
@@ -75,8 +76,13 @@ export function CymaticsView({ log, noteTable, onCanvas }: CymaticsViewProps) {
       }
     }
 
+    // Fewer frames when one is expensive (9,000 grains on a slow phone), never late notes.
+    const budget = createFrameBudget({ share: 0.3 })
     const draw = (now: number) => {
       frame = requestAnimationFrame(draw)
+      if (budget.due(now)) budget.run(now, () => step(now))
+    }
+    const step = (now: number) => {
       const active = mode !== null && now < activeUntil
       if (!active && drawn) return
       drawn = true

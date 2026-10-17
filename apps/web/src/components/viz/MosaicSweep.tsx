@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import type { PerformanceLog } from '../../core/composition/performanceLog'
 import type { DigitSource } from '../../core/digits/digitSource'
 import { mosaicGroupSizes, sweepColumns } from '../../viz/art'
+import { createFrameBudget } from '../../viz/frameBudget'
 import { mosaicGroups, sweepFrame, type SweepFrame } from '../../viz/mosaicShapes'
 import { useDigitColors } from '../palette'
 import { prefersReducedMotion, useCanvas } from './useCanvas'
@@ -109,9 +110,16 @@ export function MosaicSweep({
     let settled = false
     let lastPlayed = -1
 
+    // Frames are also spaced by their cost, so thousands of gliding dots on a slow device give a
+    // choppier sweep rather than late notes (R-010 third pass).
+    const budget = createFrameBudget({ share: 0.35 })
     const draw = (now: number) => {
       raf = requestAnimationFrame(draw)
       if (digits.length > MANY_DOTS && now - last < MANY_DOTS_FRAME_MS) return
+      if (!budget.due(now)) return
+      budget.run(now, () => step(now))
+    }
+    const step = (now: number) => {
       const dt = Math.min(0.1, (now - last) / 1000)
       last = now
       const played = log.stepCount
