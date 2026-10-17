@@ -90,7 +90,7 @@ export function HarmonographView({
     let lastPair: [PerformedNote, PerformedNote] | null = null
     // At most ~24 frames/s, and fewer when one frame is expensive (a slow phone): the ~1,800-point
     // curve must never crowd out note scheduling (R-010 third pass).
-    const budget = createFrameBudget({ minIntervalMs: FRAME_MS, share: 0.25 })
+    const budget = createFrameBudget({ minIntervalMs: FRAME_MS, share: 0.25, watchFrames: true })
     const draw = (now: number) => {
       frame = requestAnimationFrame(draw)
       // When idle (paused for a while) and nothing changed, skip the frame entirely.

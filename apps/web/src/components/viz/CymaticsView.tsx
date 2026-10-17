@@ -77,7 +77,7 @@ export function CymaticsView({ log, noteTable, onCanvas }: CymaticsViewProps) {
     }
 
     // Fewer frames when one is expensive (9,000 grains on a slow phone), never late notes.
-    const budget = createFrameBudget({ share: 0.3 })
+    const budget = createFrameBudget({ share: 0.3, watchFrames: true })
     const draw = (now: number) => {
       frame = requestAnimationFrame(draw)
       if (budget.due(now)) budget.run(now, () => step(now))

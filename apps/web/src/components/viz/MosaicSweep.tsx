@@ -112,7 +112,7 @@ export function MosaicSweep({
 
     // Frames are also spaced by their cost, so thousands of gliding dots on a slow device give a
     // choppier sweep rather than late notes (R-010 third pass).
-    const budget = createFrameBudget({ share: 0.35 })
+    const budget = createFrameBudget({ share: 0.35, watchFrames: true })
     const draw = (now: number) => {
       raf = requestAnimationFrame(draw)
       if (digits.length > MANY_DOTS && now - last < MANY_DOTS_FRAME_MS) return

@@ -43,3 +43,35 @@ describe('frame budget', () => {
     expect(capped.frame(40)).toBe(true)
   })
 })
+
+describe('frame budget watching frame gaps', () => {
+  it('backs off when drawing makes the next frame late, though the JavaScript is cheap', () => {
+    // Each drawn frame costs 1 ms of script but 60 ms of rasterising, so the next frame is late.
+    const budget = createFrameBudget({ watchFrames: true, clock: () => 0 })
+    let now = 0
+    let drawn = 0
+    let lateNext = false
+    while (now < 3000) {
+      now += lateNext ? 60 : 16.7
+      lateNext = false
+      if (budget.due(now)) {
+        budget.run(now, () => {})
+        drawn++
+        lateNext = true
+      }
+    }
+    // Unthrottled it would draw every frame (~40 frames of 76 ms); spaced, rasterising takes
+    // well under half the time.
+    expect(drawn).toBeLessThan(25)
+    expect((drawn * 60) / 3000).toBeLessThan(0.45)
+    expect(drawn).toBeGreaterThan(8) // still animates
+  })
+
+  it('ignores long gaps from a hidden tab', () => {
+    const budget = createFrameBudget({ watchFrames: true, clock: () => 0 })
+    budget.due(0)
+    budget.run(0, () => {})
+    expect(budget.due(5000)).toBe(true)
+    expect(budget.due(5016)).toBe(true)
+  })
+})

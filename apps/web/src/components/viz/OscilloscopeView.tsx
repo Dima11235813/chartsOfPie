@@ -58,7 +58,7 @@ export function OscilloscopeView({
     let frame = 0
 
     // Fewer frames when one is expensive (a slow phone), never late notes (R-010 third pass).
-    const budget = createFrameBudget({ share: 0.3 })
+    const budget = createFrameBudget({ share: 0.3, watchFrames: true })
     const draw = (now: number) => {
       frame = requestAnimationFrame(draw)
       if (now > stopAt.current || !budget.due(now)) return

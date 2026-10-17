@@ -71,19 +71,46 @@ columns).
   and avoid `shadowBlur`; batch many small primitives into one `ImageData` or path.
 - Run `npm run perf` before/after touching a view; no long tasks, ≲ 30 % busy at ~13 digits/s.
 
-## Third pass: note timing and the Chrome DevTools MCP (in progress)
+## Third pass: note timing under load, and the Chrome DevTools MCP
 
-Owner request: heavy computation must never make the audio glitch; set up the Chrome DevTools
-MCP server to profile the app and find what really needs optimising.
+Owner request (2026-10-17): heavy computation must never make the audio glitch; set up the Chrome
+DevTools MCP server to profile the app and find what really needs optimising.
+
+### Tools
 
 - `.mcp.json` registers `chrome-devtools` (`scripts/chrome-devtools-mcp.sh`, pinned 1.10.1, own
   throwaway profile, usage statistics and CrUX off; local Chrome, or headless Chromium in the
-  cloud). Verified: navigate, 4× CPU throttling, performance trace recorded and saved.
-- What "glitch" means here: notes are scheduled from the main thread 150 ms ahead of the audio
-  clock (`LOOK_AHEAD_SEC`). The note player now counts steps scheduled after their time (late),
-  rhythm re-anchors and the least headroom (`audio/timingStats.ts`,
-  `window.chartsOfPieAudioTiming()`). Chrome 141 headless has no `AudioContext.playoutStats`.
-- `npm run perf` reports those per view, takes `CPU=4` and `LONG=0`, and covers the Golden
-  rectangle and a mod-12 ring.
-- At full speed (6 s at ~13 digits/s, fresh): **no late notes in any view**; least headroom
-  118–150 ms; busiest views oscilloscope 32 %, harmonograph 29 %, cymatics 26 %.
+  cloud). Verified: navigate, 4× CPU throttling, a performance trace recorded and saved. Its
+  insights are page-load oriented (LCP, CLS); for playback the raw trace and the harness's CPU
+  profile (`PROFILE=1`) are what point at the cost. How to use it: CLAUDE.md.
+- **What "glitch" means here.** Notes are scheduled from the main thread 150 ms ahead of the audio
+  clock (`LOOK_AHEAD_SEC`). A stall shorter than that is inaudible; a longer one makes a note late
+  or the rhythm re-anchor (a stumble). The note player now counts late steps, re-anchors and the
+  least headroom (`audio/timingStats.ts`, `window.chartsOfPieAudioTiming()`). Chrome 141 headless
+  has no `AudioContext.playoutStats`; the audio thread itself never dropped out in these runs.
+- `npm run perf` reports those per view, and takes `CPU=4` (a mid-range phone), `LONG=0` and
+  `PROFILE=1`. It now covers the Golden rectangle and a mod-12 ring.
+
+### Findings (6 s at ~13 digits/s; re-anchors = audible stumbles)
+
+At full speed no view stumbles (least headroom 118–150 ms). At **4× slower CPU**:
+
+| View (fresh / after 20k digits) | before       | after     | cause → fix                                                                                                                                                                                                                                                                                                                                |
+| ------------------------------- | ------------ | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| every view                      | —            | —         | the player re-anchored whenever a tick was 80 ms late, although notes are 150 ms ahead → `nextStepTime` keeps the grid until a note's time has (nearly) passed: stalls up to ~140 ms are absorbed                                                                                                                                          |
+| harmonograph                    | 11 / 16      | **0 / 0** | a ~1,800-point gradient curve rasterised every 24 fps frame (the cost is in the browser's raster, "(program)", not in our JS) → `createFrameBudget` spaces frames by their cost **and by late animation frames** (`watchFrames`), turn speed time-based                                                                                    |
+| mosaic groups wide (100 cols)   | 0 / 16       | 1 / 4     | a new full-size layer canvas allocated and uploaded on every digit (3.1 s of `drawImage`) → reused; the digit feed is budgeted (`useDigitFeed`), batching digits into fewer redraws on a slow device, with a timer so the newest digits always show. **Left:** each redraw still repaints thousands of dots (~90 ms at 4×) — see follow-up |
+| mosaic sweep wide (80 cols)     | 0 / 9        | **0 / 0** | thousands of gliding dots per frame → frame budget with `watchFrames`                                                                                                                                                                                                                                                                      |
+| cymatics                        | 2 / 2        | **0 / 0** | 9,000 grains per frame → frame budget                                                                                                                                                                                                                                                                                                      |
+| mosaic groups, ring mod 12      | 0–2 / 2      | **0 / 0** | the scheduling fix alone                                                                                                                                                                                                                                                                                                                   |
+| oscilloscope                    | 0 / 0 (98 %) | 0 / 0     | busy but in short frames, never a long stall; budgeted too                                                                                                                                                                                                                                                                                 |
+
+Repeat runs vary by a stumble or two (the container shares its CPU): a single 3 on the
+oscilloscope did not reproduce in two re-runs.
+
+### Follow-up
+
+- Mosaic groups-only with very many dots: redraw only the rows a new digit's group touches, or
+  move the groups drawing to an `OffscreenCanvas` in a worker.
+- `MAX_DRIFT_MS` in `midi/midiTap.ts` uses the old 80 ms rule for MIDI out; MIDI has no look-ahead
+  headroom of its own, so it was left as is.
