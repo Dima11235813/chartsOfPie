@@ -1,5 +1,6 @@
 import type * as ToneNamespace from 'tone'
 import { createSoundChain, type SoundChain, type SoundSettings } from './soundChain'
+import { createTimingStats, type AudioTiming } from './timingStats'
 
 /** The audio surface the app needs; tests swap in a fake. */
 export interface NotePlayer {
@@ -61,6 +62,10 @@ export function createToneNotePlayer(): NotePlayer {
   let analyser: FrequencySource | null = null
   let waveform: WaveformSource | null = null
   let stream: MediaStream | null = null
+  const timing = createTimingStats()
+  // Read-only timing counters for the perf harness and the DevTools MCP (see timingStats.ts).
+  ;(globalThis as { chartsOfPieAudioTiming?: () => AudioTiming }).chartsOfPieAudioTiming =
+    timing.snapshot
 
   const applyMute = () => {
     if (tone) tone.getDestination().mute = muted
@@ -89,10 +94,12 @@ export function createToneNotePlayer(): NotePlayer {
       if (!tone || !chain) return
       const now = tone.now()
       let time = lastTime === null ? now : lastTime + gapMs / 1000
+      const reanchored = lastTime !== null && Math.abs(time - now) > MAX_DRIFT_SEC
       if (Math.abs(time - now) > MAX_DRIFT_SEC) time = now
       // Two attacks at the same audio time are rejected by Tone; keep them strictly increasing.
       if (lastTime !== null && time <= lastTime) time = lastTime + 0.001
       lastTime = time
+      timing.record(time - tone.getContext().currentTime, reanchored)
       chain.startDrone(time)
       if (note === null) return
       try {

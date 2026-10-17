@@ -70,3 +70,20 @@ columns).
 - Animations stop drawing when nothing changes (idle detection), cap at the frame rate they need,
   and avoid `shadowBlur`; batch many small primitives into one `ImageData` or path.
 - Run `npm run perf` before/after touching a view; no long tasks, ≲ 30 % busy at ~13 digits/s.
+
+## Third pass: note timing and the Chrome DevTools MCP (in progress)
+
+Owner request: heavy computation must never make the audio glitch; set up the Chrome DevTools
+MCP server to profile the app and find what really needs optimising.
+
+- `.mcp.json` registers `chrome-devtools` (`scripts/chrome-devtools-mcp.sh`, pinned 1.10.1, own
+  throwaway profile, usage statistics and CrUX off; local Chrome, or headless Chromium in the
+  cloud). Verified: navigate, 4× CPU throttling, performance trace recorded and saved.
+- What "glitch" means here: notes are scheduled from the main thread 150 ms ahead of the audio
+  clock (`LOOK_AHEAD_SEC`). The note player now counts steps scheduled after their time (late),
+  rhythm re-anchors and the least headroom (`audio/timingStats.ts`,
+  `window.chartsOfPieAudioTiming()`). Chrome 141 headless has no `AudioContext.playoutStats`.
+- `npm run perf` reports those per view, takes `CPU=4` and `LONG=0`, and covers the Golden
+  rectangle and a mod-12 ring.
+- At full speed (6 s at ~13 digits/s, fresh): **no late notes in any view**; least headroom
+  118–150 ms; busiest views oscilloscope 32 %, harmonograph 29 %, cymatics 26 %.
