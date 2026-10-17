@@ -12,6 +12,11 @@
         "claude-code",
         "--project-from-cwd"
       ]
+    },
+    "chrome-devtools": {
+      "type": "stdio",
+      "command": "sh",
+      "args": ["scripts/chrome-devtools-mcp.sh"]
     }
   }
 }

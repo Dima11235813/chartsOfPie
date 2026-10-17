@@ -3,6 +3,7 @@ import type { PerformanceLog, PerformedNote } from '../../core/composition/perfo
 import { intervalName } from '../../core/music/chords'
 import { harmonographPoints, intervalRatio } from '../../viz/harmonograph'
 import { PHI } from '../../viz/art'
+import { createFrameBudget } from '../../viz/frameBudget'
 import { withAlpha } from '../../viz/palettes'
 import { useDigitColors } from '../palette'
 import { prefersReducedMotion, useCanvas } from './useCanvas'
@@ -38,6 +39,8 @@ function currentPair(log: PerformanceLog): [PerformedNote, PerformedNote] | null
 const FRAME_MS = 1000 / 24 - 2
 /** Stop turning this long after the last note. */
 const IDLE_MS = 4000
+/** How fast the figure turns, in radians of phase per second (0.015 per frame at 24 fps). */
+const TURN_PER_SECOND = 0.36
 
 const GOLDEN_CAPTION =
   'φ : 1 ≈ 1.618, an interval of 833 cents (between a minor and a major sixth). No whole-number ratio is close to φ, so the figure never closes.'
@@ -85,15 +88,22 @@ export function HarmonographView({
     let frame = 0
     let lastDraw = -Infinity
     let lastPair: [PerformedNote, PerformedNote] | null = null
+    // At most ~24 frames/s, and fewer when one frame is expensive (a slow phone): the ~1,800-point
+    // curve must never crowd out note scheduling (R-010 third pass).
+    const budget = createFrameBudget({ minIntervalMs: FRAME_MS, share: 0.25, watchFrames: true })
     const draw = (now: number) => {
       frame = requestAnimationFrame(draw)
-      // 30 frames/s is plenty for a slow turn; when idle (paused for a while) and nothing changed,
-      // skip the frame entirely — redrawing a ~2,000-point curve 60×/s was ~50 % of a core.
+      // When idle (paused for a while) and nothing changed, skip the frame entirely.
       const idle = reduced || now - lastNoteAt.current > IDLE_MS
-      if (now - lastDraw < FRAME_MS) return
+      if (!budget.due(now)) return
       if (idle && pair.current === lastPair && lastDraw > 0) return
+      // The figure turns at the same speed however many frames are drawn.
+      if (!idle && lastDraw > 0) phase += TURN_PER_SECOND * Math.min(0.25, (now - lastDraw) / 1000)
       lastDraw = now
       lastPair = pair.current
+      budget.run(now, paint)
+    }
+    const paint = () => {
       const w = canvas.width
       const h = canvas.height
       ctx.clearRect(0, 0, w, h)
@@ -125,7 +135,6 @@ export function HarmonographView({
         ctx.lineWidth = 1.2 * scale
         ctx.stroke()
       }
-      if (!idle) phase += 0.015 // per 24 fps frame: the same speed as 0.006 at 60 fps
     }
     frame = requestAnimationFrame(draw)
     return () => cancelAnimationFrame(frame)

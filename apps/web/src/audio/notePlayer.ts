@@ -1,5 +1,6 @@
 import type * as ToneNamespace from 'tone'
 import { createSoundChain, type SoundChain, type SoundSettings } from './soundChain'
+import { createTimingStats, nextStepTime, type AudioTiming } from './timingStats'
 
 /** The audio surface the app needs; tests swap in a fake. */
 export interface NotePlayer {
@@ -44,9 +45,6 @@ export interface FrequencySource {
  */
 export const LOOK_AHEAD_SEC = 0.15
 
-/** If the ideal grid time drifts further than this from "now", re-anchor to now. */
-const MAX_DRIFT_SEC = 0.08
-
 /**
  * Tone.js-backed player. Tone is imported lazily on the first Play click, which keeps it out of the
  * initial bundle and guarantees the AudioContext is created inside a user gesture.
@@ -61,6 +59,10 @@ export function createToneNotePlayer(): NotePlayer {
   let analyser: FrequencySource | null = null
   let waveform: WaveformSource | null = null
   let stream: MediaStream | null = null
+  const timing = createTimingStats()
+  // Read-only timing counters for the perf harness and the DevTools MCP (see timingStats.ts).
+  ;(globalThis as { chartsOfPieAudioTiming?: () => AudioTiming }).chartsOfPieAudioTiming =
+    timing.snapshot
 
   const applyMute = () => {
     if (tone) tone.getDestination().mute = muted
@@ -87,12 +89,10 @@ export function createToneNotePlayer(): NotePlayer {
     },
     playStep(note, durationSec, velocity, gapMs) {
       if (!tone || !chain) return
-      const now = tone.now()
-      let time = lastTime === null ? now : lastTime + gapMs / 1000
-      if (Math.abs(time - now) > MAX_DRIFT_SEC) time = now
-      // Two attacks at the same audio time are rejected by Tone; keep them strictly increasing.
-      if (lastTime !== null && time <= lastTime) time = lastTime + 0.001
+      const audioNow = tone.getContext().currentTime
+      const { time, reanchored } = nextStepTime(lastTime, gapMs / 1000, tone.now(), audioNow)
       lastTime = time
+      timing.record(time - audioNow, reanchored)
       chain.startDrone(time)
       if (note === null) return
       try {

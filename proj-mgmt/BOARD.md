@@ -1,6 +1,6 @@
 # Board
 
-_Last updated with B-024: the mosaic sweep fills the width in Fit mode._
+_Last updated with R-010 third pass: notes stay on time under load; Chrome DevTools MCP._
 
 ## Epics
 
