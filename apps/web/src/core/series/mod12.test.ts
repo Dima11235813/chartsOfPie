@@ -88,7 +88,7 @@ describe('Fibonacci mod 12', () => {
 
 describe('the mod-12 reading', () => {
   it('is offered for Fibonacci after all digits and last digit', () => {
-    expect(getSeries('fibonacci').readings).toEqual(['concat', 'last-digit', 'mod-12'])
+    expect(getSeries('fibonacci').readings.slice(0, 3)).toEqual(['concat', 'last-digit', 'mod-12'])
   })
 
   it('round-trips through links as s=fibonacci.mod-12', () => {

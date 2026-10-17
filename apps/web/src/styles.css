@@ -92,6 +92,23 @@ body {
   outline-offset: 2px;
 }
 
+/* The "Learn more" links next to the pickers in the app. */
+.learn-more {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding-inline: 0.5rem;
+  color: var(--accent);
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.learn-more:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
 .layout {
   display: grid;
   gap: var(--gutter);

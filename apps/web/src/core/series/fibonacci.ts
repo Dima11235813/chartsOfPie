@@ -10,6 +10,8 @@ import type { TermIndex } from '../digits/digitSource'
  *   π(10) = 60, A001175), so it is a table, no big numbers at all.
  * - `mod-12`: Fₙ mod 12, one pitch class per term (F05.5). It repeats every 24 terms (π(12) = 24)
  *   and never reaches 6, so played as semitones above C it is a 24-note melody without F♯.
+ * - `base-12`: every digit of every term written in base 12 (R-013): F₁₂ = 144 is written 100, the
+ *   last two digits repeat every 24 terms (π(144) = 24) and every 12th term ends in 00.
  */
 
 export interface FibonacciSymbols {
@@ -61,8 +63,12 @@ export function fibonacciResidues(length: number, modulus: number): FibonacciSym
 /** Fₙ mod 10 for n = 0 … length − 1. */
 export const fibonacciLastDigits = (length: number) => fibonacciResidues(length, 10)
 
-/** The first `length` digits of F₀ F₁ F₂ … written one after another, with each term's start. */
-export function fibonacciConcatenated(length: number): FibonacciSymbols {
+/**
+ * The first `length` digits of F₀ F₁ F₂ … written in `base` (2–36) one after another, with each
+ * term's start.
+ */
+export function fibonacciConcatenated(length: number, base = 10): FibonacciSymbols {
+  if (!Number.isInteger(base) || base < 2 || base > 36) throw new RangeError(`Bad base: ${base}`)
   const symbols = new Uint8Array(length)
   const starts: number[] = []
   let a = 0n
@@ -70,8 +76,8 @@ export function fibonacciConcatenated(length: number): FibonacciSymbols {
   let at = 0
   while (at < length) {
     starts.push(at)
-    const text = a.toString()
-    for (let i = 0; i < text.length && at < length; i++) symbols[at++] = text.charCodeAt(i) - 48
+    const text = a.toString(base)
+    for (let i = 0; i < text.length && at < length; i++) symbols[at++] = parseInt(text[i]!, base)
     ;[a, b] = [b, a + b]
   }
   const table = Uint32Array.from(starts)
@@ -116,16 +122,18 @@ export function describePosition(
 }
 
 /**
- * First digits of the terms that start in [from, to): counts for 1–9 (index = digit). Benford's
- * law predicts a share log₁₀(1 + 1/d) for digit d, which Fibonacci numbers follow.
+ * First digits of the terms that start in [from, to): counts for 1 … base − 1 (index = digit).
+ * Benford's law predicts a share log_b(1 + 1/d) for digit d, which Fibonacci numbers follow in
+ * every base.
  */
 export function firstDigitCounts(
   symbols: { digitAt(i: number): number },
   terms: TermIndex,
   from: number,
   to: number,
+  base = 10,
 ): number[] {
-  const counts = new Array<number>(10).fill(0)
+  const counts = new Array<number>(base).fill(0)
   if (to <= from) return counts
   for (let t = terms.termAt(from); t < terms.count; t++) {
     const start = terms.startOf(t)
@@ -138,5 +146,5 @@ export function firstDigitCounts(
   return counts
 }
 
-/** Benford's law: the share of numbers whose first digit is d. */
-export const benfordShare = (d: number) => Math.log10(1 + 1 / d)
+/** Benford's law: the share of numbers written in `base` whose first digit is d. */
+export const benfordShare = (d: number, base = 10) => Math.log(1 + 1 / d) / Math.log(base)

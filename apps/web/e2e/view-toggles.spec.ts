@@ -489,3 +489,54 @@ test('digit chart: every chart style draws', async ({ page }) => {
     await expect.poll(() => inkedPixels(page), { message: label }).toBeGreaterThan(50)
   }
 })
+
+test('Fibonacci in base 12: dozenal digits, Benford in base 12, and Learn more links', async ({
+  page,
+}) => {
+  const errors: string[] = []
+  page.on('pageerror', (error) => errors.push(error.message))
+  await page.goto('/#s=fibonacci.base-12')
+  await expect(page.getByRole('button', { name: 'Play' })).toBeEnabled({ timeout: 15_000 })
+  await expect(page.getByRole('combobox', { name: 'Reading' })).toHaveValue('base-12')
+  await page.locator('body').click({ position: { x: 5, y: 5 } })
+  for (let i = 0; i < 20; i++) await page.keyboard.press('ArrowRight')
+  // 0 1 1 2 3 5 8 11 19 2A 47 75 100: F₁₂ = 144 is written 100.
+  await expect(page.locator('.stream')).toHaveText('011235811192A4775100')
+  await expect(page.getByTestId('term')).toHaveText('in F₁₂')
+  const firstDigits = page.getByTestId('first-digits')
+  await expect(firstDigits.locator('tbody tr')).toHaveCount(11)
+  await expect(firstDigits.locator('caption')).toContainText('B least')
+  await page.getByRole('combobox', { name: 'View' }).selectOption({ label: 'Digit ring' })
+  await expect.poll(() => inkedPixels(page)).toBeGreaterThan(100)
+
+  // Learn more opens the article for what is on screen: the reading, and the view.
+  await expect(page.getByRole('link', { name: /Learn more about Fibonacci/ })).toHaveAttribute(
+    'href',
+    '/learn.html#reading-base-12',
+  )
+  await expect(page.getByRole('link', { name: /Learn how the Digit ring works/ })).toHaveAttribute(
+    'href',
+    '/learn.html#view-ring',
+  )
+  expect(errors).toEqual([])
+})
+
+test('the Learn page: every article, readable at phone width, Try it opens the app', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 360, height: 740 })
+  await page.goto('/learn.html#reading-base-12')
+  const article = page.locator('article#reading-base-12')
+  await expect(article.getByRole('heading', { name: 'All digits in base 12' })).toBeInViewport()
+  await expect(article).toContainText('144 is written 100')
+  await expect(page.locator('article')).toHaveCount(26)
+  // No horizontal scroll at 360 px (rule 6).
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(
+    true,
+  )
+  await article.getByRole('link', { name: 'Try it' }).click()
+  await expect(page.getByRole('combobox', { name: 'Reading' })).toHaveValue('base-12', {
+    timeout: 15_000,
+  })
+  await expect(page.getByRole('combobox', { name: 'View' })).toHaveValue('type')
+})

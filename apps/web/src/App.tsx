@@ -3,7 +3,9 @@ import { createToneNotePlayer, type NotePlayer } from './audio/notePlayer'
 import { findMatchingPreset } from './core/composition/presets'
 import { alphabetOf, DECIMAL_ALPHABET, type DigitSource } from './core/digits/digitSource'
 import { loadSource as loadSeriesSource } from './core/series/load'
-import { sameSource, sourceKey, type SourceConfig } from './core/series/sourceConfig'
+import { sameSource, sourceKey, sourceName, type SourceConfig } from './core/series/sourceConfig'
+import { readingArticleId, seriesArticleId } from './learn/articles'
+import { learnHref } from './learn/links'
 import {
   getReading,
   getSeries,
@@ -255,6 +257,19 @@ export default function App({
                   </select>
                 </label>
               )}
+              <a
+                className="learn-more"
+                href={learnHref(
+                  source.reading === readings[0]
+                    ? seriesArticleId(source.series)
+                    : readingArticleId(source.reading),
+                )}
+                target="_blank"
+                rel="noopener"
+                aria-label={`Learn more about ${sourceName(source)}`}
+              >
+                Learn more
+              </a>
             </p>
             <AccountBar account={account} />
           </header>
