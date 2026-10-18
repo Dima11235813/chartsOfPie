@@ -1,6 +1,6 @@
 # Board
 
-_Last updated with R-010 third pass: notes stay on time under load; Chrome DevTools MCP._
+_Last updated with the Game of Life from the paused mosaic (F03.4)._
 
 ## Epics
 

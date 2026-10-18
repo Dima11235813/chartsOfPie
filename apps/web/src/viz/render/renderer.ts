@@ -38,6 +38,18 @@ export interface DigitRenderer {
   compose(ctx: CanvasRenderingContext2D, overlay: ComposeOverlay): void
   /** Grid renderers report their current column count (shown and used as a starting point). */
   columns?(): number
+  /** The mosaic reports the grid it shows now (the Game of Life starts from it). */
+  grid?(): ShownGrid | null
+}
+
+/** The cells a grid renderer shows: `rows` × `cols`, the top-left one holding digit `first`. */
+export interface ShownGrid {
+  cols: number
+  rows: number
+  /** Index of the digit in the top-left cell. */
+  first: number
+  /** Digits played (cells from `count` on are empty). */
+  count: number
 }
 
 export type RendererFactory = (options: RendererOptions) => DigitRenderer
