@@ -159,6 +159,8 @@ export function createMosaicRenderer(
   return {
     columns: () => cols,
 
+    grid: () => (count > 0 ? { cols, rows: visibleRows, first: firstRow * cols, count } : null),
+
     draw(from: number, to: number, digitAt: DigitAt) {
       source = digitAt
       count = to

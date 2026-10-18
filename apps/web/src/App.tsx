@@ -320,6 +320,7 @@ export default function App({
                       }
                       shapeFilter={view === 'mosaic' ? shapeFilter : null}
                       onLayout={setMosaicColumns}
+                      isPlaying={playback.isPlaying}
                     />
                   )}
                   {view === 'clock' && (
