@@ -16,6 +16,8 @@ interface HarmonographViewProps {
   golden?: boolean
   onGoldenChange?: (golden: boolean) => void
   log: PerformanceLog
+  /** The figure turns only while playing; paused, it holds still (and costs nothing). */
+  isPlaying?: boolean
   onCanvas?: (canvas: HTMLCanvasElement | null) => void
 }
 
@@ -51,6 +53,7 @@ export function HarmonographView({
   onPureChange,
   golden = false,
   onGoldenChange,
+  isPlaying = true,
   onCanvas,
 }: HarmonographViewProps) {
   const { ref, canvasRef, size } = useCanvas(onCanvas)
@@ -59,6 +62,12 @@ export function HarmonographView({
   const pair = useRef<[PerformedNote, PerformedNote] | null>(null)
   /** When the last note arrived: the figure stops turning once playback goes quiet. */
   const lastNoteAt = useRef(0)
+  const playing = useRef(isPlaying)
+  useEffect(() => {
+    playing.current = isPlaying
+  }, [isPlaying])
+  /** How far the figure has turned; kept across redraws (toggles, resizes) so it never jumps. */
+  const phase = useRef(0)
 
   useEffect(() => {
     const update = () => {
@@ -84,7 +93,6 @@ export function HarmonographView({
     if (!canvas || !ctx || size.width === 0) return
     const scale = size.ratio
     const reduced = prefersReducedMotion()
-    let phase = 0
     let frame = 0
     let lastDraw = -Infinity
     let lastPair: [PerformedNote, PerformedNote] | null = null
@@ -94,11 +102,12 @@ export function HarmonographView({
     const draw = (now: number) => {
       frame = requestAnimationFrame(draw)
       // When idle (paused for a while) and nothing changed, skip the frame entirely.
-      const idle = reduced || now - lastNoteAt.current > IDLE_MS
+      const idle = reduced || !playing.current || now - lastNoteAt.current > IDLE_MS
       if (!budget.due(now)) return
       if (idle && pair.current === lastPair && lastDraw > 0) return
       // The figure turns at the same speed however many frames are drawn.
-      if (!idle && lastDraw > 0) phase += TURN_PER_SECOND * Math.min(0.25, (now - lastDraw) / 1000)
+      if (!idle && lastDraw > 0)
+        phase.current += TURN_PER_SECOND * Math.min(0.25, (now - lastDraw) / 1000)
       lastDraw = now
       lastPair = pair.current
       budget.run(now, paint)
@@ -117,7 +126,7 @@ export function HarmonographView({
         // A pure p:q figure closes after q periods: draw a few full cycles of it so pure ratios
         // retrace themselves crisply and tempered ones visibly drift.
         const turns = golden ? 28 : Math.min(28, Math.max(8, just[1] * 4))
-        const points = harmonographPoints(ratio, phase, { turns, samples: turns * 64 })
+        const points = harmonographPoints(ratio, phase.current, { turns, samples: turns * 64 })
         const radius = Math.min(w, h) * 0.42
         const cx = w / 2
         const cy = h / 2

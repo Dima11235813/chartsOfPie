@@ -32,6 +32,21 @@ async function openView(page: Page, label: string, digits = 80) {
   for (let i = 0; i < digits; i++) await page.keyboard.press('ArrowRight')
 }
 
+/**
+ * Pixels once the picture has stopped changing (the same count twice, 300 ms apart). Views redraw
+ * on a frame budget, so right after a burst of steps the canvas can still show an earlier frame.
+ */
+async function settledPixels(page: Page) {
+  let last = -1
+  let now = await inkedPixels(page)
+  for (let i = 0; i < 20 && now !== last; i++) {
+    await page.waitForTimeout(300)
+    last = now
+    now = await inkedPixels(page)
+  }
+  return now
+}
+
 /** The view still shows (most of) what it showed before. */
 async function expectDrawnLike(page: Page, before: number, what: string) {
   await expect
@@ -289,15 +304,18 @@ test('mosaic → Game of Life from the paused picture, step, filters, and back a
   await page.getByRole('combobox', { name: 'Show' }).selectOption({ label: 'Every digit' })
   await expectDrawnLike(page, mosaicPixels, 'mosaic after the filtered Game of Life')
 
-  // Playing the digits again returns to the mosaic; the button waits for a pause.
+  // Playing the digits again returns to the mosaic…
   await launch.click()
   await expect(board).toBeVisible()
   await page.locator('body').click({ position: { x: 5, y: 5 } })
   await page.keyboard.press('Space')
   await expect(board).toHaveCount(0)
-  await expect(launch).toBeDisabled()
-  await page.keyboard.press('Space')
-  await expect(launch).toBeEnabled()
+  await expect.poll(() => inkedPixels(page)).toBeGreaterThan(100)
+  // …and while playing, one tap pauses and launches Life from the picture (B-025).
+  await expect(page.getByRole('button', { name: 'Pause', exact: true })).toBeVisible()
+  await launch.click()
+  await expect(board).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Play', exact: true })).toBeVisible()
   await expect.poll(() => inkedPixels(page)).toBeGreaterThan(100)
 })
 
@@ -484,7 +502,7 @@ for (const [view, toggle] of [
   test(`${view}: "${toggle}" on and off keeps it drawn`, async ({ page }) => {
     await openView(page, view, 12)
     await expect.poll(() => inkedPixels(page)).toBeGreaterThan(100)
-    const before = await inkedPixels(page)
+    const before = await settledPixels(page)
     const box = page.getByRole('checkbox', { name: toggle })
     await box.check()
     await expect.poll(() => inkedPixels(page)).toBeGreaterThan(100)
