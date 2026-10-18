@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { VIEWS } from '../components/views'
+import { getPreset } from '../core/composition/presets'
 import { parseShareHash } from '../core/piece/shareLink'
 import { READING_IDS, SERIES, SERIES_IDS } from '../core/series/series'
 import { ARTICLES, getArticle, readingArticleId, seriesArticleId, viewArticleId } from './articles'
@@ -41,6 +42,7 @@ describe('the Learn series', () => {
       expect(shared.source?.series ?? 'pi', a.id).toBe(a.tryIt.series ?? 'pi')
       if (a.tryIt.reading) expect(shared.source?.reading, a.id).toBe(a.tryIt.reading)
       expect(shared.visual?.view ?? 'chart', a.id).toBe(a.tryIt.view ?? 'chart')
+      if (a.tryIt.preset) expect(getPreset(a.tryIt.preset), a.id).toBeDefined()
     }
     expect(tryItHash({ series: 'fibonacci', reading: 'base-12', view: 'type' })).toMatch(
       /s=fibonacci\.base-12/,

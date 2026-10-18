@@ -603,7 +603,7 @@ test('the Learn page: every article, readable at phone width, Try it opens the a
   const article = page.locator('article#reading-base-12')
   await expect(article.getByRole('heading', { name: 'All digits in base 12' })).toBeInViewport()
   await expect(article).toContainText('144 is written 100')
-  await expect(page.locator('article')).toHaveCount(27)
+  await expect(page.locator('article')).toHaveCount(30)
   // No horizontal scroll at 360 px (rule 6).
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(
     true,
@@ -612,7 +612,8 @@ test('the Learn page: every article, readable at phone width, Try it opens the a
   await expect(page.getByRole('combobox', { name: 'Reading' })).toHaveValue('base-12', {
     timeout: 15_000,
   })
-  await expect(page.getByRole('combobox', { name: 'View' })).toHaveValue('type')
+  await expect(page.getByRole('combobox', { name: 'View' })).toHaveValue('wall')
+  await expect(page.getByLabel('Preset')).toHaveValue('dozenal-mallets')
 })
 
 test('place-value wall: Fibonacci in base 12 by place, then π as a triangle', async ({ page }) => {

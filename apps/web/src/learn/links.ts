@@ -18,7 +18,7 @@ export function tryItHash(tryIt: Article['tryIt']): string {
     series,
     reading: tryIt.reading ?? getSeries(series).readings[0],
   }
-  const sound = (getPreset(DEFAULT_PRESET_ID) ?? PRESETS[0]!).config
+  const sound = (getPreset(tryIt.preset ?? DEFAULT_PRESET_ID) ?? PRESETS[0]!).config
   const visual = { ...DEFAULT_VISUAL_CONFIG, view: tryIt.view ?? DEFAULT_VISUAL_CONFIG.view }
   // An empty hash would restore the visitor's last session instead: name π explicitly.
   return buildShareHash(sound, visual, 0, source) || '#s=pi'

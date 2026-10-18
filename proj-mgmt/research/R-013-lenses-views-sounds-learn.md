@@ -56,18 +56,18 @@ factor 5 (period 20) stretches the loops to 60 and 300.
 
 Each is a new reading id (additive), listed on the series it makes sense for.
 
-| Lens                       | Id (proposed)         | Alphabet | What it reveals                                                        |
-| -------------------------- | --------------------- | -------- | ---------------------------------------------------------------------- |
-| All digits in base 12      | `base-12` (**built**) | 12       | Benford in base 12; every 12th term ends in 00; ~1/12 each overall     |
-| Mod 12                     | `mod-12` (done)       | 12       | 24-note loop without F♯                                                |
-| Last digit                 | `last-digit` (done)   | 10       | 60-step loop                                                           |
-| Digital root               | `digital-root`        | 9 (1–9)  | Fibonacci: a 24-step loop (π(9) = 24), so it lines up with mod 12      |
-| Mod 5, mod 8               | `mod-5`, `mod-8`      | 5, 8     | Short loops (20, 12) for pentatonic or octatonic playing               |
-| Binary                     | `base-2`              | 2        | Two-colour carpets; the Ulam / Sacks spirals for primes                |
-| First digit only           | `first-digit`         | 9        | Benford as a stream: hear 1 far more often than 9                      |
-| Term length                | `length`              | ~36      | A slow staircase (each term ~0.21 digits longer: log₁₀ φ)              |
-| Differences / gaps         | `gaps` (primes)       | ≤ 36     | Prime gaps: always even after 2, sixes most common                     |
-| Constants in base 12 or 16 | `base-12` on π, φ, e  | 12, 16   | π looks just as random in any base (normality): the lesson is the null |
+| Lens                       | Id (proposed)                | Alphabet           | What it reveals                                                        |
+| -------------------------- | ---------------------------- | ------------------ | ---------------------------------------------------------------------- |
+| All digits in base 12      | `base-12` (**built**)        | 12                 | Benford in base 12; every 12th term ends in 00; ~1/12 each overall     |
+| Mod 12                     | `mod-12` (done)              | 12                 | 24-note loop without F♯                                                |
+| Last digit                 | `last-digit` (done)          | 10                 | 60-step loop                                                           |
+| Digital root               | `digital-root` (**built**)   | 10 (0 only for F₀) | Fibonacci: a 24-step loop (π(9) = 24), so it lines up with mod 12      |
+| Mod 5, mod 8               | `mod-5`, `mod-8` (**built**) | 5, 8               | Short loops (20, 12) for pentatonic or octatonic playing               |
+| Binary                     | `base-2`                     | 2                  | Two-colour carpets; the Ulam / Sacks spirals for primes                |
+| First digit only           | `first-digit`                | 9                  | Benford as a stream: hear 1 far more often than 9                      |
+| Term length                | `length`                     | ~36                | A slow staircase (each term ~0.21 digits longer: log₁₀ φ)              |
+| Differences / gaps         | `gaps` (primes)              | ≤ 36               | Prime gaps: always even after 2, sixes most common                     |
+| Constants in base 12 or 16 | `base-12` on π, φ, e         | 12, 16             | π looks just as random in any base (normality): the lesson is the null |
 
 Constants in another base need data, not a generator: convert the verified decimal file once
 (⌊x · 10ᴰ⌋ · 12ᴷ / 10ᴰ in BigInt), verify with a second independent algorithm as R-011 did for
@@ -124,15 +124,15 @@ with a preset config, progress kept on the device.
 
 ## 6. Order
 
-| Slice | Contents                                                                          | Status  |
-| ----- | --------------------------------------------------------------------------------- | ------- |
-| L1    | `fibonacci.base-12` reading, Benford in any base, `learn.html` with every article | in PR   |
-| L2    | Place-value wall view (any terms reading), poster, e2e on, off, on (rule 9)       | next    |
-| L3    | Dozenal semitones preset + term-boundary accent, measured                         | next    |
-| L4    | Digital root, mod 5, mod 8 readings; Pisano star view                             | backlog |
-| L5    | π, φ, e, √2 in base 12 (verified data files)                                      | backlog |
-| L6    | Place-value voices, two-loop polyrhythm                                           | backlog |
-| L7    | E04 lesson tracks built on the Learn articles                                     | backlog |
+| Slice | Contents                                                                          | Status                   |
+| ----- | --------------------------------------------------------------------------------- | ------------------------ |
+| L1    | `fibonacci.base-12` reading, Benford in any base, `learn.html` with every article | done (PR #36)            |
+| L2    | Place-value wall view (any terms reading), poster, e2e on, off, on (rule 9)       | done (PR #36)            |
+| L3    | Dozenal semitones preset + term-boundary accent, measured                         | preset done; accent next |
+| L4    | Digital root, mod 5, mod 8 readings; Pisano star view                             | readings done; star next |
+| L5    | π, φ, e, √2 in base 12 (verified data files)                                      | backlog                  |
+| L6    | Place-value voices, two-loop polyrhythm                                           | backlog                  |
+| L7    | E04 lesson tracks built on the Learn articles                                     | backlog                  |
 
 ## 7. Decisions (defaults taken; the owner can overrule)
 

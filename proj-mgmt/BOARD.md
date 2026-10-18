@@ -1,6 +1,6 @@
 # Board
 
-_Last updated with R-013 L1 (Fibonacci in base 12, Learn page) and B-025 (phone controls)._
+_Last updated with R-013 L2–L4: place-value wall, Dozenal mallets, digital root / mod 5 / mod 8._
 
 ## Epics
 
@@ -54,10 +54,10 @@ _Last updated with R-013 L1 (Fibonacci in base 12, Learn page) and B-025 (phone 
 
 | Slice | Contents                                                      | Status      |
 | ----- | ------------------------------------------------------------- | ----------- |
-| L1    | Fibonacci in base 12, Benford in any base, Learn page (F04.0) | in-progress |
+| L1    | Fibonacci in base 12, Benford in any base, Learn page (F04.0) | done        |
 | L2    | Place-value wall view                                         | done        |
-| L3    | Dozenal semitones preset, term-boundary accent                | backlog     |
-| L4    | Digital root, mod 5, mod 8 readings; Pisano star view         | backlog     |
+| L3    | Dozenal mallets preset done; term-boundary accent next        | in-progress |
+| L4    | Digital root, mod 5, mod 8 readings done; Pisano star next    | in-progress |
 | L5    | π, φ, e, √2 in base 12 (verified data)                        | backlog     |
 
 ## E02 progress (previous slice: configurable music, presets, pleasant sound)

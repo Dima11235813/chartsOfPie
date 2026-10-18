@@ -1,7 +1,12 @@
 import { createDigitSource, type SymbolSource } from '../digits/digitSource'
 import { CONSTANTS, loadConstantDigits } from '../digits/constants'
 import { loadPiDigits } from '../digits/pi'
-import { fibonacciConcatenated, fibonacciResidues, pisanoPeriod } from './fibonacci'
+import {
+  fibonacciConcatenated,
+  fibonacciDigitalRoots,
+  fibonacciResidues,
+  pisanoPeriod,
+} from './fibonacci'
 import type { ReadingId, SeriesId } from './series'
 import type { SourceConfig } from './sourceConfig'
 
@@ -18,7 +23,12 @@ const LOADERS: Record<SeriesId, (reading: ReadingId) => Promise<SymbolSource>> =
 export const GENERATED_LENGTH = 1_000_000
 
 /** Residue readings of Fibonacci: the modulus each one takes. */
-const FIBONACCI_MODULI: Partial<Record<ReadingId, number>> = { 'last-digit': 10, 'mod-12': 12 }
+const FIBONACCI_MODULI: Partial<Record<ReadingId, number>> = {
+  'last-digit': 10,
+  'mod-12': 12,
+  'mod-5': 5,
+  'mod-8': 8,
+}
 
 /** Fibonacci is generated, not fetched: ~35 ms for a million digits (3,094 BigInt terms). */
 function loadFibonacci(reading: ReadingId): SymbolSource {
@@ -26,6 +36,15 @@ function loadFibonacci(reading: ReadingId): SymbolSource {
     const { symbols, terms } = fibonacciConcatenated(GENERATED_LENGTH, 12)
     const source = createDigitSource('fibonacci:base-12', 'Fibonacci numbers · base 12', symbols)
     return { ...source, terms, alphabetSize: 12 }
+  }
+  if (reading === 'digital-root') {
+    const { symbols, terms } = fibonacciDigitalRoots(GENERATED_LENGTH)
+    const source = createDigitSource(
+      'fibonacci:digital-root',
+      'Fibonacci numbers · digital root',
+      symbols,
+    )
+    return { ...source, terms, period: pisanoPeriod(9) }
   }
   const modulus = FIBONACCI_MODULI[reading]
   if (modulus === undefined) {

@@ -105,7 +105,12 @@ describe('Fibonacci in base 12', () => {
 
 describe('the base-12 reading', () => {
   it('is offered for Fibonacci after mod 12, with twelve symbols', () => {
-    expect(getSeries('fibonacci').readings).toEqual(['concat', 'last-digit', 'mod-12', 'base-12'])
+    expect(getSeries('fibonacci').readings.slice(0, 4)).toEqual([
+      'concat',
+      'last-digit',
+      'mod-12',
+      'base-12',
+    ])
     expect(getReading('base-12').alphabetSize).toBe(12)
   })
 

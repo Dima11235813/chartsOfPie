@@ -341,6 +341,28 @@ export const PRESETS: readonly Preset[] = [
       volume: -1,
     },
   },
+  {
+    id: 'dozenal-mallets',
+    name: 'Dozenal mallets (12 notes)',
+    description:
+      'Symbol n is n semitones above C on a soft marimba, so each base-12 digit (0–9, A, B) is one of the twelve notes. Made for Fibonacci mod 12 and base 12.',
+    config: {
+      ...polished,
+      scale: 'chromatic',
+      mapping: 'semitones',
+      octave: 4,
+      rhythm: 'steady',
+      timing: 'tempo',
+      bpm: 104,
+      subdivision: 2,
+      legato: 1.1,
+      dynamics: 'accented',
+      humanize: 0.15,
+      instrument: 'marimba',
+      reverb: 0.25,
+      volume: 4.5,
+    },
+  },
 ]
 
 export const DEFAULT_PRESET_ID = 'original'

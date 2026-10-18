@@ -36,6 +36,8 @@ export interface Article {
     readonly series?: SeriesId
     readonly reading?: ReadingId
     readonly view?: ViewId
+    /** A sound preset id (default: the app's default sound). */
+    readonly preset?: string
   }
 }
 
@@ -250,7 +252,7 @@ const READINGS: readonly Article[] = [
     ],
     lookFor: ['The empty F♯ on the music clock', 'A 24-note loop'],
     references: [oeis('A001175', 'Pisano periods'), wiki('Pisano_period', 'Pisano period')],
-    tryIt: { series: 'fibonacci', reading: 'mod-12', view: 'clock' },
+    tryIt: { series: 'fibonacci', reading: 'mod-12', view: 'clock', preset: 'dozenal-mallets' },
   },
   {
     id: 'reading-base-12',
@@ -276,7 +278,7 @@ const READINGS: readonly Article[] = [
       {
         heading: 'How it sounds',
         paragraphs: [
-          'Twelve symbols give twelve notes and twelve colours. Choose the semitones mapping in Customize and each base-12 digit is exactly one pitch class, 0 = C to B = B.',
+          'Twelve symbols give twelve notes and twelve colours. The Dozenal mallets preset (or the semitones mapping in Customize) makes each base-12 digit exactly one pitch class, 0 = C to B = B.',
         ],
       },
     ],
@@ -290,7 +292,65 @@ const READINGS: readonly Article[] = [
       wiki('Duodecimal', 'Duodecimal (base 12)'),
       wiki('Benford%27s_law', 'Benford’s law'),
     ],
-    tryIt: { series: 'fibonacci', reading: 'base-12', view: 'type' },
+    tryIt: { series: 'fibonacci', reading: 'base-12', view: 'wall', preset: 'dozenal-mallets' },
+  },
+  {
+    id: 'reading-digital-root',
+    group: 'reading',
+    title: 'Digital root',
+    summary: 'Add up a number’s digits, then add up the answer’s digits, until one digit is left.',
+    sections: [
+      {
+        heading: 'How it works',
+        paragraphs: [
+          '144 → 1 + 4 + 4 = 9. 233 → 2 + 3 + 3 = 8. 6765 → 24 → 6. The digital root of a number is the same as its remainder after dividing by 9, except that a multiple of 9 gives 9 instead of 0: that is the old trick of “casting out nines”.',
+          'So the digital roots of the Fibonacci numbers follow the remainders mod 9, which repeat every 24 terms: 1 1 2 3 5 8 4 3 7 1 8 9 8 8 7 6 4 1 5 6 2 8 1 9. That is the same length as the mod 12 loop, so the two line up when played side by side.',
+        ],
+      },
+    ],
+    lookFor: ['A 24-note loop', 'Every 12th term has root 9 (F₁₂ = 144, F₂₄ = 46368)'],
+    references: [wiki('Digital_root', 'Digital root'), oeis('A001175', 'Pisano periods')],
+    tryIt: { series: 'fibonacci', reading: 'digital-root', view: 'ring' },
+  },
+  {
+    id: 'reading-mod-5',
+    group: 'reading',
+    title: 'Mod 5',
+    summary:
+      'Each Fibonacci number’s remainder after dividing by 5: five symbols for a five-note scale.',
+    sections: [
+      {
+        heading: 'How it works',
+        paragraphs: [
+          'The remainders repeat every 20 terms: 0 1 1 2 3 0 3 3 1 4 0 4 4 3 2 0 2 2 4 1. Every fifth one is 0, because every fifth Fibonacci number (5, 55, 610 …) is a multiple of 5.',
+          'Five symbols fit a pentatonic scale exactly: on C major pentatonic they are C, D, E, G and A, so the loop is a 20-note pentatonic tune that lands on C every fifth note.',
+        ],
+      },
+    ],
+    lookFor: [
+      'C on every fifth note',
+      'The mosaic at 20 columns: one loop per row, stacked into stripes',
+    ],
+    references: [oeis('A001175', 'Pisano periods')],
+    tryIt: { series: 'fibonacci', reading: 'mod-5', view: 'mosaic' },
+  },
+  {
+    id: 'reading-mod-8',
+    group: 'reading',
+    title: 'Mod 8',
+    summary: 'Each Fibonacci number’s remainder after dividing by 8: a short loop of 12.',
+    sections: [
+      {
+        heading: 'How it works',
+        paragraphs: [
+          'The remainders repeat every 12 terms: 0 1 1 2 3 5 0 5 5 2 7 1. Two of the eight remainders, 4 and 6, never appear, so two notes of the eight-note table stay silent.',
+          'On the default C major pentatonic, eight symbols climb into the next octave (C4 to E5); the loop never plays A4 or D5.',
+        ],
+      },
+    ],
+    lookFor: ['Two notes that never sound', 'A 12-note loop'],
+    references: [oeis('A001175', 'Pisano periods')],
+    tryIt: { series: 'fibonacci', reading: 'mod-8', view: 'clock' },
   },
 ]
 

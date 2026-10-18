@@ -60,6 +60,17 @@ export function fibonacciResidues(length: number, modulus: number): FibonacciSym
   return { symbols, terms: oneTermPerSymbol(length) }
 }
 
+/**
+ * Digital root of Fₙ for n = 0 … length − 1: the digit sum, repeated until one digit is left. It is
+ * Fₙ mod 9, except that a nonzero multiple of 9 gives 9 (144 → 1 + 4 + 4 = 9). F₀ = 0 is the only
+ * 0; from F₁ it loops every 24 terms (π(9) = 24, R-013).
+ */
+export function fibonacciDigitalRoots(length: number): FibonacciSymbols {
+  const { symbols, terms } = fibonacciResidues(length, 9)
+  for (let n = 1; n < length; n++) if (symbols[n] === 0) symbols[n] = 9
+  return { symbols, terms }
+}
+
 /** Fₙ mod 10 for n = 0 … length − 1. */
 export const fibonacciLastDigits = (length: number) => fibonacciResidues(length, 10)
 
