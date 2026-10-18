@@ -3,6 +3,7 @@ import type { PerformanceLog, PerformedNote } from '../../core/composition/perfo
 import { intervalName } from '../../core/music/chords'
 import { harmonographPoints, intervalRatio } from '../../viz/harmonograph'
 import { PHI } from '../../viz/art'
+import { createFrameBudget } from '../../viz/frameBudget'
 import { withAlpha } from '../../viz/palettes'
 import { useDigitColors } from '../palette'
 import { prefersReducedMotion, useCanvas } from './useCanvas'
@@ -15,6 +16,8 @@ interface HarmonographViewProps {
   golden?: boolean
   onGoldenChange?: (golden: boolean) => void
   log: PerformanceLog
+  /** The figure turns only while playing; paused, it holds still (and costs nothing). */
+  isPlaying?: boolean
   onCanvas?: (canvas: HTMLCanvasElement | null) => void
 }
 
@@ -38,6 +41,8 @@ function currentPair(log: PerformanceLog): [PerformedNote, PerformedNote] | null
 const FRAME_MS = 1000 / 24 - 2
 /** Stop turning this long after the last note. */
 const IDLE_MS = 4000
+/** How fast the figure turns, in radians of phase per second (0.015 per frame at 24 fps). */
+const TURN_PER_SECOND = 0.36
 
 const GOLDEN_CAPTION =
   'φ : 1 ≈ 1.618, an interval of 833 cents (between a minor and a major sixth). No whole-number ratio is close to φ, so the figure never closes.'
@@ -48,6 +53,7 @@ export function HarmonographView({
   onPureChange,
   golden = false,
   onGoldenChange,
+  isPlaying = true,
   onCanvas,
 }: HarmonographViewProps) {
   const { ref, canvasRef, size } = useCanvas(onCanvas)
@@ -56,6 +62,12 @@ export function HarmonographView({
   const pair = useRef<[PerformedNote, PerformedNote] | null>(null)
   /** When the last note arrived: the figure stops turning once playback goes quiet. */
   const lastNoteAt = useRef(0)
+  const playing = useRef(isPlaying)
+  useEffect(() => {
+    playing.current = isPlaying
+  }, [isPlaying])
+  /** How far the figure has turned; kept across redraws (toggles, resizes) so it never jumps. */
+  const phase = useRef(0)
 
   useEffect(() => {
     const update = () => {
@@ -81,19 +93,26 @@ export function HarmonographView({
     if (!canvas || !ctx || size.width === 0) return
     const scale = size.ratio
     const reduced = prefersReducedMotion()
-    let phase = 0
     let frame = 0
     let lastDraw = -Infinity
     let lastPair: [PerformedNote, PerformedNote] | null = null
+    // At most ~24 frames/s, and fewer when one frame is expensive (a slow phone): the ~1,800-point
+    // curve must never crowd out note scheduling (R-010 third pass).
+    const budget = createFrameBudget({ minIntervalMs: FRAME_MS, share: 0.25, watchFrames: true })
     const draw = (now: number) => {
       frame = requestAnimationFrame(draw)
-      // 30 frames/s is plenty for a slow turn; when idle (paused for a while) and nothing changed,
-      // skip the frame entirely — redrawing a ~2,000-point curve 60×/s was ~50 % of a core.
-      const idle = reduced || now - lastNoteAt.current > IDLE_MS
-      if (now - lastDraw < FRAME_MS) return
+      // When idle (paused for a while) and nothing changed, skip the frame entirely.
+      const idle = reduced || !playing.current || now - lastNoteAt.current > IDLE_MS
+      if (!budget.due(now)) return
       if (idle && pair.current === lastPair && lastDraw > 0) return
+      // The figure turns at the same speed however many frames are drawn.
+      if (!idle && lastDraw > 0)
+        phase.current += TURN_PER_SECOND * Math.min(0.25, (now - lastDraw) / 1000)
       lastDraw = now
       lastPair = pair.current
+      budget.run(now, paint)
+    }
+    const paint = () => {
       const w = canvas.width
       const h = canvas.height
       ctx.clearRect(0, 0, w, h)
@@ -107,7 +126,7 @@ export function HarmonographView({
         // A pure p:q figure closes after q periods: draw a few full cycles of it so pure ratios
         // retrace themselves crisply and tempered ones visibly drift.
         const turns = golden ? 28 : Math.min(28, Math.max(8, just[1] * 4))
-        const points = harmonographPoints(ratio, phase, { turns, samples: turns * 64 })
+        const points = harmonographPoints(ratio, phase.current, { turns, samples: turns * 64 })
         const radius = Math.min(w, h) * 0.42
         const cx = w / 2
         const cy = h / 2
@@ -125,7 +144,6 @@ export function HarmonographView({
         ctx.lineWidth = 1.2 * scale
         ctx.stroke()
       }
-      if (!idle) phase += 0.015 // per 24 fps frame: the same speed as 0.006 at 60 fps
     }
     frame = requestAnimationFrame(draw)
     return () => cancelAnimationFrame(frame)

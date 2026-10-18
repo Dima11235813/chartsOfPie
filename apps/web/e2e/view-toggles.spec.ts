@@ -32,6 +32,21 @@ async function openView(page: Page, label: string, digits = 80) {
   for (let i = 0; i < digits; i++) await page.keyboard.press('ArrowRight')
 }
 
+/**
+ * Pixels once the picture has stopped changing (the same count twice, 300 ms apart). Views redraw
+ * on a frame budget, so right after a burst of steps the canvas can still show an earlier frame.
+ */
+async function settledPixels(page: Page) {
+  let last = -1
+  let now = await inkedPixels(page)
+  for (let i = 0; i < 20 && now !== last; i++) {
+    await page.waitForTimeout(300)
+    last = now
+    now = await inkedPixels(page)
+  }
+  return now
+}
+
 /** The view still shows (most of) what it showed before. */
 async function expectDrawnLike(page: Page, before: number, what: string) {
   await expect
@@ -245,6 +260,65 @@ test('mosaic sweep with Fit fills the width at every step, and Fit off keeps one
   await expect.poll(() => drawnSpan(page)).toBeGreaterThan(0.85)
 })
 
+test('mosaic → Game of Life from the paused picture, step, filters, and back again', async ({
+  page,
+}) => {
+  await openView(page, 'Neighbour mosaic', 300)
+  await expect.poll(() => inkedPixels(page)).toBeGreaterThan(200)
+  const mosaicPixels = await inkedPixels(page)
+  const launch = page.getByRole('button', { name: 'Game of Life' })
+  const status = page.getByTestId('life-status')
+  const alive = async () =>
+    Number((await status.textContent())!.match(/([\d,]+) alive/)![1]!.replace(/,/g, ''))
+
+  // Every digit: the linked dots start alive.
+  await launch.click()
+  const board = page.getByRole('img', { name: /Game of Life on the neighbour mosaic/ })
+  await expect(board).toBeVisible()
+  await page.getByRole('button', { name: 'Pause Life' }).click()
+  await page.getByRole('button', { name: 'Restart' }).click()
+  await expect(status).toHaveText(/^Gen 0 · [\d,]+ alive$/)
+  const linked = await alive()
+  expect(linked).toBeGreaterThan(50)
+  await expect.poll(() => inkedPixels(page)).toBeGreaterThan(100)
+  // Step by hand, then run on.
+  await page.getByRole('button', { name: 'Next generation' }).click()
+  await page.getByRole('button', { name: 'Next generation' }).click()
+  await expect(status).toHaveText(/^Gen 2 · /)
+  await page.getByRole('button', { name: 'Run Life' }).click()
+  await expect(status).toHaveText(/Gen (\d{2,}|[3-9])|gen /, { timeout: 8_000 })
+  await expect.poll(() => inkedPixels(page)).toBeGreaterThan(0)
+
+  // Back to the mosaic: drawn as before (rule 9).
+  await page.getByRole('button', { name: 'Back to mosaic' }).click()
+  await expectDrawnLike(page, mosaicPixels, 'mosaic after the Game of Life')
+
+  // Groups of 3+: a sparser seed than every linked dot.
+  await page.getByRole('combobox', { name: 'Show' }).selectOption({ label: 'Groups of 3+' })
+  await launch.click()
+  await page.getByRole('button', { name: 'Pause Life' }).click()
+  await page.getByRole('button', { name: 'Restart' }).click()
+  await expect(status).toHaveText(/^Gen 0 · /)
+  expect(await alive()).toBeLessThan(linked)
+  await page.getByRole('button', { name: 'Back to mosaic' }).click()
+  await page.getByRole('combobox', { name: 'Show' }).selectOption({ label: 'Every digit' })
+  await expectDrawnLike(page, mosaicPixels, 'mosaic after the filtered Game of Life')
+
+  // Playing the digits again returns to the mosaic…
+  await launch.click()
+  await expect(board).toBeVisible()
+  await page.locator('body').click({ position: { x: 5, y: 5 } })
+  await page.keyboard.press('Space')
+  await expect(board).toHaveCount(0)
+  await expect.poll(() => inkedPixels(page)).toBeGreaterThan(100)
+  // …and while playing, one tap pauses and launches Life from the picture (B-025).
+  await expect(page.getByRole('button', { name: 'Pause', exact: true })).toBeVisible()
+  await launch.click()
+  await expect(board).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Play', exact: true })).toBeVisible()
+  await expect.poll(() => inkedPixels(page)).toBeGreaterThan(100)
+})
+
 test('number: Fibonacci, both readings, and back to π, while paused, keeps views drawing', async ({
   page,
 }) => {
@@ -428,7 +502,7 @@ for (const [view, toggle] of [
   test(`${view}: "${toggle}" on and off keeps it drawn`, async ({ page }) => {
     await openView(page, view, 12)
     await expect.poll(() => inkedPixels(page)).toBeGreaterThan(100)
-    const before = await inkedPixels(page)
+    const before = await settledPixels(page)
     const box = page.getByRole('checkbox', { name: toggle })
     await box.check()
     await expect.poll(() => inkedPixels(page)).toBeGreaterThan(100)

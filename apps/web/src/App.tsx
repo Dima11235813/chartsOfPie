@@ -335,6 +335,10 @@ export default function App({
                       }
                       shapeFilter={view === 'mosaic' ? shapeFilter : null}
                       onLayout={setMosaicColumns}
+                      isPlaying={playback.isPlaying}
+                      onPause={() => {
+                        if (playback.isPlaying) void playback.toggle()
+                      }}
                     />
                   )}
                   {view === 'clock' && (
@@ -369,6 +373,7 @@ export default function App({
                       onGoldenChange={(golden) =>
                         updateViewOptions('harmonograph', { ...viewOptions.harmonograph, golden })
                       }
+                      isPlaying={playback.isPlaying}
                       onCanvas={setCanvas}
                     />
                   )}

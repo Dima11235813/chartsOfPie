@@ -1,5 +1,5 @@
 ---
-id: B-025
+id: B-026
 title: Mosaic columns e2e fails when Fit already shows 7 columns
 status: done
 severity: low
@@ -7,7 +7,7 @@ found-in: apps/web/e2e/smoke.spec.ts (the neighbour mosaic narrows and widens)
 fixed-by: PR #36
 ---
 
-# B-025 — Mosaic columns e2e fails when Fit already shows 7 columns
+# B-026 — Mosaic columns e2e fails when Fit already shows 7 columns
 
 ## Observed
 

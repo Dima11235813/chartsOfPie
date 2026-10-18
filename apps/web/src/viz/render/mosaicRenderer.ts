@@ -87,8 +87,10 @@ export function createMosaicRenderer(
         if (group.shape === shape) for (const i of group.indices) inShape[i - firstIndex] = 1
       }
     }
-    layer = createLayer(width, height)
+    // Reuse the layer (this runs on every digit): a new canvas each time had to be allocated and
+    // uploaded again, which was most of the cost with thousands of dots (R-010 third pass).
     const ctx = layer.getContext('2d')!
+    ctx.clearRect(0, 0, width, height)
     ctx.lineCap = 'round'
     ctx.lineWidth = Math.max(1, cell * 0.2)
     const dot = Math.max(0.6, cell * 0.3)
@@ -156,6 +158,8 @@ export function createMosaicRenderer(
 
   return {
     columns: () => cols,
+
+    grid: () => (count > 0 ? { cols, rows: visibleRows, first: firstRow * cols, count } : null),
 
     draw(from: number, to: number, digitAt: DigitAt) {
       source = digitAt

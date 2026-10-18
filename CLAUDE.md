@@ -85,3 +85,13 @@ In the cloud container, Playwright uses the pre-installed Chromium; never run `p
   (`uvx` on PATH). Prefer Serena's symbol tools (`find_symbol`, `find_referencing_symbols`,
   `replace_symbol_body`) for refactors that cross files. Serena generates `.serena/project.yml` on
   first activation — commit it; its cache/logs are git-ignored.
+- `.mcp.json` also registers the [Chrome DevTools MCP server](https://github.com/ChromeDevTools/chrome-devtools-mcp)
+  (`scripts/chrome-devtools-mcp.sh`, pinned version, own throwaway Chrome profile, usage statistics
+  off). It uses your Chrome locally and the pre-installed Chromium, headless, in the cloud. Use it to
+  profile the running app: `npm run dev`, `navigate_page` to `http://localhost:5173/#…`, `emulate`
+  `cpuThrottlingRate: 4` (a mid-range phone), start playback, `performance_start_trace` with
+  `reload: false`, wait, `performance_stop_trace` with a `filePath`. Every tool needs the `pageId`
+  from `list_pages`. `evaluate_script` with `() => window.chartsOfPieAudioTiming()` gives late notes,
+  rhythm re-anchors and the least scheduling headroom (notes are scheduled 150 ms ahead from the
+  main thread, so a stall longer than that is audible). For numbers per view use `npm run perf`
+  (`CPU=4`, `PROFILE=1`, `VIEWS=…`, `LONG=0`); findings live in `proj-mgmt/research/R-010`.

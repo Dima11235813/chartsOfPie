@@ -14,6 +14,8 @@ import type { DigitRenderer } from '../../viz/render/renderer'
 import { useDigitColors } from '../palette'
 import { useCanvas } from './useCanvas'
 import { MosaicSweep } from './MosaicSweep'
+import { LifeView } from './LifeView'
+import { lifeSeed, type LifeGrid } from '../../viz/life'
 import { useDigitFeed } from './useDigitFeed'
 
 interface DigitArtViewProps {
@@ -34,6 +36,10 @@ interface DigitArtViewProps {
   /** Golden rectangle only: outline the squares and draw the spiral. */
   golden?: ViewOptions['golden']
   onGoldenChange?: (change: Partial<ViewOptions['golden']>) => void
+  /** Whether the digits are playing (the mosaic's Game of Life starts from a paused picture). */
+  isPlaying?: boolean
+  /** Pause the digits (the Game of Life button pauses and launches in one tap). */
+  onPause?: () => void
 }
 
 const GROUP_CHOICES = [0, 2, 3, 4, 5] as const
@@ -62,6 +68,8 @@ export function DigitArtView({
   golden,
   onGoldenChange,
   onLayout,
+  isPlaying = false,
+  onPause,
 }: DigitArtViewProps) {
   const { ref, canvasRef, size } = useCanvas(onCanvas)
   const colors = useDigitColors()
@@ -70,6 +78,15 @@ export function DigitArtView({
   const renderer = useRef<DigitRenderer | null>(null)
   const [summary, setSummary] = useState('No digits yet.')
   const [shownColumns, setShownColumns] = useState(0)
+  /** The Game of Life launched from the paused mosaic (null = showing the mosaic). */
+  const [life, setLife] = useState<{
+    seed: LifeGrid
+    cols: number
+    rows: number
+    id: number
+  } | null>(null)
+  // Playing again goes back to the mosaic, which carries on from where it paused.
+  if (life && isPlaying) setLife(null)
   const shownRef = useRef(0)
   const columns = mosaic?.columns ?? 0
   const minGroup = mosaic?.minGroup ?? 0
@@ -125,7 +142,7 @@ export function DigitArtView({
   // the sweep state is part of the key and the picture is rebuilt (B-018).
   useDigitFeed(
     log,
-    `${kind}:${source.id}:${size.width}x${size.height}:${colors.join()}:${layoutColumns}:${minGroup}:${shapeFilter}:${sweep}:${spirals}:${goldenSpiral}`,
+    `${kind}:${source.id}:${size.width}x${size.height}:${colors.join()}:${layoutColumns}:${minGroup}:${shapeFilter}:${sweep}:${spirals}:${goldenSpiral}:${life ? `life${life.id}` : 'art'}`,
     {
       reset() {
         const canvas = canvasRef.current
@@ -198,6 +215,30 @@ export function DigitArtView({
       </div>
     )
   if (kind !== 'mosaic' || !onMosaicChange) return canvas
+
+  if (life)
+    return (
+      <LifeView
+        key={life.id}
+        seed={life.seed}
+        cols={life.cols}
+        rows={life.rows}
+        onExit={() => setLife(null)}
+        onCanvas={onCanvas}
+      />
+    )
+
+  /** Seed the Game of Life from the mosaic exactly as shown: its grid and its groups filter. */
+  const launchLife = () => {
+    const grid = renderer.current?.grid?.()
+    if (!grid) return
+    const shown = Math.max(0, Math.min(grid.count - grid.first, grid.cols * grid.rows))
+    const digits = Array.from({ length: shown }, (_, k) => source.digitAt(grid.first + k))
+    // The board is the rows that hold digits (not the empty rows kept below the newest one).
+    const rows = Math.max(1, Math.min(grid.rows, Math.ceil(shown / grid.cols)))
+    const seed = lifeSeed({ ...grid, rows, digits, minGroup, shape: shapeFilter })
+    setLife({ seed, cols: grid.cols, rows, id: Date.now() })
+  }
 
   const fit = columns === 0
   // A periodic reading (Fibonacci last digits repeat every 60): widths that divide the loop line
@@ -297,6 +338,24 @@ export function DigitArtView({
             ))}
           </select>
         </label>
+        <button
+          type="button"
+          className="btn"
+          disabled={sweep}
+          title={
+            sweep
+              ? 'Stop the sweep to start the Game of Life'
+              : 'Pause and play Conway’s Game of Life from the linked dots shown'
+          }
+          onClick={() => {
+            // One tap pauses the digits and launches Life from the picture on screen (phones
+            // have no hover to explain a disabled button, B-025).
+            if (isPlaying) onPause?.()
+            launchLife()
+          }}
+        >
+          Game of Life
+        </button>
         <label className="viz-columns-fit">
           <input
             type="checkbox"

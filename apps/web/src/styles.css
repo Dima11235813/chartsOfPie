@@ -328,18 +328,67 @@ body {
   color: var(--text-muted);
 }
 
+/* Phones: the sticky bar stays two short rows (B-025), so the picture and its own controls fit
+   above it: the transport buttons in one row (Full screen as an icon), then the view and colour
+   pickers side by side with their labels kept for screen readers only. */
+.narrow-only {
+  display: none;
+}
+
 @media (max-width: 520px) {
+  .app-footer {
+    padding-top: 0.5rem;
+    padding-bottom: calc(0.5rem + env(safe-area-inset-bottom));
+  }
+
+  .controls {
+    gap: 0.4rem;
+  }
+
+  .controls > .btn {
+    padding: 0 0.7rem;
+    min-width: 44px; /* touch target, also for the icon-only Full screen */
+  }
+
+  .controls > .btn-primary {
+    min-width: 4.5rem; /* room for "Pause" without wrapping the row */
+  }
+
+  .narrow-hide {
+    display: none;
+  }
+
+  .narrow-only {
+    display: inline;
+    font-size: 1.15rem;
+  }
+
   .view-selects {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+    gap: 0.4rem;
     margin-left: 0;
     width: 100%;
   }
 
   .select {
     width: 100%;
+    min-width: 0;
   }
 
   .select select {
     flex: 1;
+    min-width: 0;
+    padding: 0 0.6rem;
+  }
+
+  .narrow-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
 }
 

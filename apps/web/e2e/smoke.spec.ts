@@ -362,7 +362,7 @@ test('the neighbour mosaic narrows and widens, and the pattern re-flows', async 
   // Choosing a width re-lays every digit already played.
   const columns = page.getByRole('slider', { name: 'Columns' })
   // Fit may already show 7 columns (it depends on how many digits played before Pause), and
-  // filling the value the slider already has changes nothing (B-025): step through 6 first.
+  // filling the value the slider already has changes nothing (B-026): step through 6 first.
   await columns.fill('6')
   await columns.fill('7')
   await expect(mosaic).toHaveAttribute(
@@ -513,3 +513,33 @@ test('mosaic: groups only, and a sweep that re-groups the digits as the width ch
   await page.getByRole('checkbox', { name: 'Sweep' }).uncheck()
   await expect(count).toHaveText('12 columns')
 })
+
+for (const [width, height] of [
+  [412, 757], // the owner's phone, browser bars excluded (B-025)
+  [360, 640],
+] as const) {
+  test(`phone ${width}×${height}: the whole mosaic and its controls fit above the sticky bar (B-025)`, async ({
+    page,
+  }, testInfo) => {
+    test.skip(testInfo.project.name !== 'mobile', 'phone layout')
+    await page.setViewportSize({ width, height })
+    await page.goto('/#p=dorian-marimba')
+    await expect(page.getByRole('button', { name: 'Play', exact: true })).toBeEnabled({
+      timeout: 15_000,
+    })
+    await page.getByRole('combobox', { name: 'View' }).selectOption({ label: 'Neighbour mosaic' })
+    const footer = await page.locator('.app-footer').boundingBox()
+    // The sticky bar leaves most of the screen to the picture.
+    expect(footer!.height).toBeLessThan(height * 0.25)
+    await page.locator('.stage').evaluate((stage) => stage.scrollIntoView({ block: 'start' }))
+    const footerTop = (await page.locator('.app-footer').boundingBox())!.y
+    for (const name of ['Game of Life', 'More columns']) {
+      const box = (await page.getByRole('button', { name }).boundingBox())!
+      expect(box.y + box.height, `${name} is above the sticky bar`).toBeLessThanOrEqual(footerTop)
+    }
+    const sweep = (await page.getByRole('checkbox', { name: 'Sweep' }).boundingBox())!
+    expect(sweep.y + sweep.height).toBeLessThanOrEqual(footerTop)
+    const overflow = await page.evaluate(() => document.documentElement.scrollWidth)
+    expect(overflow).toBeLessThanOrEqual(width)
+  })
+}

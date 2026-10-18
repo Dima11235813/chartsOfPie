@@ -1,6 +1,6 @@
 # Board
 
-_Last updated with R-013 L1: Fibonacci in base 12 and the Learn page._
+_Last updated with R-013 L1 (Fibonacci in base 12, Learn page) and B-025 (phone controls)._
 
 ## Epics
 

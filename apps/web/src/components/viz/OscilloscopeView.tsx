@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import type { WaveformSource } from '../../audio/notePlayer'
 import { useCanvas } from './useCanvas'
+import { createFrameBudget } from '../../viz/frameBudget'
 
 interface OscilloscopeViewProps {
   /** Stereo time-domain samples of the output, or null before audio has started. */
@@ -56,9 +57,14 @@ export function OscilloscopeView({
     const right = new Float32Array(waveform.size)
     let frame = 0
 
-    const draw = () => {
+    // Fewer frames when one is expensive (a slow phone), never late notes (R-010 third pass).
+    const budget = createFrameBudget({ share: 0.3, watchFrames: true })
+    const draw = (now: number) => {
       frame = requestAnimationFrame(draw)
-      if (performance.now() > stopAt.current) return
+      if (now > stopAt.current || !budget.due(now)) return
+      budget.run(now, step)
+    }
+    const step = () => {
       waveform.read(left, right)
       // Phosphor persistence: fade earlier frames towards transparent instead of clearing.
       ctx.globalCompositeOperation = 'destination-out'
