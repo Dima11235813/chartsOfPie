@@ -210,6 +210,7 @@ test('artistic views draw and follow the colour palette', async ({ page }, testI
     ['Hilbert carpet', /Hilbert carpet/, /\d+ of 1,000,001 digits lit/],
     ['Golden rectangle', /Golden rectangle/, /\d+ digits in \d+ squares/],
     ['Typographic π', /Typographic π/, /\d+ digits set in type/],
+    ['Place-value wall', /Place-value wall/, /\d+ digits in a triangle of \d+ rows/],
     ['Harmonograph', /Harmonograph/, / · ratio \d/],
     ['Oscilloscope', /Oscilloscope/, /vectorscope/],
     ['Guitar fretboard', /Guitar fretboard/, /Now: .* · string \d, (open|fret \d+)/],
@@ -361,6 +362,9 @@ test('the neighbour mosaic narrows and widens, and the pattern re-flows', async 
 
   // Choosing a width re-lays every digit already played.
   const columns = page.getByRole('slider', { name: 'Columns' })
+  // Fit may already show 7 columns (it depends on how many digits played before Pause), and
+  // filling the value the slider already has changes nothing (B-026): step through 6 first.
+  await columns.fill('6')
   await columns.fill('7')
   await expect(mosaic).toHaveAttribute(
     'aria-label',

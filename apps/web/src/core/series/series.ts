@@ -17,7 +17,16 @@ import { DECIMAL_ALPHABET } from '../digits/digitSource'
 export const SERIES_IDS = ['pi', 'phi', 'e', 'sqrt2', 'fibonacci'] as const
 export type SeriesId = (typeof SERIES_IDS)[number]
 
-export const READING_IDS = ['digits', 'concat', 'last-digit', 'mod-12'] as const
+export const READING_IDS = [
+  'digits',
+  'concat',
+  'last-digit',
+  'mod-12',
+  'base-12',
+  'digital-root',
+  'mod-5',
+  'mod-8',
+] as const
 export type ReadingId = (typeof READING_IDS)[number]
 
 export interface ReadingDefinition {
@@ -53,6 +62,34 @@ export const READINGS: readonly ReadingDefinition[] = [
     description:
       'Each term’s remainder after dividing by 12, one of the 12 notes (10 and 11 show as A and B): a loop that repeats every 24 terms',
     alphabetSize: 12,
+  },
+  {
+    id: 'base-12',
+    name: 'All digits in base 12',
+    description:
+      'Every term written in base 12 (10 and 11 show as A and B), one after another: 0 1 1 2 3 5 8 11 19 2A 47 75 100…',
+    alphabetSize: 12,
+  },
+  {
+    id: 'digital-root',
+    name: 'Digital root',
+    description:
+      'Add up each term’s digits, and again, until one digit is left (144 → 9): a loop that repeats every 24 terms',
+    alphabetSize: DECIMAL_ALPHABET,
+  },
+  {
+    id: 'mod-5',
+    name: 'Mod 5',
+    description:
+      'Each term’s remainder after dividing by 5, one of five notes: a loop of 20 where every fifth term is 0',
+    alphabetSize: 5,
+  },
+  {
+    id: 'mod-8',
+    name: 'Mod 8',
+    description:
+      'Each term’s remainder after dividing by 8, one of eight notes: a loop of 12 that never reaches 4 or 6',
+    alphabetSize: 8,
   },
 ]
 
@@ -117,8 +154,9 @@ export const SERIES: readonly SeriesDefinition[] = [
     place: 'digit',
     oeis: 'A000045',
     // All digits first (owner decision G-3, R-012); the 60-step last-digit loop second; the
-    // 24-step mod-12 loop (one pitch class per term) third.
-    readings: ['concat', 'last-digit', 'mod-12'],
+    // 24-step mod-12 loop (one pitch class per term) third; base 12 and the other lenses of
+    // R-013 after it.
+    readings: ['concat', 'last-digit', 'mod-12', 'base-12', 'digital-root', 'mod-5', 'mod-8'],
   },
 ]
 

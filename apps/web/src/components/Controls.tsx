@@ -1,5 +1,7 @@
 import { PALETTES } from '../viz/palettes'
 import { VIEW_GROUPS, VIEWS, type ViewId } from './views'
+import { viewArticleId } from '../learn/articles'
+import { learnHref } from '../learn/links'
 import { CHART_STYLES, type ChartStyle } from './chartConfig'
 import { withSymbol } from '../core/series/series'
 import { useNumber } from './numberContext'
@@ -93,6 +95,15 @@ export function Controls(props: ControlsProps) {
             ))}
           </select>
         </label>
+        <a
+          className="learn-more"
+          href={learnHref(viewArticleId(view))}
+          target="_blank"
+          rel="noopener"
+          aria-label={`Learn how the ${withSymbol(VIEWS.find((v) => v.id === view)?.label ?? view, number.symbol)} works`}
+        >
+          Learn more
+        </a>
         <label className="select">
           <span className="narrow-label">Colours</span>
           <select value={props.paletteId} onChange={(e) => props.onPaletteChange(e.target.value)}>

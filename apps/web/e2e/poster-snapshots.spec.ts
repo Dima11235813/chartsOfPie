@@ -22,6 +22,7 @@ test('every artwork renders as recorded in its poster baseline', async ({ page }
     'hilbert',
     'golden',
     'type',
+    'wall',
     'string-art',
   ])
 
@@ -63,5 +64,25 @@ test('a 12-symbol reading draws twelve arcs, directions and colours (Fibonacci m
     expect
       .soft(png)
       .toMatchSnapshot(`mod12-${kind}.png`, { maxDiffPixelRatio: 0.002, threshold: 0.05 })
+  }
+})
+
+test('the place-value wall lines Fibonacci numbers up by place, in base 10 and base 12', async ({
+  page,
+}, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop', 'posters are the same on every viewport')
+  await page.goto('/lab.html')
+  await page.waitForFunction(() => window.posterLab !== undefined)
+  for (const reading of ['concat', 'base-12']) {
+    const dataUrl = await page.evaluate(
+      (r) => window.posterLab.render('wall', { series: 'fibonacci', reading: r }),
+      reading,
+    )
+    const png = Buffer.from(dataUrl.split(',')[1]!, 'base64')
+    await testInfo.attach(`fibonacci-${reading}-wall.png`, { body: png, contentType: 'image/png' })
+    expect.soft(png).toMatchSnapshot(`fibonacci-${reading}-wall.png`, {
+      maxDiffPixelRatio: 0.002,
+      threshold: 0.05,
+    })
   }
 })

@@ -22,7 +22,11 @@
         "digits",
         "concat",
         "last-digit",
-        "mod-12"
+        "mod-12",
+        "base-12",
+        "digital-root",
+        "mod-5",
+        "mod-8"
       ]
     }
   },

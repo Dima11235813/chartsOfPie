@@ -9,6 +9,7 @@ import { alphabetOf, type DigitSource } from '../core/digits/digitSource'
 import { loadSource } from '../core/series/load'
 import { getSeries, isReadingId, isSeriesId } from '../core/series/series'
 import { getPalette } from '../viz/palettes'
+import { wallLayoutFor } from '../viz/placeValue'
 import { POSTER_KINDS, renderPoster, type PosterKind } from '../viz/render/posters'
 
 const sources = new Map<string, Promise<DigitSource>>()
@@ -45,6 +46,7 @@ export async function renderPosterDataUrl(
     colors: getPalette(palette).digitColors(noteTable),
     symbol: isSeriesId(series) ? getSeries(series).symbol : 'π',
     caption: false,
+    settings: { wallLayout: wallLayoutFor(number) },
   })
   return canvas.toDataURL('image/png')
 }

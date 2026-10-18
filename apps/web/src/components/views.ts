@@ -11,6 +11,7 @@ export const VIEWS = [
   { id: 'mosaic', label: 'Neighbour mosaic', group: 'Artistic' },
   { id: 'hilbert', label: 'Hilbert carpet', group: 'Artistic' },
   { id: 'golden', label: 'Golden rectangle', group: 'Artistic' },
+  { id: 'wall', label: 'Place-value wall', group: 'Artistic' },
   { id: 'type', label: 'Typographic π', group: 'Artistic' },
   { id: 'strings', label: 'String art', group: 'Artistic' },
   { id: 'clock', label: 'Music clock', group: 'Sound shapes' },
