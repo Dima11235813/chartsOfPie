@@ -6,6 +6,7 @@ import { loadSource as loadSeriesSource } from './core/series/load'
 import { sameSource, sourceKey, sourceName, type SourceConfig } from './core/series/sourceConfig'
 import { readingArticleId, seriesArticleId } from './learn/articles'
 import { learnHref } from './learn/links'
+import { wallLayoutFor } from './viz/placeValue'
 import {
   getReading,
   getSeries,
@@ -314,6 +315,7 @@ export default function App({
                     view === 'mosaic' ||
                     view === 'hilbert' ||
                     view === 'golden' ||
+                    view === 'wall' ||
                     view === 'type') && (
                     <DigitArtView
                       key={view}
@@ -471,6 +473,7 @@ export default function App({
                   settings={{
                     mosaicColumns: viewOptions.mosaic.columns || undefined,
                     mosaicMinGroup: viewOptions.mosaic.minGroup,
+                    wallLayout: wallLayoutFor(load.full),
                   }}
                 />
               )}

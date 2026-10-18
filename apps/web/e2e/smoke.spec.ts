@@ -210,6 +210,7 @@ test('artistic views draw and follow the colour palette', async ({ page }, testI
     ['Hilbert carpet', /Hilbert carpet/, /\d+ of 1,000,001 digits lit/],
     ['Golden rectangle', /Golden rectangle/, /\d+ digits in \d+ squares/],
     ['Typographic π', /Typographic π/, /\d+ digits set in type/],
+    ['Place-value wall', /Place-value wall/, /\d+ digits in a triangle of \d+ rows/],
     ['Harmonograph', /Harmonograph/, / · ratio \d/],
     ['Oscilloscope', /Oscilloscope/, /vectorscope/],
     ['Guitar fretboard', /Guitar fretboard/, /Now: .* · string \d, (open|fret \d+)/],

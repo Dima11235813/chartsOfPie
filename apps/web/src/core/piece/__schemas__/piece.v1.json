@@ -237,7 +237,8 @@
             "scope",
             "fretboard",
             "cymatics",
-            "golden"
+            "golden",
+            "wall"
           ]
         },
         "palette": {

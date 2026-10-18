@@ -603,7 +603,7 @@ test('the Learn page: every article, readable at phone width, Try it opens the a
   const article = page.locator('article#reading-base-12')
   await expect(article.getByRole('heading', { name: 'All digits in base 12' })).toBeInViewport()
   await expect(article).toContainText('144 is written 100')
-  await expect(page.locator('article')).toHaveCount(26)
+  await expect(page.locator('article')).toHaveCount(27)
   // No horizontal scroll at 360 px (rule 6).
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(
     true,
@@ -613,4 +613,28 @@ test('the Learn page: every article, readable at phone width, Try it opens the a
     timeout: 15_000,
   })
   await expect(page.getByRole('combobox', { name: 'View' })).toHaveValue('type')
+})
+
+test('place-value wall: Fibonacci in base 12 by place, then π as a triangle', async ({ page }) => {
+  const errors: string[] = []
+  page.on('pageerror', (error) => errors.push(error.message))
+  await page.goto('/#s=fibonacci.base-12')
+  await expect(page.getByRole('button', { name: 'Play' })).toBeEnabled({ timeout: 15_000 })
+  await page.getByRole('combobox', { name: 'View' }).selectOption({ label: 'Place-value wall' })
+  await page.locator('body').click({ position: { x: 5, y: 5 } })
+  for (let i = 0; i < 20; i++) await page.keyboard.press('ArrowRight')
+  // 0 1 1 2 3 5 8 11 19 2A 47 75 100: thirteen numbers, the longest (100) three digits.
+  const wall = page.getByRole('img', { name: /Place-value wall/ })
+  await expect(wall).toHaveAttribute(
+    'aria-label',
+    /20 digits in 13 numbers; the longest has 3 digits/,
+  )
+  await expect.poll(() => inkedPixels(page)).toBeGreaterThan(100)
+  // Another number keeps the view and lays it out as a triangle.
+  await page.getByRole('combobox', { name: 'Number' }).selectOption({ label: 'π (pi)' })
+  await page.locator('body').click({ position: { x: 5, y: 5 } })
+  for (let i = 0; i < 10; i++) await page.keyboard.press('ArrowRight')
+  await expect(wall).toHaveAttribute('aria-label', /10 digits in a triangle of 4 rows/)
+  await expect.poll(() => inkedPixels(page)).toBeGreaterThan(100)
+  expect(errors).toEqual([])
 })

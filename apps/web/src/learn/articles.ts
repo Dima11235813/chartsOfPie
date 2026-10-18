@@ -458,6 +458,29 @@ const VIEWS: readonly Article[] = [
     tryIt: { series: 'fibonacci', view: 'golden' },
   },
   {
+    id: 'view-wall',
+    group: 'view',
+    title: 'Place-value wall',
+    summary: 'One number per row, right-aligned, so digits of equal place value stand in columns.',
+    sections: [
+      {
+        heading: 'How to read it',
+        paragraphs: [
+          'Write the Fibonacci numbers one under another, lined up on the right as you would to add them. Each column is one place value: units on the right, then tens (or twelves in base 12), then hundreds (or gross).',
+          'The right-hand columns show the loops. In base 12 the units column repeats every 24 rows, and so does the twelves column next to it; every 12th row ends in two zero cells. In base 10 the units repeat every 60 rows.',
+          'The left edge is a straight staircase: each Fibonacci number is about 0.21 decimal digits (0.19 base-12 digits) longer than the one before. The first cell of each row follows Benford’s law, so it is a 1 far more often than anything else.',
+          'Numbers without separate terms, such as π, are laid out as a triangle instead: each row is one digit longer than the one above.',
+        ],
+      },
+    ],
+    lookFor: [
+      'The striped right-hand columns, repeating every 24 rows in base 12',
+      'The straight diagonal left edge',
+    ],
+    references: [wiki('Positional_notation', 'Positional notation')],
+    tryIt: { series: 'fibonacci', reading: 'base-12', view: 'wall' },
+  },
+  {
     id: 'view-type',
     group: 'view',
     title: 'Typographic display',

@@ -55,7 +55,7 @@ _Last updated with R-013 L1 (Fibonacci in base 12, Learn page) and B-025 (phone 
 | Slice | Contents                                                      | Status      |
 | ----- | ------------------------------------------------------------- | ----------- |
 | L1    | Fibonacci in base 12, Benford in any base, Learn page (F04.0) | in-progress |
-| L2    | Place-value wall view                                         | backlog     |
+| L2    | Place-value wall view                                         | done        |
 | L3    | Dozenal semitones preset, term-boundary accent                | backlog     |
 | L4    | Digital root, mod 5, mod 8 readings; Pisano star view         | backlog     |
 | L5    | π, φ, e, √2 in base 12 (verified data)                        | backlog     |

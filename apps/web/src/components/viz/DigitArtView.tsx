@@ -1,6 +1,6 @@
 import { withSymbol } from '../../core/series/series'
 import { useNumber } from '../numberContext'
-import { useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import {
   MAX_MOSAIC_COLUMNS,
   MIN_MOSAIC_COLUMNS,
@@ -9,7 +9,8 @@ import {
 import type { PerformanceLog } from '../../core/composition/performanceLog'
 import type { DigitSource } from '../../core/digits/digitSource'
 import { decimalPointCell, loopColumnWidths, spiralNeighbours } from '../../viz/art'
-import { ART, type ArtKind } from '../../viz/render/registry'
+import { ART, describeWall, type ArtKind } from '../../viz/render/registry'
+import { wallLayoutFor } from '../../viz/placeValue'
 import type { DigitRenderer } from '../../viz/render/renderer'
 import { useDigitColors } from '../palette'
 import { useCanvas } from './useCanvas'
@@ -93,6 +94,7 @@ export function DigitArtView({
   const sweep = kind === 'mosaic' && Boolean(mosaic?.sweep)
   const spirals = kind === 'sunflower' && Boolean(sunflower?.spirals)
   const goldenSpiral = kind !== 'golden' || (golden?.spiral ?? true)
+  const wall = useMemo(() => wallLayoutFor(source), [source])
 
   const speed = mosaic?.sweepSpeed ?? 1
   // The sweep goes from half to one-and-a-half times the chosen width (or, in Fit mode, the width
@@ -111,6 +113,7 @@ export function DigitArtView({
       onLayout?.(cols)
     }
     if (count === 0) return 'No digits yet.'
+    if (kind === 'wall') return describeWall(wall, count)
     if (spirals) {
       const pair = spiralNeighbours(count - 1)
       const families = pair
@@ -164,6 +167,7 @@ export function DigitArtView({
             goldenSpiral,
             typeDecimalPoint: decimalPointCell(number.kind, source.offset ?? 0),
             termStartAt: termStartAt(source),
+            wallLayout: wall,
           },
         )
         compose()

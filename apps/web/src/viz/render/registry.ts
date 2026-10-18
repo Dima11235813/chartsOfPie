@@ -6,10 +6,13 @@ import { createRingRenderer } from './ringRenderer'
 import { createSunflowerRenderer } from './sunflowerRenderer'
 import { createTypeRenderer } from './typeRenderer'
 import { createWalkRenderer } from './walkRenderer'
+import { createWallRenderer } from './wallRenderer'
 import { hilbertSide } from '../art'
 import { goldenLayout, goldenSquaresFor } from '../golden'
+import { TRIANGLE_LAYOUT, wallExtent, type WallLayout } from '../placeValue'
 
-export type ArtKind = 'ring' | 'walk' | 'sunflower' | 'mosaic' | 'hilbert' | 'golden' | 'type'
+export type ArtKind =
+  'ring' | 'walk' | 'sunflower' | 'mosaic' | 'hilbert' | 'golden' | 'type' | 'wall'
 
 /** User choices that change how an artwork is laid out (from the view's options). */
 export interface ArtSettings {
@@ -27,6 +30,8 @@ export interface ArtSettings {
   typeDecimalPoint?: number | null
   /** Typographic: true where a new term of a whole-number sequence begins. */
   termStartAt?: (index: number) => boolean
+  /** Place-value wall: rows and places (`wallLayoutFor(source)`); default the triangle. */
+  wallLayout?: WallLayout
 }
 
 export interface ArtDefinition {
@@ -149,4 +154,24 @@ export const ART: Record<ArtKind, ArtDefinition> = {
       }),
     maxPosterDigits: 100_000,
   },
+  wall: {
+    kind: 'wall',
+    name: 'Place-value wall',
+    describe:
+      'Place-value wall: each number of the sequence is a row, right-aligned, so digits of equal place value line up in columns (a constant’s digits make a triangle, one more per row).',
+    summary: (count) => `${n(count)} digits.`,
+    live: (options, settings) => createWallRenderer(options, { layout: settings?.wallLayout }),
+    poster: (options, count, settings) =>
+      createWallRenderer(options, { layout: settings?.wallLayout, fitCount: Math.max(1, count) }),
+    maxPosterDigits: 1_000_000,
+  },
+}
+
+/** "12 rows, the widest 3 digits" for the wall's description. */
+export function describeWall(layout: WallLayout = TRIANGLE_LAYOUT, count: number): string {
+  if (count === 0) return 'No digits yet.'
+  const { rows, width } = wallExtent(layout, count)
+  return layout.kind === 'terms'
+    ? `${n(count)} digits in ${n(rows)} numbers; the longest has ${n(width)} digits. Each column is one place value, units on the right.`
+    : `${n(count)} digits in a triangle of ${n(rows)} rows, each one digit longer than the last.`
 }
