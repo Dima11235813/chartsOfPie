@@ -71,12 +71,16 @@ export function Controls(props: ControlsProps) {
           aria-keyshortcuts="F"
           title="Full screen (F)"
         >
-          Full screen
+          {/* Phones show just the icon, so the bar stays one row (B-025); the name is unchanged. */}
+          <span className="narrow-hide">Full screen</span>
+          <span className="narrow-only" aria-hidden="true">
+            ⛶
+          </span>
         </button>
       )}
       <div className="view-selects">
         <label className="select">
-          <span>View</span>
+          <span className="narrow-label">View</span>
           <select value={view} onChange={(e) => props.onViewChange(e.target.value as ViewId)}>
             {VIEW_GROUPS.map((group) => (
               <optgroup key={group} label={group}>
@@ -90,7 +94,7 @@ export function Controls(props: ControlsProps) {
           </select>
         </label>
         <label className="select">
-          <span>Colours</span>
+          <span className="narrow-label">Colours</span>
           <select value={props.paletteId} onChange={(e) => props.onPaletteChange(e.target.value)}>
             {PALETTES.map((p) => (
               <option key={p.id} value={p.id} title={p.description}>
@@ -101,7 +105,7 @@ export function Controls(props: ControlsProps) {
         </label>
         {view === 'chart' && (
           <label className="select">
-            <span>Chart style</span>
+            <span className="narrow-label">Chart style</span>
             <select
               value={chartStyle}
               onChange={(e) => props.onChartStyleChange(e.target.value as ChartStyle)}

@@ -1,6 +1,6 @@
 # Board
 
-_Last updated with the Game of Life from the paused mosaic (F03.4)._
+_Last updated with B-025: phone controls fit above the sticky bar; Life launches in one tap._
 
 ## Epics
 

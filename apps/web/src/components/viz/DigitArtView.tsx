@@ -38,6 +38,8 @@ interface DigitArtViewProps {
   onGoldenChange?: (change: Partial<ViewOptions['golden']>) => void
   /** Whether the digits are playing (the mosaic's Game of Life starts from a paused picture). */
   isPlaying?: boolean
+  /** Pause the digits (the Game of Life button pauses and launches in one tap). */
+  onPause?: () => void
 }
 
 const GROUP_CHOICES = [0, 2, 3, 4, 5] as const
@@ -67,6 +69,7 @@ export function DigitArtView({
   onGoldenChange,
   onLayout,
   isPlaying = false,
+  onPause,
 }: DigitArtViewProps) {
   const { ref, canvasRef, size } = useCanvas(onCanvas)
   const colors = useDigitColors()
@@ -338,15 +341,18 @@ export function DigitArtView({
         <button
           type="button"
           className="btn"
-          disabled={isPlaying || sweep}
+          disabled={sweep}
           title={
-            isPlaying
-              ? 'Pause to start the Game of Life from this picture'
-              : sweep
-                ? 'Stop the sweep to start the Game of Life'
-                : 'Play Conway’s Game of Life from the linked dots shown'
+            sweep
+              ? 'Stop the sweep to start the Game of Life'
+              : 'Pause and play Conway’s Game of Life from the linked dots shown'
           }
-          onClick={launchLife}
+          onClick={() => {
+            // One tap pauses the digits and launches Life from the picture on screen (phones
+            // have no hover to explain a disabled button, B-025).
+            if (isPlaying) onPause?.()
+            launchLife()
+          }}
         >
           Game of Life
         </button>
