@@ -74,6 +74,10 @@ In the cloud container, Playwright uses the pre-installed Chromium; never run `p
    case in `e2e/view-toggles.spec.ts` that switches it on **and back off while paused** and asserts
    the canvas still has drawn pixels (not just a label). Bugs found by the owner get a failing test
    first, then the fix (B-018).
+10. **Every visualization feeds the Game of Life** (F03.21, [R-013](proj-mgmt/research/R-013-life-from-any-grid.md)).
+    A new view declares its `LifeBoard` (topology, seed policy, cell positions, optional notes),
+    or its feature file says why the raster fallback is enough, and it ships with an e2e case
+    that launches Life from it while paused and goes back with the view still drawn.
 
 ## Agents, skills and MCP
 

@@ -34,5 +34,14 @@ digitAt)` onto a layer, `compose(ctx, overlay)`), and register it in `viz/render
    still has drawn pixels (`inkedPixels`). Never assert only on labels — B-018 shipped because a
    test checked the column label while the canvas was blank. If a view swaps its canvas element,
    `useCanvas` must see the new element and the redraw key must change.
-6. Run `npm run check && npm run test:e2e`, look at the screenshots, then update the story in
+6. **Life board** (CLAUDE.md rule 10, [R-013](../../../proj-mgmt/research/R-013-life-from-any-grid.md)):
+   decide how the view feeds Conway's Game of Life and fill its row in R-013's table:
+   - its board: square (cols × rows, wrap or not), graph (neighbour lists) or line (1-D rules);
+   - what is alive at the start, from the shared seed policies (`linked`, `runs`, `threshold`,
+     `visited`, `digitSet`, `shape`), respecting what the view is showing (its filters);
+   - where each cell is drawn (`cellAt`), so Life plays in place on the view's geometry;
+   - optional `noteOf(cell)` for sound;
+     or write in the feature file why the raster fallback is enough. Add an e2e case: launch Life
+     while paused, step a generation, go back, and the view is still drawn.
+7. Run `npm run check && npm run test:e2e`, look at the screenshots, then update the story in
    `proj-mgmt/`.
