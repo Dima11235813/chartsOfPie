@@ -36,3 +36,12 @@ box-downscaled: per-glyph edge noise averages out, while a changed layout, colou
 still fails (measured: a repeat render differs by 0 %, another palette by 33 %, 100 fewer digits by
 46 %, against the 0.2 % allowance). The test also asserts, by name, that the bundled face is the
 one loaded, so a silent fallback cannot hide in the blur.
+
+## Third round
+
+The font-loaded assertion passed on CI, so the bundled face did draw there, and 3 % of the
+downscaled pixels still differed: the runner hints glyph stems to whole pixels (its fontconfig),
+the container does not (`12-unhinted-grayscale.conf`: hinting off, grayscale). Linux Chrome
+applies those settings to web fonts and canvas text alike. The Playwright config now launches
+Chromium with `--font-render-hinting=none --disable-lcd-text`, pinning the rasterisation the
+baselines were made with on every machine.
