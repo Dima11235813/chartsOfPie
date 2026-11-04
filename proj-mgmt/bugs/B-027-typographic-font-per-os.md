@@ -25,3 +25,14 @@ The view bundles its face: JetBrains Mono SemiBold (Apache-2.0, licence beside t
 typographic view or its poster is used). The live view rebuilds its picture once the face has
 loaded; `renderPoster` awaits it for the typographic kind. The two baselines are regenerated from
 the bundled face, and the Typographic view now looks the same on every device.
+
+## Second round
+
+With the bundled face CI still differed by 6 %: the same Chromium build and the same font file
+render glyph edges differently on the two machines (Linux fontconfig hinting applies to web fonts
+too), and the CI artifact cannot be fetched from the container to look closer. Rasterised text is
+the browser's work, not the renderer's, so the two typographic posters are now compared 4×
+box-downscaled: per-glyph edge noise averages out, while a changed layout, colour, glow or run
+still fails (measured: a repeat render differs by 0 %, another palette by 33 %, 100 fewer digits by
+46 %, against the 0.2 % allowance). The test also asserts, by name, that the bundled face is the
+one loaded, so a silent fallback cannot hide in the blur.
