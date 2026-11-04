@@ -1,6 +1,6 @@
 # Board
 
-_Last updated with the plan for Game of Life from any view (F03.21, R-013) and its standing rule._
+_Last updated with the shared Life engine (S03.21.1) and the Playwright 1.63 upgrade (B-026 closed)._
 
 ## Epics
 
@@ -23,8 +23,8 @@ Standing rule (CLAUDE.md rule 10): every visualization declares its Life board.
 
 | Story       | Title                                                       | Status  |
 | ----------- | ----------------------------------------------------------- | ------- |
-| S03.21.1    | Engine: square, graph and line topologies; rules            | ready   |
-| S03.21.2    | LifeBoard contract, seed policies, generic Life view        | backlog |
+| S03.21.1    | Engine: square, graph and line topologies; rules            | done    |
+| S03.21.2    | LifeBoard contract, seed policies, generic Life view        | ready   |
 | S03.21.3    | Raster fallback: Life from every view                       | backlog |
 | S03.21.4    | Big boards in a Web Worker                                  | backlog |
 | S03.21.5–15 | Per-view boards (fretboard, sheet music, golden rectangle…) | backlog |

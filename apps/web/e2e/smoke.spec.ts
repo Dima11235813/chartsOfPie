@@ -359,16 +359,18 @@ test('the neighbour mosaic narrows and widens, and the pattern re-flows', async 
   })
   await page.getByRole('button', { name: 'Pause' }).click()
 
-  // Choosing a width re-lays every digit already played.
+  // Choosing a width re-lays every digit already played. Fit may already sit on 7 columns after
+  // a few digits (then filling 7 would change nothing), so pick a width that differs.
   const columns = page.getByRole('slider', { name: 'Columns' })
-  await columns.fill('7')
+  const chosen = (await columns.inputValue()) === '7' ? 9 : 7
+  await columns.fill(String(chosen))
   await expect(mosaic).toHaveAttribute(
     'aria-label',
-    /in 7 columns\. A vertical link joins equal digits 7 places apart/,
+    new RegExp(`in ${chosen} columns\\. A vertical link joins equal digits ${chosen} places apart`),
   )
   await expect(page.getByRole('checkbox', { name: 'Fit' })).not.toBeChecked()
   await page.getByRole('button', { name: 'More columns' }).click()
-  await expect(mosaic).toHaveAttribute('aria-label', /in 8 columns/)
+  await expect(mosaic).toHaveAttribute('aria-label', new RegExp(`in ${chosen + 1} columns`))
   await testInfo.attach('mosaic-8-columns.png', {
     body: await mosaic.screenshot(),
     contentType: 'image/png',
@@ -376,7 +378,7 @@ test('the neighbour mosaic narrows and widens, and the pattern re-flows', async 
 
   // The choice travels in the link; Fit goes back to filling the width.
   await page.reload()
-  await expect(page.getByRole('slider', { name: 'Columns' })).toHaveValue('8')
+  await expect(page.getByRole('slider', { name: 'Columns' })).toHaveValue(String(chosen + 1))
   await page.getByRole('checkbox', { name: 'Fit' }).check()
   await expect(page.getByRole('checkbox', { name: 'Fit' })).toBeChecked()
   const overflow = await page.evaluate(
