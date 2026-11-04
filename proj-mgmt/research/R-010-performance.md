@@ -114,3 +114,12 @@ oscilloscope did not reproduce in two re-runs.
   move the groups drawing to an `OffscreenCanvas` in a worker.
 - `MAX_DRIFT_MS` in `midi/midiTap.ts` uses the old 80 ms rule for MIDI out; MIDI has no look-ahead
   headroom of its own, so it was left as is.
+
+## Life engine (S03.21.1, 2026-11-04)
+
+Shared cellular-automaton engine (`viz/life/engine.ts`): the square fast path counts neighbours
+in eight shifted passes over typed arrays instead of a per-cell loop. Node, one core, 30 % alive,
+ms per generation (old mosaic step in brackets): 100 × 60 **0.26** (0.53), 256 × 256 **2.6**
+(4.0), 1024 × 1024 **39** (71). The Hilbert carpet's full board is still far over the ~16 ms a
+frame allows, so boards over ~64k cells step in a Web Worker (S03.21.4); the mosaic and the other
+views' boards stay on the main thread.

@@ -1,5 +1,17 @@
 import { mosaicGroupSizes } from './art'
+import { CONWAY, DEAD, step, type LifeGrid } from './life/engine'
 import { mosaicGroups } from './mosaicShapes'
+
+// The engine (rules, topologies, colour Life, settling) lives in life/engine.ts (F03.21); this
+// file keeps the mosaic's seed and the names the mosaic's view uses.
+export {
+  DEAD,
+  LifeHistory,
+  newbornColour,
+  population,
+  type LifeGrid,
+  type LifeStatus,
+} from './life/engine'
 
 /**
  * Conway's Game of Life seeded from the neighbour mosaic (F03.4, owner idea 2026-10-18). Pure and
@@ -14,11 +26,6 @@ import { mosaicGroups } from './mosaicShapes'
  *   of its three parents share, or the middle one of three different digits (a deterministic
  *   take on the two-colour "Immigration" variant), so you can watch digit families spread.
  */
-
-/** −1 for a dead cell, otherwise the digit (colour) of a living one. */
-export type LifeGrid = Int8Array<ArrayBuffer>
-
-export const DEAD = -1
 
 export interface LifeSeedOptions {
   /** Columns of the mosaic. */
@@ -61,77 +68,7 @@ export function lifeSeed({
   return grid
 }
 
-/** One generation (B3/S23) on a torus of `cols` × `rows`. */
+/** One generation (B3/S23) on a torus of `cols` × `rows`: the shared engine on a square board. */
 export function lifeStep(grid: LifeGrid, cols: number, rows: number): LifeGrid {
-  const next = new Int8Array(grid.length).fill(DEAD)
-  const parents = [0, 0, 0]
-  for (let y = 0; y < rows; y++) {
-    const up = ((y + rows - 1) % rows) * cols
-    const row = y * cols
-    const down = ((y + 1) % rows) * cols
-    for (let x = 0; x < cols; x++) {
-      const left = (x + cols - 1) % cols
-      const right = (x + 1) % cols
-      let alive = 0
-      for (const r of [up, row, down]) {
-        for (const c of [left, x, right]) {
-          if (r === row && c === x) continue
-          const value = grid[r + c]!
-          if (value === DEAD) continue
-          if (alive < 3) parents[alive] = value
-          alive++
-        }
-      }
-      const self = grid[row + x]!
-      if (self !== DEAD) {
-        if (alive === 2 || alive === 3) next[row + x] = self
-      } else if (alive === 3) {
-        next[row + x] = newbornColour(parents[0]!, parents[1]!, parents[2]!)
-      }
-    }
-  }
-  return next
-}
-
-/** The colour two or three parents share, else the middle of three different digits. */
-export function newbornColour(a: number, b: number, c: number): number {
-  if (a === b || a === c) return a
-  if (b === c) return b
-  return Math.max(Math.min(a, b), Math.min(Math.max(a, b), c))
-}
-
-export const population = (grid: LifeGrid) => grid.reduce((n, v) => (v === DEAD ? n : n + 1), 0)
-
-/** How a run ended: still running, died out, or repeating with a period. */
-export type LifeStatus =
-  { kind: 'running' } | { kind: 'extinct' } | { kind: 'repeating'; period: number; since: number }
-
-/** Remembers recent generations to tell when the game has settled (still life or oscillator). */
-export class LifeHistory {
-  private seen = new Map<string, number>()
-  private order: string[] = []
-
-  constructor(private readonly memory = 256) {}
-
-  /** Record generation `generation`; returns how the run stands after it. */
-  record(grid: LifeGrid, generation: number): LifeStatus {
-    if (population(grid) === 0) return { kind: 'extinct' }
-    const key = fingerprint(grid)
-    const before = this.seen.get(key)
-    if (before !== undefined)
-      return { kind: 'repeating', period: generation - before, since: before }
-    this.seen.set(key, generation)
-    this.order.push(key)
-    if (this.order.length > this.memory) this.seen.delete(this.order.shift()!)
-    return { kind: 'running' }
-  }
-}
-
-/** A compact exact key for a grid (cells as characters; colours count). */
-function fingerprint(grid: LifeGrid): string {
-  let key = ''
-  for (let i = 0; i < grid.length; i += 4096) {
-    key += String.fromCharCode(...Array.from(grid.subarray(i, i + 4096), (v) => v + 66))
-  }
-  return key
+  return step(grid, { kind: 'square', cols, rows, wrap: true }, CONWAY)
 }

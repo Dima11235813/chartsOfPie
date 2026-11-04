@@ -45,6 +45,8 @@ npm run test:e2e -- poster-snapshots --update-snapshots  # after an INTENDED art
 ```
 
 In the cloud container, Playwright uses the pre-installed Chromium; never run `playwright install` there.
+`npm run check` and the Playwright suites both build into `dist`: run them one after the other, never
+at the same time (a concurrent build makes every browser test fail within milliseconds).
 
 ## Rules
 

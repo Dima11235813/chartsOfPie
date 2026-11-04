@@ -11,6 +11,10 @@ export default defineConfig({
   use: {
     baseURL: `http://localhost:${PORT}`,
     trace: 'retain-on-failure',
+    // Linux Chrome takes font hinting and LCD smoothing from the OS's fontconfig, so the same font
+    // and Chromium rasterise text differently per machine (B-027). Pin unhinted grayscale text,
+    // which the cloud container uses, so the typographic poster baselines match on CI too.
+    launchOptions: { args: ['--font-render-hinting=none', '--disable-lcd-text'] },
   },
   projects: [
     { name: 'desktop', use: { ...devices['Desktop Chrome'] } },

@@ -1,5 +1,6 @@
 import { withSymbol } from '../../core/series/series'
 import { stringArtMultiplier } from '../art'
+import { loadTypeFont } from '../typeFont'
 import { ART, type ArtKind, type ArtSettings } from './registry'
 import type { DigitAt } from './renderer'
 import { drawStringArt } from './stringArtRenderer'
@@ -56,6 +57,8 @@ export async function renderPoster(
   }: PosterOptions,
   onProgress?: (fraction: number) => void,
 ): Promise<HTMLCanvasElement> {
+  // The typographic poster sets type in the bundled face: have it loaded before drawing.
+  if (kind === 'type') await loadTypeFont()
   const canvas = document.createElement('canvas')
   canvas.width = size
   canvas.height = size

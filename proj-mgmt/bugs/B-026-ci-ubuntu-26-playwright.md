@@ -21,8 +21,11 @@ had moved to Ubuntu 26.04; every branch, master included, would fail the same wa
 The e2e job runs on `ubuntu-24.04` (pinned, with a comment). The other jobs (check, deploys)
 install no browser and stay on `ubuntu-latest`.
 
-## Follow-up
+## Follow-up (done, 2026-11-04)
 
-Upgrade Playwright to a release that supports Ubuntu 26.04 and unpin. The cloud containers use a
-pre-installed Chromium matched to 1.56 (`/opt/pw-browsers`), so the upgrade needs that path
-checked (or `executablePath`) at the same time.
+Playwright upgraded 1.56 → 1.63.0, which the cloud containers now pre-install (Chromium build
+1243, Chrome 153), and the e2e job is back on `ubuntu-latest`. The newer Chromium rasterises
+text with a slightly different anti-aliasing fringe, so the two typographic poster baselines
+(`type.png`, `mod12-type.png`) were refreshed; every other poster and audio baseline matched. One
+smoke test (mosaic widths) turned out timing-dependent and was fixed (it filled the slider with the
+width Fit had already chosen).

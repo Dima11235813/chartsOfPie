@@ -1,6 +1,7 @@
 import { runLengthEndingAt } from '../art'
 import { symbolGlyph } from '../../core/digits/digitSource'
 import { withAlpha } from '../palettes'
+import { TYPE_FONT_FAMILY, TYPE_FONT_WEIGHT } from '../typeFont'
 import { createLayer, type DigitAt, type DigitRenderer, type RendererOptions } from './renderer'
 
 /** Live cell sizes (CSS px), largest first; the text steps down as the frame fills, then scrolls. */
@@ -63,7 +64,7 @@ export function createTypeRenderer(
   const drawRange = (from: number, to: number, digitAt: DigitAt) => {
     const t = text.getContext('2d')!
     const g = glow.getContext('2d')!
-    t.font = `600 ${Math.round(cell * 0.72)}px ui-monospace, Menlo, Consolas, monospace`
+    t.font = `${TYPE_FONT_WEIGHT} ${Math.round(cell * 0.72)}px "${TYPE_FONT_FAMILY}", ui-monospace, Menlo, Consolas, monospace`
     t.textAlign = 'center'
     t.textBaseline = 'middle'
     const firstIndex = firstRow * cols
