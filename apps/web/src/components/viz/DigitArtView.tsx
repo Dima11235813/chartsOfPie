@@ -1,6 +1,6 @@
 import { withSymbol } from '../../core/series/series'
 import { useNumber } from '../numberContext'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   MAX_MOSAIC_COLUMNS,
   MIN_MOSAIC_COLUMNS,
@@ -16,6 +16,7 @@ import { useCanvas } from './useCanvas'
 import { MosaicSweep } from './MosaicSweep'
 import { LifeView } from './LifeView'
 import { lifeSeed, type LifeGrid } from '../../viz/life'
+import { loadTypeFont } from '../../viz/typeFont'
 import { useDigitFeed } from './useDigitFeed'
 
 interface DigitArtViewProps {
@@ -78,6 +79,18 @@ export function DigitArtView({
   const renderer = useRef<DigitRenderer | null>(null)
   const [summary, setSummary] = useState('No digits yet.')
   const [shownColumns, setShownColumns] = useState(0)
+  // Typographic view: the bundled face arrives a moment after mount; the picture is rebuilt then.
+  const [typeFontReady, setTypeFontReady] = useState(false)
+  useEffect(() => {
+    if (kind !== 'type' || typeFontReady) return
+    let cancelled = false
+    void loadTypeFont().then(() => {
+      if (!cancelled) setTypeFontReady(true)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [kind, typeFontReady])
   /** The Game of Life launched from the paused mosaic (null = showing the mosaic). */
   const [life, setLife] = useState<{
     seed: LifeGrid
@@ -142,7 +155,7 @@ export function DigitArtView({
   // the sweep state is part of the key and the picture is rebuilt (B-018).
   useDigitFeed(
     log,
-    `${kind}:${source.id}:${size.width}x${size.height}:${colors.join()}:${layoutColumns}:${minGroup}:${shapeFilter}:${sweep}:${spirals}:${goldenSpiral}:${life ? `life${life.id}` : 'art'}`,
+    `${kind}:${source.id}:${size.width}x${size.height}:${colors.join()}:${layoutColumns}:${minGroup}:${shapeFilter}:${sweep}:${spirals}:${goldenSpiral}:${life ? `life${life.id}` : 'art'}:${typeFontReady}`,
     {
       reset() {
         const canvas = canvasRef.current
